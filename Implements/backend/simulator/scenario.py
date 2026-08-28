@@ -7,7 +7,7 @@ import numpy as np
 from simulator.channel import harvest_power_w, sample_pin_dbm, stratified_unit
 from simulator.config import DONE, OFF, ON, SLEEP, SimConfig, is_dcm
 from simulator.energy import recharge_time_s
-from simulator.warmup import explicit_warmup, remaining_charge_stats
+from simulator.warmup import explicit_warmup, harvest_only_warmup, remaining_charge_stats
 
 
 @dataclass
@@ -109,7 +109,9 @@ def stationary_dcm_preinventory_state(cfg: SimConfig, peh_w: np.ndarray, phase_u
 
 def initial_arrays(cfg: SimConfig, scenario: Scenario, strategy: str):
     mode = cfg.assumptions.warmup_mode
-    if mode == "explicit":
+    if mode == "harvest_only":
+        energy, state, on_remaining = harvest_only_warmup(cfg, scenario.peh_w)
+    elif mode == "explicit":
         energy, state, on_remaining = explicit_warmup(cfg, scenario.peh_w, strategy)
     elif is_dcm(strategy):
         energy, state, on_remaining = stationary_dcm_preinventory_state(

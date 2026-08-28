@@ -58,7 +58,10 @@
     "reshuffleSeed": "New realization (new seed)",
     "maxTime": "Max time (s)",
     "run": "Run simulation",
-    "paper": "Paper configuration"
+    "paper": "Paper configuration",
+    "earlySleep": "Experimental: early-sleep after access rejection",
+    "sleepNetMin": "SLEEP net-power min (nW)",
+    "sleepNetMinPlaceholder": "−∞"
   },
   "hints": {
     "numDevices": "Tag count N. Paper Figure 5(b) uses N = 600. (x, y) on the floor is display only; $p_{\\mathrm{in}}$ comes from the digitized CDF.",
@@ -66,9 +69,11 @@
     "strategies": "All selected strategies share the same random numbers (same $p_{\\mathrm{in}}$, positions, energy phases).",
     "em": "Energy-aware monitoring. Next paging starts when the previous CBRA ends (paper strategy 1).",
     "dcm1": "Discontinuous coverage mode, one group. All devices share the same ON window.",
-    "dcm4": "DCM with 4 groups. Devices are split evenly (id modulo 4); each paging serves one group. Paper: ~50% $T_{99}$ cut vs EM.",
+    "dcm4": "DCM with 4 groups. Group assigned at first paging (spread). Each paging serves one group. Paper: ~50% $T_{99}$ cut vs EM — the UI shows PASS/FAIL from the automatic check.",
     "seed": "PRNG seed. Same seed + same N replays the identical Monte Carlo draw: floor (x, y), $p_{\\mathrm{in}}$, energy phase, and every access coin-flip. Devices do not walk; the factory “route” is only state playback. Change the seed, then Run, for a new layout and inventory order. 42 is the paper-reproduction default.",
-    "maxTime": "Simulation horizon in seconds. Paper qualitative: EM $T_{99}$ around 20 s. Web snapshots are stored every 100 ms."
+    "maxTime": "Simulation horizon in seconds. Paper qualitative: EM $T_{99}$ around 20 s. Web snapshots are stored every 100 ms.",
+    "earlySleep": "Not the paper default (unchecked). If checked, devices that fail the access-probability draw SLEEP after the 1 ms paging instead of remaining ON for Table 1 $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$. That is an unpublished duty-cycle optimization. Paper configuration keeps the box unchecked.",
+    "sleepNetMin": "Paper: $\\Delta E=(P_{\\mathrm{eh}}-P_{\\mathrm{sl}})\\Delta t$. Weak tags still drain in SLEEP. This box is the lower bound $x$ in $P_{\\mathrm{net}}=\\max(x,\\,P_{\\mathrm{eh}}-P_{\\mathrm{sl}})$. Empty or $-\\infty$ is the paper formula. $0$ stops SLEEP drain (not a paper claim). Units: nW."
   },
   "assumptions": {
     "title": "Parameters vs assumptions",
@@ -100,11 +105,16 @@
   "assumptionHints": {
     "pin_source": "$p_{\\mathrm{in}}$ is sampled from the digitized Fig. 5(a) CDF, not from factory (x, y) path loss.",
     "warmup": "How initial energy is set. `stationary` = closed-form cycle phase; `explicit` = ON/OFF machine for $warmup_s$ from $E_{\\mathrm{low}}$. They are not equivalent.",
-    "access_probability": "Paper gives no $p_{\\mathrm{access}}$ equation. Default `poisson_idle` is an unpublished idle-AO load estimate.",
+    "access_probability": "Paper gives no $p_{\\mathrm{access}}$ equation. Default `occupancy_counts` is a Schoute load estimate from idle/singleton/collision AOs.",
     "aperiodic_paging": "EM: next paging as soon as the previous CBRA ends.",
     "periodic_paging": "DCM: fixed global epochs $0, T_{\\mathrm{pg}}, 2T_{\\mathrm{pg}},\\ldots$. Overrun skips that occasion.",
-    "group_assignment": "Default $g = i \\bmod N_g$ is a preconfigured even-split assumption, not a published procedure. `first_paging_mod` is not paper-equivalent.",
-    "off_clears_sync": "Default true: OFF drops DCM sync and the device must hear paging again. False keeps sync and recharges until the next group epoch."
+    "group_assignment": "Default first_paging_spread: group is drawn at first paging detection so simultaneous hearers are not dumped into one group. even_id_mod / random_preconfigured are preconfigured splits. first_paging_mod uses paging index mod N_g.",
+    "off_clears_sync": "Default true: OFF drops DCM sync and the device must hear paging again. False keeps sync and recharges until the next group epoch.",
+    "sleep_when_not_attempting": "Paper default false: after inventory-stage sync, each DCM occasion stays ON for Table 1 $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$, including devices that do not attempt Msg1. True is experimental early-sleep (1 ms paging then SLEEP) — not the published model.",
+    "dcm_on_mode": "`strict_paper_fixed_ton_dcm` is the paper configuration. `experimental_early_sleep_after_access_rejection` shortens unused ON windows; do not treat it as the IEEE default.",
+    "sleep_net_power_min": "SLEEP net-power floor. `-inf` is the paper: $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$. A finite nW is experimental $\\max(x,\\,P_{\\mathrm{eh}}-P_{\\mathrm{sl}})$. $0$ means SLEEP cannot drain.",
+    "p_access_scope": "per_group: each paging/group has its own access probability (p is in the paging message). global shares one p.",
+    "channel_errors": "Noise, interference, and decoding failures are not simulated. Msg1 fails only on collision or energy depletion."
   },
   "anatomy": {
     "title": "Device internals",
@@ -131,7 +141,7 @@
     "pinHint": "Received RF power from the digitized Figure 5(a) CDF, clipped at −36 dBm. Not computed from (x, y).",
     "pehHint": "Harvested power $P_{\\mathrm{eh}} = \\eta(p_{\\mathrm{in}})\\, p_{\\mathrm{in}}$. Efficiency $\\eta$ uses the published piecewise formula (not the arXiv swap).",
     "group": "Group",
-    "groupHint": "DCM $g = i \\bmod N_g$. EM has no group.",
+    "groupHint": "DCM group after first paging. Default first_paging_spread. EM has no group.",
     "attempts": "Attempts",
     "attemptsHint": "Number of $\\mathrm{Msg}_{1}$ access attempts by this device.",
     "collisions": "Collisions",
@@ -202,7 +212,9 @@
     "final": "Final",
     "collisions": "Collisions",
     "inventoryTimes": "Inventory times",
-    "fromTimes": "From completion times, not a fitted curve"
+    "fromTimes": "From completion times, not a fitted curve",
+    "validation": "Fig. 5(b) scientific check: {{status}}",
+    "reduction": "4-group T99 reduction {{value}}%"
   },
   "maps": {
     "view": "View strategy map",
@@ -214,9 +226,9 @@
     "runMetrics": "Current run metrics",
     "legend": "Drag nodes to tidy the layout; Reset layout restores the default. Rounded = energy · square = protocol · pill = decision · sharp = failure · check = success. Dashed/animated edges are retries or sleep loops.",
     "expect": {
-      "em": "Device 1 EM T99 is qualitatively around 20 s on the published figure. This run is a Monte Carlo realization, not a curve fit.",
+      "em": "Published text: Device-1 EM T99 ≈ 20 s (P1: near $E_{\\mathrm{low}}$ at $p_{\\mathrm{in}}\\approx-36\\,\\mathrm{dBm}$). This run is a Monte Carlo realization. PASS/FAIL is the automatic check, not a claim that the curves overlay the IEEE plot.",
       "dcm1": "DCM 1-group should not improve Device 1 much versus EM: all N still share one contention group.",
-      "dcm4": "DCM 4-groups is qualitatively about 10 s / ~50% T99 cut versus EM on the published figure. Bulk (T90) should be clearly fastest; T99 tail is still set by the weakest harvesters."
+      "dcm4": "Published figure: DCM 4-groups about 10 s / ~50% T99 cut versus EM. Automatic PASS requires that band (30–70%), not an 80% collapse from early-sleep."
     },
     "em": {
       "summary": "ON is energy-thresholded. Paging is aperiodic. Weak devices recharge E_low→E_up on the order of 20 s.",
@@ -224,16 +236,16 @@
     },
     "dcm1": {
       "summary": "All 600 Device-1 tags share one group. Low p_access; many hear paging and pay monitoring energy without transmitting.",
-      "steps": "Pre-inventory ON timer 18 ms, then OFF if no paging.\nFirst paging synchronizes to 12 ms.\nDCM ON 3 ms, SLEEP 9 ms.\nNo-attempt still pays P_rx.\nE_low clears sync."
+      "steps": "Pre-inventory ON timer 18 ms, then OFF if no paging.\nFirst paging synchronizes to 12 ms.\nEach synced occasion stays ON for Table 1 $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$ unless OFF, DONE, or CBRA lasts longer.\nOptional experimental early-sleep: no-attempt devices SLEEP after paging.\nE_low clears sync."
     },
     "dcm4": {
-      "summary": "Even split g = id mod 4. Each device wakes every 48 ms (3 ms ON + 45 ms SLEEP). About 150 contend per paging.",
-      "steps": "First paging only synchronizes.\nGroup is device_id modulo 4 (not first-paging index).\nWake when paging_index mod 4 = g.\nN_g × T_pg = 48 ms.\nHigher p_access because the contention set is ~N/4."
+      "summary": "Group assigned at first paging detection (spread, not paging-index dump). Wake every 48 ms; paper default ON duration is still 3 ms.",
+      "steps": "First paging synchronizes and assigns a group.\nDefault first_paging_spread: simultaneous hearers are not all group 0.\nWake when paging_index mod 4 = g.\nN_g × T_pg = 48 ms.\nPer-group p_access from AO occupancy."
     }
   },
   "curve": {
     "title": "Figure 5(b)",
-    "subtitle": "from completion times, not a fitted curve. Qualitatively close; not an exact paper reproduction.",
+    "subtitle": "from completion times, not a fitted curve. Preliminary reproduction — PASS/FAIL is the automatic scientific check, not a claim that the curves match the paper.",
     "x": "Time (ms)",
     "y": "Inventoried (%)",
     "panHint": "Drag the bar under the plot to pan time. Double-click the plot to show the full run.",

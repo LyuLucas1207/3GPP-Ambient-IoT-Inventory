@@ -58,7 +58,10 @@
     "reshuffleSeed": "换一次实现（新种子）",
     "maxTime": "最大时间 (s)",
     "run": "运行仿真",
-    "paper": "论文配置"
+    "paper": "论文配置",
+    "earlySleep": "实验项：接入抽签失败后提前睡眠",
+    "sleepNetMin": "SLEEP 净功率下限 (nW)",
+    "sleepNetMinPlaceholder": "−∞"
   },
   "hints": {
     "numDevices": "标签数 N。论文图 5(b) 使用 N = 600。地面上的 (x, y) 仅用于显示；$p_{\\mathrm{in}}$ 来自数字化的 CDF。",
@@ -68,7 +71,9 @@
     "dcm1": "非连续覆盖模式，一组。所有设备共用同一 ON 窗口。",
     "dcm4": "DCM 共 4 组。设备按 id 对 4 取模均分；每一轮寻呼只服务一组。论文：相对 EM 约降低 50% $T_{99}$。",
     "seed": "伪随机种子。相同种子 + 相同 N 会原样重放同一次蒙特卡洛抽样：车间 (x, y)、$p_{\\mathrm{in}}$、能量相位、以及每一次接入掷币。设备不会走动；车间里看到的“路线”只是状态回放。要换布局和入库顺序：改种子后再点运行。42 是复现论文的默认值。",
-    "maxTime": "仿真时长（秒）。论文定性结果：EM 的 $T_{99}$ 约 20 s。网页快照每 100 ms 存一次。"
+    "maxTime": "仿真时长（秒）。论文定性结果：EM 的 $T_{99}$ 约 20 s。网页快照每 100 ms 存一次。",
+    "earlySleep": "不是论文默认（默认不勾选）。勾选后，接入概率抽签失败的设备在 1 ms paging 后立刻 SLEEP，而不是保持 Table 1 的 $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$。这是论文未写明的占空比优化。点「论文配置」会取消勾选。",
+    "sleepNetMin": "论文：$\\Delta E=(P_{\\mathrm{eh}}-P_{\\mathrm{sl}})\\Delta t$，弱设备 SLEEP 仍掉电。此栏是下限 $x$：$P_{\\mathrm{net}}=\\max(x,\\,P_{\\mathrm{eh}}-P_{\\mathrm{sl}})$。留空或 $-\\infty$ 为论文公式。填 $0$ 则 SLEEP 不再掉电（实验项，非论文）。单位 nW。"
   },
   "assumptions": {
     "title": "参数与假设",
@@ -100,11 +105,16 @@
   "assumptionHints": {
     "pin_source": "$p_{\\mathrm{in}}$ 从图 5(a) 数字化 CDF 抽样，不是由车间 (x, y) 路径损耗计算。",
     "warmup": "初始能量：`stationary` 为闭式周期相位；`explicit` 从 $E_{\\mathrm{low}}$ 跑 warmup_s 的 ON/OFF 状态机。两者不等价。",
-    "access_probability": "论文未给出 $p_{\\mathrm{access}}$ 公式。默认 `poisson_idle` 是未发表的空闲 AO 负荷估计。",
+    "access_probability": "论文未给出 $p_{\\mathrm{access}}$ 公式。默认 `occupancy_counts` 是根据空闲/单例/碰撞 AO 的 Schoute 负荷估计。",
     "aperiodic_paging": "EM：上一轮 CBRA 结束后尽快开始下一次寻呼。",
     "periodic_paging": "DCM：固定全局 epoch $0, T_{\\mathrm{pg}}, 2T_{\\mathrm{pg}},\\ldots$。CBRA 跨过则跳过该次寻呼。",
-    "group_assignment": "默认 $g = i \\bmod N_g$ 是预配置均匀分组假设，不是论文公布的流程。`first_paging_mod` 不能当作 paper mode。",
-    "off_clears_sync": "默认 true：OFF 会丢掉 DCM 同步，必须再听到寻呼。False 保留同步，充到 $E_{\\mathrm{up}}$ 后等下一次组 epoch。"
+    "group_assignment": "默认 first_paging_spread：在首次检测到寻呼时抽组，避免把同时听到同一寻呼的设备全部塞进同一组。even_id_mod / random_preconfigured 为预配置分组。first_paging_mod 用 paging index mod $N_g$。",
+    "off_clears_sync": "默认 true：OFF 会丢掉 DCM 同步，必须再听到寻呼。False 保留同步，充到 $E_{\\mathrm{up}}$ 后等下一次组 epoch。",
+    "sleep_when_not_attempting": "论文默认 false：获得 inventory stage 后，每个 DCM occasion 保持 Table 1 的 $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$，包括未发送 Msg1 的设备。True 是实验性提前睡眠（1 ms paging 后 SLEEP），不是发表模型。",
+    "dcm_on_mode": "`strict_paper_fixed_ton_dcm` 是论文配置。`experimental_early_sleep_after_access_rejection` 会缩短未接入设备的 ON，不得当作 IEEE 默认。",
+    "sleep_net_power_min": "SLEEP 净功率下限。`-inf` 为论文 $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$。有限 nW 是实验项 $\\max(x,\\,P_{\\mathrm{eh}}-P_{\\mathrm{sl}})$。$0$ 表示 SLEEP 不再掉电。",
+    "p_access_scope": "per_group：每个寻呼/组有自己的接入概率（p 写在寻呼里）。global 共用一个 p。",
+    "channel_errors": "未模拟噪声、干扰或译码失败。Msg1 只在碰撞或能量耗尽时失败。"
   },
   "anatomy": {
     "title": "设备内部",
@@ -202,7 +212,9 @@
     "final": "最终",
     "collisions": "碰撞",
     "inventoryTimes": "盘点时间",
-    "fromTimes": "来自完成时刻，不是拟合曲线"
+    "fromTimes": "来自完成时刻，不是拟合曲线",
+    "validation": "图 5(b) 科学验收：{{status}}",
+    "reduction": "4 组相对 EM 的 T99 降幅 {{value}}%"
   },
   "maps": {
     "view": "查看策略图",
@@ -214,9 +226,9 @@
     "runMetrics": "本次运行指标",
     "legend": "可拖动节点整理布局；「重置布局」恢复默认。圆角=能量状态 · 方角=协议 · 胶囊=决策 · 直角=失败 · 勾=成功。虚线/动画边为重试或睡眠循环。",
     "expect": {
-      "em": "发表图上 Device 1 的 EM T99 约 20 s。本次是蒙特卡洛一次实现，不是曲线拟合。",
+      "em": "发表论文：Device-1 EM T99 ≈ 20 s（P1：接近 $E_{\\mathrm{low}}$ 且 $p_{\\mathrm{in}}\\approx-36\\,\\mathrm{dBm}$）。本次是蒙特卡洛一次实现。PASS/FAIL 来自自动验收，不是声称曲线叠在 IEEE 图上。",
       "dcm1": "Device 1 下 DCM 1-group 不应明显优于 EM：全部 N 仍在同一竞争组。",
-      "dcm4": "发表图上 DCM 4-groups 约 10 s / 相对 EM 约降低 50% T99。主体（T90）应明显最快；T99 尾巴仍由最弱采集器决定。"
+      "dcm4": "发表图上 DCM 4-groups 约 10 s / 相对 EM 约降低 50% T99。自动 PASS 要求降幅落在 30–70%，不能把提前睡眠造成的约 80% 当成接近论文。"
     },
     "em": {
       "summary": "ON 由能量阈值控制。寻呼是非周期的。弱设备从 E_low 充到 E_up 约 20 s 量级。",
@@ -224,16 +236,16 @@
     },
     "dcm1": {
       "summary": "600 台 Device 1 同属一组。p_access 很低；大量设备听到寻呼并支付监听能量却不发送。",
-      "steps": "盘点前 ON 定时器 18 ms，无寻呼则 OFF。\n第一次寻呼同步到 12 ms。\nDCM ON 3 ms，SLEEP 9 ms。\n未尝试仍支付 P_rx。\nE_low 清除同步。"
+      "steps": "盘点前 ON 定时器 18 ms，无寻呼则 OFF。\n第一次寻呼同步到 12 ms。\n每个已同步 occasion 保持 Table 1 的 $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$，除非 OFF、DONE，或当前 CBRA 更长。\n可选实验项：未接入则寻呼后立刻 SLEEP。\nE_low 清除同步。"
     },
     "dcm4": {
-      "summary": "均匀分组 g = id mod 4。每台设备每 48 ms 醒一次（ON 3 ms + SLEEP 45 ms）。每次约 150 台竞争。",
-      "steps": "第一次寻呼只负责同步。\n分组是 device_id 对 4 取模（不是首次寻呼序号）。\n仅当 paging_index mod 4 = g 时醒来。\nN_g × T_pg = 48 ms。\n竞争集合约 N/4，因此 p_access 更高。"
+      "summary": "在首次检测到寻呼时分组（spread，不是把同时听到的设备全塞进一组）。每 48 ms 醒一次；论文默认 ON 仍为 3 ms。",
+      "steps": "第一次寻呼同步并分配组。\n默认 first_paging_spread：同时听到的设备不会全部进 group 0。\n当 paging_index mod 4 = g 时醒来。\nN_g × T_pg = 48 ms。\n每组 p_access 由 AO occupancy 更新。"
     }
   },
   "curve": {
     "title": "图 5(b)",
-    "subtitle": "来自完成时刻，不是拟合曲线。趋势接近论文，不是精确复现。",
+    "subtitle": "来自完成时刻，不是拟合曲线。初步复现——PASS/FAIL 来自自动科学验收，不是“看起来接近论文”。",
     "x": "时间 (ms)",
     "y": "已盘点 (%)",
     "panHint": "拖动图下方的滑条左右查看时间。双击图恢复整段仿真。",

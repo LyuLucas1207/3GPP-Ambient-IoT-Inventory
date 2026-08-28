@@ -33,14 +33,69 @@ def _one_device(strategy: str, p_access: float, max_time_s: float = 0.05):
     return res, e
 
 
-def test_dcm_listen_window_pays_full_ton():
-    """p_access=0: still pay T_on_DCM * P_rx, not a single dt."""
-    res, e = _one_device("dcm_1_group", p_access=0.0, max_time_s=0.03)
+def test_dcm_rejected_device_pays_paging_not_full_ton():
+    """Experimental early-sleep: p_access=0 listens then SLEEPs, not full 3 ms."""
+    from simulator.config import SLEEP
+
+    cfg = paper_device1_config(
+        num_devices=1, max_time_s=0.03, collect_snapshots=False, collect_paging_events=False, seed=1
+    )
+    cfg = replace(
+        cfg,
+        assumptions=replace(
+            cfg.assumptions,
+            p_access_init=0.0,
+            p_access_min=0.0,
+            sleep_when_not_attempting=True,
+        ),
+    )
+    sc = Scenario.generate(cfg)
+    sc.phase_u[:] = 0.0
+    sc.pin_dbm[:] = -10.0
+    sc.peh_w[:] = harvest_power_w(sc.pin_dbm)
+    res = run_strategy(cfg, sc, "dcm_1_group", rng=np.random.default_rng(1))
+    e = np.array(res.energy_traces["energy_nj"]["0"])
+    initial = res.device_stats[0]["initial_energy_nj"]
+    drop_first = float(initial - e[0])
+    paging_nj = 1e-6 * 1e-3 * 1e9  # 1 nJ
+    full_ton_nj = 1e-6 * 3e-3 * 1e9  # 3 nJ
+    assert 0.25 <= drop_first <= 1.2 * paging_nj
+    assert drop_first < 0.5 * full_ton_nj
+    assert res.metrics["n_msg1_attempts"] == 0
+    states = np.array(res.energy_traces["state"]["0"])
+    times = np.array(res.energy_traces["times_s"])
+    after_paging = (times >= 0.0005) & (times < 0.010)
+    assert after_paging.any()
+    assert np.all(states[after_paging] == SLEEP)
+
+
+def test_dcm_strict_duty_cycle_pays_full_ton():
+    """Paper default: Table 1 3 ms ON every synced DCM period, even if p=0."""
+    from simulator.config import AssumptionParams
+
+    assert AssumptionParams().sleep_when_not_attempting is False
+    cfg = paper_device1_config(
+        num_devices=1, max_time_s=0.03, collect_snapshots=False, collect_paging_events=False, seed=1
+    )
+    cfg = replace(
+        cfg,
+        assumptions=replace(
+            cfg.assumptions,
+            p_access_init=0.0,
+            p_access_min=0.0,
+        ),
+    )
+    assert cfg.assumptions.sleep_when_not_attempting is False
+    sc = Scenario.generate(cfg)
+    sc.phase_u[:] = 0.0
+    sc.pin_dbm[:] = -10.0
+    sc.peh_w[:] = harvest_power_w(sc.pin_dbm)
+    res = run_strategy(cfg, sc, "dcm_1_group", rng=np.random.default_rng(1))
+    e = np.array(res.energy_traces["energy_nj"]["0"])
     drop = float(e[0] - np.min(e[:20]))
-    expected = 1e-6 * 3e-3 * 1e9  # 3 nJ
+    expected = 1e-6 * 3e-3 * 1e9
     assert drop >= 0.85 * expected
     assert drop < 8.0
-    assert res.metrics["n_msg1_attempts"] == 0
 
 
 def test_successful_cbra_pays_absolute_rx_tx():

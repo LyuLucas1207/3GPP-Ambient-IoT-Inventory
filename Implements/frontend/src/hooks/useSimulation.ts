@@ -17,6 +17,8 @@ const PAPER: SimulateRequest = {
   snapshot_interval_ms: 100,
   collect_snapshots: true,
   collect_paging_events: true,
+  sleep_when_not_attempting: false,
+  sleep_net_power_min_nw: null,
 }
 
 export function useSimulation() {

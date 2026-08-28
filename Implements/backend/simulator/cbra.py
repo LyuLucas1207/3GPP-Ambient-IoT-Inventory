@@ -83,6 +83,7 @@ class CBRAPlan:
     p_access: float
     eligible_ids: np.ndarray
     attempting_ids: np.ndarray
+    access_u: np.ndarray
     time_ao: np.ndarray
     freq_ao: np.ndarray
     aos: list[AOOutcome]
@@ -135,9 +136,10 @@ def plan_cbra(
     msg3_slots = max(1, cfg.slots(d.msg3_s))
 
     attempting = _empty_int()
+    access_u = np.array([], dtype=np.float64)
     if eligible_ids.size > 0:
-        draws = rng.random(eligible_ids.size)
-        attempting = eligible_ids[draws < p_access]
+        access_u = rng.random(eligible_ids.size)
+        attempting = eligible_ids[access_u < p_access]
 
     time_ao = np.full(attempting.size, -1, dtype=np.int16)
     freq_ao = np.full(attempting.size, -1, dtype=np.int16)
@@ -178,6 +180,7 @@ def plan_cbra(
         p_access=float(p_access),
         eligible_ids=np.asarray(eligible_ids, dtype=int),
         attempting_ids=np.asarray(attempting, dtype=int),
+        access_u=np.asarray(access_u, dtype=np.float64),
         time_ao=time_ao,
         freq_ao=freq_ao,
         aos=outcomes,

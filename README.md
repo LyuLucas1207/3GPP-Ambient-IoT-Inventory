@@ -1,6 +1,6 @@
 # 3GPP-Ambient-IoT-Inventory
 
-A **system-level simulator** for 3GPP Ambient IoT inventory: batteryless tags harvest RF energy, and a reader identifies them with paging and CBRA (Msg1–Msg3). This repo implements that procedure and reproduces the paper’s Device-1 Figure 5(b) comparison (EM, DCM 1-group, DCM 4-group).
+A **system-level simulator** for 3GPP Ambient IoT inventory: batteryless tags harvest RF energy, and a reader identifies them with paging and CBRA (Msg1–Msg3). This repo **implements the simulation environment** and provides a **preliminary reproduction** of the paper’s Device-1 Figure 5(b) comparison (EM, DCM 1-group, DCM 4-group). It does not claim a finished curve-for-curve reproduction until `python scripts/validate_fig5b.py` reports PASS on the scientific checks.
 
 Canonical source: the **published IEEE** paper (arXiv `2501.15020v1` is for discrepancy notes only):
 
@@ -55,12 +55,18 @@ docker compose -f docker-compose.prod.yml up --build
 
 Open http://localhost:3000. Do not run both compose files at once; they share ports 3000 and 8000.
 
-## Reproduce Figure 5(b) only
+## Figure 5(b) simulation (preliminary reproduction)
 
 ```bash
 cd Implements/backend
 source .venv/bin/activate
 python scripts/reproduce_fig5b.py
+python scripts/diagnose_fig5b_tail.py
+python scripts/validate_fig5b.py
+python scripts/validate_fig5b.py --quick
+python scripts/validate_fig5b.py --monte-carlo 20
+python scripts/digitize_fig5b.py
+python scripts/compare_assumptions.py --quick
 ```
 
 or:
@@ -74,6 +80,10 @@ Outputs:
 - `Implements/results/fig5b_reproduced.png`
 - `Implements/results/fig5b_reproduced.csv`
 - `Implements/results/fig5b_metrics.json`
+- `Implements/results/fig5b_tail_diagnosis.json`
+- `Implements/results/fig5b_validation.json`
+
+Call this a Figure 5(b) **reproduction** only when validation PASS includes: 4-group T99 faster than EM, reduction in a **30–70%** band around the paper’s ~50% (an ~80% cut is not “near 50%”), 4-group T99 in [6, 16] s (paper ≈ 10 s), EM T99 in [12, 28] s (paper ≈ 20 s), DCM 1-group not a clear win vs EM, digitized-curve error reported, and multi-seed direction stable. Paper configuration uses a **fixed 3 ms** DCM ON window; experimental early-sleep is a separate checkbox, default off.
 
 ## Local development (without Docker)
 
@@ -103,16 +113,26 @@ source .venv/bin/activate
 pytest
 ```
 
+Frontend:
+
+```bash
+cd Implements/frontend
+npm run lint
+npm run build
+```
+
 ## What is simulated
 
 - RF energy harvesting $P_{\mathrm{eh}}=p_{\mathrm{in}}\,\xi(p_{\mathrm{in}})$
 - Energy storage and EM / DCM state machines
-- Device grouping from first detected paging
-- Access-probability control from AO occupancy
+- Device grouping at first detected paging (default: spread across groups; not “everyone who hears paging 0 is group 0”)
+- Access-probability control from AO occupancy (Schoute / occupancy counts)
 - CBRA over 8 Device-1 AOs, Msg1 collision / retry
 - Inventory completion times $\rightarrow$ Figure 5(b)
 
 Factory $(x,y)$ is **illustrative visualization**. Device $p_{\mathrm{in}}$ is sampled from the digitized Figure 5(a) CDF, not from $1/d^{2}$.
+
+Noise, interference, and channel decoding failures are **not** modelled. Msg1 fails only on AO collision or energy depletion.
 
 ## Parameter categories
 
@@ -134,14 +154,15 @@ Factory $(x,y)$ is **illustrative visualization**. Device $p_{\mathrm{in}}$ is s
 ### B. Digitized from a figure
 
 - `Implements/backend/data/fig5a_pin_cdf.csv` — Figure 5(a) $p_{\mathrm{in}}$ CDF.
+- `Implements/backend/data/reference_fig5b/*.csv` — Figure 5(b) Device-1 curves (IEEE page 7). See `reference_fig5b/DIGITIZATION.md`.
 
 ### C. Reproduction assumptions (not fully specified by the paper)
 
-- **Access probability update**: idle-AO Poisson load estimate targeting ~1 attempt per AO.
+- **Access probability update**: Schoute occupancy counts targeting ~1 attempt per AO, **per paging group**. Not a paper equation.
 - **Aperiodic paging (EM)**: next paging as soon as the previous CBRA ends.
-- **Initial energy**: stationary EM/DCM cycle phase from a shared `phase_u`.
+- **Initial energy**: default `stationary` independent cycle phase. `explicit` and `harvest_only` charging stages are experiments; charging time is **not** on the Figure 5(b) axis.
 - **OFF clears DCM sync**: IC off loses the sleep timer.
-- **Group id**: `device_id % N_groups` (even split; first paging only syncs).
+- **Group id**: default `first_paging_spread` (group drawn at first detection, not paging index). Alternatives: `even_id_mod`, `random_preconfigured`, `first_paging_mod`.
 
 See `Implements/docs/REPRODUCTION_ASSUMPTIONS.md` and `Implements/docs/PAPER_NOTES.md`.
 

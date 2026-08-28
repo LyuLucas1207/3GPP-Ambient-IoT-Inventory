@@ -1,7 +1,7 @@
 import numpy as np
 
 from simulator.config import OFF, ON, SLEEP, paper_device1_config
-from simulator.strategies.dcm import apply_dcm_pre_inventory, apply_elow
+from simulator.strategies.dcm import apply_dcm_pre_inventory, apply_elow, return_to_sleep
 
 
 def test_preinventory_timer_returns_to_off():
@@ -35,3 +35,17 @@ def test_elow_forces_off_from_sleep():
     hit = apply_elow(energy, state, cfg, np.array([True]))
     assert bool(hit[0])
     assert state[0] == OFF
+
+
+def test_return_to_sleep_leaves_off_and_done():
+    from simulator.config import DONE
+
+    state = np.array([ON, OFF, DONE, ON], dtype=np.int8)
+    on_remaining = np.array([6, 0, 0, 3], dtype=np.int32)
+    return_to_sleep(state, on_remaining, np.array([True, True, True, False]))
+    assert state[0] == SLEEP
+    assert on_remaining[0] == 0
+    assert state[1] == OFF
+    assert state[2] == DONE
+    assert state[3] == ON
+    assert on_remaining[3] == 3

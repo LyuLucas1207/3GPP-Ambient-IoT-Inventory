@@ -47,6 +47,19 @@ def expire_synced_on_window(
     return expired
 
 
+def return_to_sleep(
+    state: np.ndarray,
+    on_remaining: np.ndarray,
+    mask: np.ndarray,
+) -> None:
+    """Leave RX/TX and keep the DCM sleep timer. OFF/DONE are left unchanged."""
+    live = mask & (state != DONE) & (state != OFF)
+    if not np.any(live):
+        return
+    state[live] = SLEEP
+    on_remaining[live] = 0
+
+
 def apply_elow(energy: np.ndarray, state: np.ndarray, cfg: SimConfig, synced: np.ndarray) -> np.ndarray:
     """Return mask of devices that just hit E_low (lose sync if configured)."""
     d = cfg.device

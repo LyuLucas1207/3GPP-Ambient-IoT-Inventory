@@ -1,3 +1,4 @@
+from dataclasses import replace
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
@@ -12,6 +13,7 @@ from simulator.config import (
 )
 from simulator.run_store import device_trace_payload, get_run, put_run
 from simulator.paper_reference import fig5b_reference_payload
+from simulator.energy import sleep_net_min_w_from_nw, format_sleep_net_min
 from simulator.simulation import result_to_web_payload, run_paper_comparison
 
 router = APIRouter()
@@ -54,15 +56,24 @@ def _paper_payload() -> dict:
             ),
             "access_probability": (
                 f"Controller `{a.access_controller}` (not specified by the paper). "
-                "poisson_idle holds p when occupancy is energy-limited."
+                "Default occupancy_counts: Schoute load from idle/singleton/collision AOs. "
+                f"Scope `{a.p_access_scope}`."
             ),
             "aperiodic_paging": "EM: earliest feasible paging after the previous CBRA ends.",
             "periodic_paging": "DCM: global epoch 0, T_pg, 2 T_pg, … .",
             "group_assignment": (
-                "even_id_mod: preconfigured g = device_id % N_groups "
-                "(reproduction assumption, not a published procedure)."
+                f"`{a.group_assignment}`. Paper groups at first paging detection; "
+                "first_paging_spread does not dump simultaneous hearers into one group."
             ),
             "off_clears_sync": a.off_clears_inventory_sync,
+            "sleep_when_not_attempting": a.sleep_when_not_attempting,
+            "dcm_on_mode": (
+                "experimental_early_sleep_after_access_rejection"
+                if a.sleep_when_not_attempting
+                else "strict_paper_fixed_ton_dcm"
+            ),
+            "sleep_net_power_min": format_sleep_net_min(a.sleep_net_power_min_w),
+            "channel_errors": "Noise/interference/decoding failures are not modelled.",
         },
         "factory": {
             "length_m": a.factory_length_m,
@@ -111,6 +122,14 @@ def simulate(req: SimulateRequest) -> dict:
             collect_paging_events=req.collect_paging_events,
             strategies=tuple(req.strategies),
             device=device2_params() if req.device_type == 2 else device1_params(),
+        )
+        cfg = replace(
+            cfg,
+            assumptions=replace(
+                cfg.assumptions,
+                sleep_when_not_attempting=req.sleep_when_not_attempting,
+                sleep_net_power_min_w=sleep_net_min_w_from_nw(req.sleep_net_power_min_nw),
+            ),
         )
         bundle = run_paper_comparison(cfg)
         run_id = str(uuid4())

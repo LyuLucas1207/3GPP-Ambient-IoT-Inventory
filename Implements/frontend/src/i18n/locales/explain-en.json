@@ -370,7 +370,7 @@
         "pre": { "title": "Pre-inventory ON · 18 ms", "body": "$T_{\\mathrm{on,timer}}$: stay ON waiting for the first paging. None heard → OFF." },
         "sync": { "title": "First paging / sync", "body": "Aligns the device to the 12 ms paging grid. Does not yet mean a Msg1 attempt." },
         "on": { "title": "DCM ON · 3 ms", "body": "$T_{\\mathrm{on,DCM}}$ listen window. All 600 Device-1 tags share one contention group." },
-        "draw": { "title": "Access probability", "body": "Low $p_{\\mathrm{access}}$ because N=600 share the paging. No-attempt still pays $P_{\\mathrm{rx}}$." },
+        "draw": { "title": "Access probability", "body": "Low $p_{\\mathrm{access}}$ because N=600 share the paging. Non-attempters return to SLEEP after paging (default)." },
         "cbra": { "title": "Msg2 → Msg3", "body": "Singleton path: receive Msg2, send Msg3, DONE if energy remains." },
         "done": { "title": "DONE", "body": "Inventory complete. Trace freeze applies as in EM." },
         "sleep": { "title": "DCM SLEEP · 9 ms", "body": "After the 3 ms ON, sleep 9 ms (1-group period 12 ms) while harvesting at $P_{\\mathrm{sl}}$." },

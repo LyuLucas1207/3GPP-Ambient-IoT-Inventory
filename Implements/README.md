@@ -9,4 +9,4 @@ cd ..
 docker compose up --build
 ```
 
-See [../README.md](../README.md) for Quick Start, Figure 5(b) reproduction, and assumptions.
+See [../README.md](../README.md) for Quick Start, Figure 5(b) preliminary reproduction, and assumptions.

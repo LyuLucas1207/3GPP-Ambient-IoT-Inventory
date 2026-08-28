@@ -58,7 +58,10 @@
     "reshuffleSeed": "Nouvelle réalisation (nouvelle graine)",
     "maxTime": "Temps max (s)",
     "run": "Lancer la simulation",
-    "paper": "Configuration papier"
+    "paper": "Configuration papier",
+    "earlySleep": "Expérimental : sommeil anticipé après rejet d’accès",
+    "sleepNetMin": "Plancher net SLEEP (nW)",
+    "sleepNetMinPlaceholder": "−∞"
   },
   "hints": {
     "numDevices": "Nombre d’étiquettes N. La figure 5(b) utilise N = 600. Les (x, y) au sol sont d’affichage seulement ; $p_{\\mathrm{in}}$ vient de la CDF numérisée.",
@@ -68,7 +71,9 @@
     "dcm1": "Mode de couverture discontinue, un seul groupe. Tous les dispositifs partagent la même fenêtre ON.",
     "dcm4": "DCM à 4 groupes. Les dispositifs sont répartis également (id modulo 4) ; chaque paging sert un groupe. Papier : réduction d’environ 50 % du $T_{99}$ vs EM.",
     "seed": "Graine du PRNG. Même graine + même N rejoue le même tirage de Monte Carlo : (x, y) au sol, $p_{\\mathrm{in}}$, phase d’énergie, et chaque tirage d’accès. Les dispositifs ne se déplacent pas ; la « route » usine n’est que la lecture des états. Changez la graine, puis Lancez, pour un nouveau plan et un nouvel ordre d’inventaire. 42 est la valeur par défaut de reproduction du papier.",
-    "maxTime": "Horizon de simulation en secondes. Qualitatif du papier : $T_{99}$ EM autour de 20 s. Les instantanés web sont stockés toutes les 100 ms."
+    "maxTime": "Horizon de simulation en secondes. Qualitatif du papier : $T_{99}$ EM autour de 20 s. Les instantanés web sont stockés toutes les 100 ms.",
+    "earlySleep": "Pas le défaut papier (décoché). Si coché, les dispositifs qui échouent au tirage $p_{\\mathrm{access}}$ passent en SLEEP après le paging de 1 ms au lieu de rester ON pendant $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$. Optimisation de duty cycle non publiée. « Configuration papier » décoche la case.",
+    "sleepNetMin": "Papier : $\\Delta E=(P_{\\mathrm{eh}}-P_{\\mathrm{sl}})\\Delta t$. Les tags faibles drainent encore en SLEEP. $x$ est le plancher $P_{\\mathrm{net}}=\\max(x,\\,P_{\\mathrm{eh}}-P_{\\mathrm{sl}})$. Vide ou $-\\infty$ = formule papier. $0$ empêche le drain SLEEP (expérimental). Unité : nW."
   },
   "assumptions": {
     "title": "Paramètres vs hypothèses",
@@ -100,11 +105,16 @@
   "assumptionHints": {
     "pin_source": "$p_{\\mathrm{in}}$ est échantillonné depuis la CDF numérisée de la fig. 5(a), pas depuis un affaiblissement de parcours (x, y).",
     "warmup": "Énergie initiale : `stationary` = phase de cycle analytique ; `explicit` = machine ON/OFF pendant warmup_s depuis $E_{\\mathrm{low}}$. Ce n’est pas équivalent.",
-    "access_probability": "Le papier ne donne pas d’équation pour $p_{\\mathrm{access}}$. `poisson_idle` est une hypothèse non publiée.",
+    "access_probability": "Le papier ne donne pas d’équation pour $p_{\\mathrm{access}}$. `occupancy_counts` est une estimation de charge de Schoute à partir des AO idle/singleton/collision.",
     "aperiodic_paging": "EM : paging suivant dès que le CBRA précédent se termine.",
     "periodic_paging": "DCM : grilles d’époques $0, T_{\\mathrm{pg}}, 2T_{\\mathrm{pg}},\\ldots$. Un dépassement saute l’occasion.",
-    "group_assignment": "Par défaut $g = i \\bmod N_g$ est une hypothèse de répartition égale préconfigurée, pas une procédure publiée. `first_paging_mod` n’est pas équivalent au papier.",
-    "off_clears_sync": "Vrai par défaut : OFF efface la synchro DCM. Faux : on conserve la synchro et on recharge jusqu’à la prochaine époque du groupe."
+    "group_assignment": "Défaut first_paging_spread : le groupe est tiré à la première détection pour ne pas empiler tous les auditeurs simultanés. even_id_mod / random_preconfigured sont préconfigurés. first_paging_mod utilise l’index de paging mod $N_g$.",
+    "off_clears_sync": "Vrai par défaut : OFF efface la synchro DCM. Faux : on conserve la synchro et on recharge jusqu’à la prochaine époque du groupe.",
+    "sleep_when_not_attempting": "Défaut papier faux : après la synchro inventory, chaque occasion DCM reste ON pendant $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$ (Table 1), y compris sans Msg1. Vrai = sommeil anticipé expérimental (paging 1 ms puis SLEEP), pas le modèle publié.",
+    "dcm_on_mode": "`strict_paper_fixed_ton_dcm` est la configuration papier. `experimental_early_sleep_after_access_rejection` raccourcit les fenêtres ON inutilisées ; ce n’est pas le défaut IEEE.",
+    "sleep_net_power_min": "Plancher de puissance nette SLEEP. `-inf` = papier $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$. Une valeur nW finie est $\\max(x,\\,P_{\\mathrm{eh}}-P_{\\mathrm{sl}})$ expérimental. $0$ : pas de drain en SLEEP.",
+    "p_access_scope": "per_group : chaque paging/groupe a son $p$ (porté par le paging). global partage un seul $p$.",
+    "channel_errors": "Bruit, brouillage et échecs de décodage non modélisés. Msg1 échoue seulement sur collision ou épuisement d’énergie."
   },
   "anatomy": {
     "title": "Intérieur du dispositif",
@@ -202,7 +212,9 @@
     "final": "Final",
     "collisions": "Collisions",
     "inventoryTimes": "Temps d’inventaire",
-    "fromTimes": "D’après les instants d’achèvement, pas une courbe ajustée"
+    "fromTimes": "D’après les instants d’achèvement, pas une courbe ajustée",
+    "validation": "Contrôle scientifique fig. 5(b) : {{status}}",
+    "reduction": "Réduction T99 4 groupes {{value}} %"
   },
   "maps": {
     "view": "Voir la carte de stratégie",
@@ -214,9 +226,9 @@
     "runMetrics": "Métriques de cette exécution",
     "legend": "Faites glisser les nœuds pour ranger le graphe ; Réinitialiser la disposition restaure le défaut. Arrondi = état d’énergie · carré = protocole · pilule = décision · anguleux = échec · coche = succès. Les arêtes animées sont des retries ou des boucles de sommeil.",
     "expect": {
-      "em": "Sur la figure publiée, le T99 EM Device 1 est autour de 20 s. Cette exécution est une réalisation de Monte Carlo, pas un ajustement.",
+      "em": "Texte publié : T99 EM Device-1 ≈ 20 s (P1). PASS/FAIL est le contrôle automatique, pas une superposition sur la figure IEEE.",
       "dcm1": "Le DCM 1 groupe ne doit pas beaucoup améliorer Device 1 vs EM : les N tags restent un seul groupe de contention.",
-      "dcm4": "Le DCM 4 groupes est qualitativement ~10 s / ~50 % de T99 vs EM. Le gros (T90) doit être clairement le plus rapide ; la queue T99 reste dictée par les plus faibles harvesters."
+      "dcm4": "Figure publiée : DCM 4 groupes ≈ 10 s / ~50 % de T99 vs EM. PASS automatique exige cette bande (30–70 %), pas un effondrement à 80 % dû au sommeil anticipé."
     },
     "em": {
       "summary": "ON est commandé par les seuils d’énergie. Le paging est apériodique. Les tags faibles rechargent E_low→E_up à l’échelle de 20 s.",
@@ -224,16 +236,16 @@
     },
     "dcm1": {
       "summary": "Les 600 tags Device 1 partagent un groupe. p_access bas ; beaucoup entendent le paging et paient le monitoring sans émettre.",
-      "steps": "Timer ON pré-inventaire 18 ms, puis OFF sans paging.\nPremier paging : sync à 12 ms.\nDCM ON 3 ms, SLEEP 9 ms.\nSans tentative, P_rx est quand même payé.\nE_low efface la sync."
+      "steps": "Timer ON pré-inventaire 18 ms, puis OFF sans paging.\nPremier paging : sync à 12 ms.\nChaque occasion synchronisée reste ON 3 ms (Table 1) sauf OFF, DONE, ou CBRA plus long.\nOption expérimentale : sans tentative, SLEEP après le paging.\nE_low efface la sync."
     },
     "dcm4": {
-      "summary": "Partition paire g = id mod 4. Réveil toutes les 48 ms (ON 3 ms + SLEEP 45 ms). Environ 150 en contention par paging.",
-      "steps": "Le premier paging ne fait que synchroniser.\nLe groupe est device_id modulo 4 (pas l’index du premier paging).\nRéveil si paging_index mod 4 = g.\nN_g × T_pg = 48 ms.\np_access plus élevé car l’ensemble de contention est ~N/4."
+      "summary": "Groupe assigné à la première détection (spread, pas un dump sur l’index de paging). Réveil toutes les 48 ms ; durée ON papier toujours 3 ms.",
+      "steps": "Le premier paging synchronise et assigne un groupe.\nDéfaut first_paging_spread : les auditeurs simultanés ne sont pas tous le groupe 0.\nRéveil si paging_index mod 4 = g.\nN_g × T_pg = 48 ms.\np_access par groupe depuis l’occupation des AO."
     }
   },
   "curve": {
     "title": "Figure 5(b)",
-    "subtitle": "d’après les instants d’achèvement, pas une courbe ajustée. Tendance proche ; pas une reproduction exacte.",
+    "subtitle": "d’après les instants d’achèvement, pas une courbe ajustée. Reproduction préliminaire — PASS/FAIL est le contrôle automatique, pas une affirmation de correspondance au papier.",
     "x": "Temps (ms)",
     "y": "Inventorié (%)",
     "panHint": "Glisser la barre sous le graphe pour parcourir le temps. Double-clic pour toute la simulation.",

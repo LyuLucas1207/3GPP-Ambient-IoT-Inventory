@@ -13,8 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from simulator.config import paper_device1_config, results_dir, strategy_label
-from simulator.scenario import Scenario
+from matplotlib.ticker import MultipleLocator
+
+from simulator.config import paper_device1_config, results_dir
+from simulator.fig5b_validation import evaluate_fig5b
 from simulator.simulation import run_paper_comparison
 
 
@@ -29,6 +31,7 @@ def main():
         collect_snapshots=False,
         collect_paging_events=False,
     )
+    print(f"sleep_when_not_attempting: {cfg.assumptions.sleep_when_not_attempting} (paper default False)")
     print("Running Device-1 Figure 5(b) reproduction...")
     print(f"N: {cfg.num_devices}")
     print(f"Seed: {cfg.seed}")
@@ -39,6 +42,8 @@ def main():
     bundle = run_paper_comparison(cfg)
     results = bundle["results"]
     scenario = bundle["scenario"]
+    validation = evaluate_fig5b(results, scenario.pin_dbm)
+    print(f"Scientific check: {validation['status']}  reduction={validation['reduction_4_vs_em']}")
     pin = scenario.pin_dbm
     peh = scenario.peh_w * 1e9
     qs = [0, 1, 10, 50, 90, 99, 100]
@@ -57,12 +62,13 @@ def main():
         "device_type": 1,
         "strategies": {},
         "warnings": bundle["warnings"],
+        "fig5b_validation": validation,
     }
     fig, ax = plt.subplots(figsize=(8.2, 5.2))
     styles = {
-        "em": {"color": "#4c78a8", "ls": "--", "lw": 1.8},
-        "dcm_1_group": {"color": "#f58518", "ls": "-.", "lw": 1.8},
-        "dcm_4_group": {"color": "#54a24b", "ls": "-", "lw": 2.2},
+        "em": {"color": "#7b4ea3", "ls": "--", "lw": 1.8},
+        "dcm_1_group": {"color": "#e07b3c", "ls": "-.", "lw": 1.8},
+        "dcm_4_group": {"color": "#3d9b4a", "ls": "-", "lw": 2.2},
     }
     for key, res in results.items():
         m = res.metrics
@@ -94,10 +100,16 @@ def main():
     ax.set_xlabel("Time (ms)")
     ax.set_ylabel("Successfully inventoried A-IoT device ratio (%)")
     ax.set_title("Figure 5(b) reproduction — Device 1")
-    ax.set_xlim(0, cfg.max_time_s * 1e3)
+    x_max_ms = max(cfg.max_time_s * 1e3, 25_000.0)
+    ax.set_xlim(0, x_max_ms)
     ax.set_ylim(0, 105)
-    ax.grid(True, alpha=0.35)
-    ax.legend(frameon=False)
+    ax.xaxis.set_major_locator(MultipleLocator(2_500))
+    ax.xaxis.set_minor_locator(MultipleLocator(1_250))
+    ax.ticklabel_format(axis="x", style="sci", scilimits=(4, 4), useMathText=True)
+    ax.xaxis.get_offset_text().set_visible(True)
+    ax.grid(True, which="major", alpha=0.35)
+    ax.grid(True, which="minor", alpha=0.12)
+    ax.legend(frameon=False, fontsize=8)
     fig.tight_layout()
 
     out = results_dir()

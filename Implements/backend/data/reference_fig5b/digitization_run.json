@@ -1,0 +1,57 @@
+{
+  "source_pdf": "Fast_Inventory_for_3GPP_Ambient_IoT_Considering_Device_Unavailability_Due_to_Energy_Harvesting.pdf",
+  "page": 7,
+  "panel_b_rows_in_embedded_image": [
+    888,
+    1595
+  ],
+  "axis_pixels_in_panel_b": {
+    "x0": 110,
+    "x1": 936,
+    "y0_0pct": 662,
+    "y1_100pct": 22,
+    "x_range_ms": [
+      0,
+      25000.0
+    ],
+    "y_range_pct": [
+      0,
+      100
+    ]
+  },
+  "txx_ms": {
+    "em": {
+      "t50": 1500.0,
+      "t90": 9400.0,
+      "t95": 12100.0,
+      "t99": null
+    },
+    "dcm_1_group": {
+      "t50": 2300.0,
+      "t90": 11600.0,
+      "t95": 15100.0,
+      "t99": null
+    },
+    "dcm_4_group": {
+      "t50": 1100.0,
+      "t90": 2500.0,
+      "t95": 3100.0,
+      "t99": 5200.0
+    }
+  },
+  "n_raw": {
+    "em": 541,
+    "dcm_1_group": 569,
+    "dcm_4_group": 827
+  },
+  "n_csv": {
+    "em": 167,
+    "dcm_1_group": 174,
+    "dcm_4_group": 251
+  },
+  "last_time_ms": {
+    "em": 17300.0,
+    "dcm_1_group": 17300.0,
+    "dcm_4_group": 25000.0
+  }
+}

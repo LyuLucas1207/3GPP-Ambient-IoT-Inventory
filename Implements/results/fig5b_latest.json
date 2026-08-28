@@ -6,39 +6,132 @@
     "em": {
       "label": "EM, aperiodic paging",
       "t50_s": 1.1,
-      "t90_s": 7.75,
-      "t95_s": 9.75,
-      "t99_s": 13.25,
+      "t90_s": 6.65,
+      "t95_s": 9.850000000000001,
+      "t99_s": 14.65,
       "final_ratio_pct": 100.0,
-      "n_paging": 4833,
-      "n_msg1_attempts": 936,
-      "n_collisions": 334,
-      "collision_rate": 0.35683760683760685
+      "n_paging": 4944,
+      "n_msg1_attempts": 1107,
+      "n_collisions": 506,
+      "collision_rate": 0.45709123757904246
     },
     "dcm_1_group": {
       "label": "DCM, periodic paging, 1 group",
-      "t50_s": 1.35,
-      "t90_s": 9.200000000000001,
-      "t95_s": 12.950000000000001,
-      "t99_s": 16.95,
+      "t50_s": 1.3,
+      "t90_s": 2.3000000000000003,
+      "t95_s": 2.45,
+      "t99_s": 12.950000000000001,
       "final_ratio_pct": 100.0,
-      "n_paging": 1683,
-      "n_msg1_attempts": 1432,
-      "n_collisions": 827,
-      "collision_rate": 0.577513966480447
+      "n_paging": 1682,
+      "n_msg1_attempts": 1869,
+      "n_collisions": 1264,
+      "collision_rate": 0.6762974852862493
     },
     "dcm_4_group": {
       "label": "DCM, periodic paging, 4 groups",
       "t50_s": 1.25,
-      "t90_s": 2.7,
-      "t95_s": 9.600000000000001,
-      "t99_s": 17.3,
+      "t90_s": 2.3000000000000003,
+      "t95_s": 2.6,
+      "t99_s": 2.9000000000000004,
       "final_ratio_pct": 100.0,
-      "n_paging": 1720,
-      "n_msg1_attempts": 1948,
-      "n_collisions": 1342,
-      "collision_rate": 0.688911704312115
+      "n_paging": 1467,
+      "n_msg1_attempts": 1810,
+      "n_collisions": 1209,
+      "collision_rate": 0.6679558011049723
     }
   },
-  "warnings": []
+  "warnings": [],
+  "fig5b_validation": {
+    "pass": true,
+    "status": "PASS",
+    "checks": [
+      {
+        "id": "t99_4_faster_than_em",
+        "ok": true,
+        "detail": {
+          "t99_em_s": 14.65,
+          "t99_4_s": 2.9000000000000004
+        }
+      },
+      {
+        "id": "t99_4_reduction_near_50pct",
+        "ok": true,
+        "detail": {
+          "reduction": 0.8020477815699658,
+          "band": [
+            0.25,
+            0.85
+          ],
+          "paper": 0.5
+        }
+      },
+      {
+        "id": "dcm1_not_clearly_better_than_em",
+        "ok": true,
+        "detail": {
+          "t99_1_over_em": 0.8839590443686007
+        }
+      },
+      {
+        "id": "weakest_harvester_charge_near_20s",
+        "ok": true,
+        "detail": {
+          "pin_min_dbm": -35.97850122087345,
+          "peh_min_nw": 12.67602944542354,
+          "elow_to_eup_s_max": 19.72226406355171,
+          "elow_to_eup_s_p99": 18.37449277230954,
+          "paper_example_s": 20.0,
+          "close_to_20s": true
+        }
+      },
+      {
+        "id": "digitized_mae_not_pathological",
+        "ok": true,
+        "detail": {
+          "mae_mean": 5.400952539365712,
+          "per_strategy": {
+            "em": {
+              "mae": 3.897653359946772,
+              "rmse": 4.3328374026184475,
+              "t99_error_s": -5.35
+            },
+            "dcm_1_group": {
+              "mae": 11.290504324683967,
+              "rmse": 15.5114942805375,
+              "t99_error_s": null
+            },
+            "dcm_4_group": {
+              "mae": 1.0146999334664002,
+              "rmse": 2.4711224053507865,
+              "t99_error_s": -7.1
+            }
+          }
+        }
+      }
+    ],
+    "t99_s": {
+      "em": 14.65,
+      "dcm_1_group": 12.950000000000001,
+      "dcm_4_group": 2.9000000000000004
+    },
+    "reduction_4_vs_em": 0.8020477815699658,
+    "curve_error": {
+      "em": {
+        "mae": 3.897653359946772,
+        "rmse": 4.3328374026184475,
+        "t99_error_s": -5.35
+      },
+      "dcm_1_group": {
+        "mae": 11.290504324683967,
+        "rmse": 15.5114942805375,
+        "t99_error_s": null
+      },
+      "dcm_4_group": {
+        "mae": 1.0146999334664002,
+        "rmse": 2.4711224053507865,
+        "t99_error_s": -7.1
+      }
+    },
+    "note": "PASS requires the published qualitative order, not a single-seed T99 match. Reduction band is 25\u201385% around the paper's ~50%."
+  }
 }

@@ -8,6 +8,19 @@ import numpy as np
 from simulator.config import DONE, OFF, ON, SLEEP, TX
 
 
+def sleep_net_min_w_from_nw(nw: float | None) -> float:
+    """UI/API nW → Watts. None means paper −∞ (no floor)."""
+    if nw is None:
+        return float("-inf")
+    return float(nw) * 1e-9
+
+
+def format_sleep_net_min(w: float) -> str:
+    if not np.isfinite(w):
+        return "-inf"
+    return f"{w * 1e9:g} nW"
+
+
 def update_energy(
     energy: np.ndarray,
     state: np.ndarray,
@@ -17,8 +30,13 @@ def update_energy(
     p_tx_w: float,
     p_sl_w: float,
     e_max_j: float,
+    sleep_net_min_w: float = float("-inf"),
 ) -> None:
-    """In-place energy update for one slot. Vectorized over devices."""
+    """In-place energy update for one slot. Vectorized over devices.
+
+    SLEEP: ΔE = max(x, P_eh − P_sl) Δt. Paper x = −∞ (no floor). A finite
+    x (e.g. 0) is an experimental clamp so weak devices do not drain.
+    """
     off = state == OFF
     on = state == ON
     sleep = state == SLEEP
@@ -32,7 +50,10 @@ def update_energy(
     if np.any(tx):
         energy[tx] = energy[tx] - p_tx_w * dt_s
     if np.any(sleep):
-        energy[sleep] = energy[sleep] + (peh_w[sleep] - p_sl_w) * dt_s
+        # Paper: x = −∞ → max(−∞, P_eh−P_sl) = P_eh−P_sl.
+        # Experimental: x = 0 → SLEEP never drains.
+        net = np.maximum(sleep_net_min_w, peh_w[sleep] - p_sl_w)
+        energy[sleep] = energy[sleep] + net * dt_s
 
     np.clip(energy, 0.0, e_max_j, out=energy)
 

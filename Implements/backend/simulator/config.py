@@ -139,19 +139,23 @@ class AssumptionParams:
     # same ON/OFF machine for warmup_s instead of the closed-form cycle.
     warmup_mode: str = "stationary"
     warmup_s: float = 60.0
-    # even_id_mod: preconfigured even split g = device_id % N_groups (default
-    # reproduction assumption, not a published procedure).
-    # first_paging_mod: g = first detected paging index % N_groups. Not an
-    # equally valid "paper mode" — it unbalances groups.
-    group_assignment: str = "even_id_mod"
-    # Access-probability controller (idle-AO load estimate).
+    # Grouping. Paper: first detected paging sets the wake phase (odd/even
+    # example). Default first_paging_spread assigns a group at that moment
+    # without stacking every simultaneous hearer into one group.
+    # even_id_mod / random_preconfigured: preconfigured splits.
+    # first_paging_mod: g = paging_index % N_g (paper-literal, often unbalanced).
+    group_assignment: str = "first_paging_spread"
     pin_sampling: str = "stratified"  # stratified | iid
     # Access-probability controller (unpublished; paper has no equation).
-    # poisson_idle: idle-AO load estimate; freeze p when TX < n_AO/2 (energy-limited).
-    # poisson_idle_ungated: same update without the energy-limited freeze.
+    # occupancy_counts: Schoute n̂ from idle/singleton/collision AO counts.
+    # poisson_idle: idle-AO Poisson; freeze p when TX < n_AO/2.
+    # poisson_idle_ungated: same without the freeze.
     # fixed: p stays at p_init.
-    access_controller: str = "poisson_idle"
-    p_access_init: float | None = None  # None → n_ao / N
+    access_controller: str = "occupancy_counts"
+    # per_group: each paging/group has its own p (paper: p is in the paging).
+    # global: one p shared across groups.
+    p_access_scope: str = "per_group"
+    p_access_init: float | None = None  # None → n_ao / n_load
     p_access_min: float = 0.002
     p_access_smoothing: float = 0.45
     target_attempts_per_ao: float = 1.0
@@ -160,6 +164,15 @@ class AssumptionParams:
     # IC off loses DCM inventory sync (sleep timer lives on the IC).
     # False keeps group/sync and must recharge then wait for the next epoch.
     off_clears_inventory_sync: bool = True
+    # Paper default: after inventory-stage sync, each DCM occasion stays ON
+    # for Table 1 T_on_DCM (Device 1: 3 ms). T_sl + T_on = T_pg (1-group)
+    # or N_g T_pg (grouping). The paper does not say a failed access draw
+    # may end the ON window after the 1 ms paging.
+    # True is an experimental early-sleep optimization, not the paper model.
+    sleep_when_not_attempting: bool = False
+    # Lower bound on SLEEP net power: max(x, P_eh − P_sl).
+    # Paper: −∞ (weak devices still drain). Experimental: 0 nW → no drain.
+    sleep_net_power_min_w: float = float("-inf")
     # Factory visualization only; p_in is NOT computed from (x, y).
     factory_length_m: float = 120.0
     factory_width_m: float = 60.0

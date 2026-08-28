@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DeviceType, StrategyKey, type SimulateRequest } from '@/types/simulation'
 import { TermId } from '@/explain/ids'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const STRATEGY_HINT: Record<StrategyKey, string> = {
@@ -21,6 +22,15 @@ const STRATEGY_LABEL: Record<StrategyKey, string> = {
   [StrategyKey.EM]: 'strategy.em',
   [StrategyKey.DCM_1_GROUP]: 'strategy.dcm_1_group',
   [StrategyKey.DCM_4_GROUP]: 'strategy.dcm_4_group',
+}
+
+function parseSleepNetMinNw(raw: string): number | null | undefined {
+  const s = raw.trim().replace(/−/g, '-').replace(/∞/g, 'inf').toLowerCase()
+  if (s === '' || s === '-inf' || s === '-infinity') return null
+  if (s === '-' || s === '.' || s === '-.') return undefined
+  const n = Number(s)
+  if (!Number.isFinite(n)) return undefined
+  return n
 }
 
 interface Props {
@@ -42,6 +52,14 @@ export function SimulationControls({
 }: Props) {
   const { t } = useTranslation()
   const patch = (partial: Partial<SimulateRequest>) => setRequest({ ...request, ...partial })
+  const [sleepMinDraft, setSleepMinDraft] = useState(
+    request.sleep_net_power_min_nw == null ? '' : String(request.sleep_net_power_min_nw),
+  )
+  useEffect(() => {
+    setSleepMinDraft(
+      request.sleep_net_power_min_nw == null ? '' : String(request.sleep_net_power_min_nw),
+    )
+  }, [request.sleep_net_power_min_nw])
 
   const toggle = (id: StrategyKey) => {
     const has = request.strategies.includes(id)
@@ -118,6 +136,51 @@ export function SimulationControls({
             </label>
           ))}
         </fieldset>
+        <label className="flex items-start gap-2 text-sm font-normal">
+          <Checkbox
+            id="early-sleep"
+            className="mt-0.5"
+            checked={request.sleep_when_not_attempting}
+            onCheckedChange={(v) => patch({ sleep_when_not_attempting: v === true })}
+          />
+          <span className="flex flex-1 items-center gap-1">
+            {t('sim.earlySleep')}
+            <ParamHint text={t('hints.earlySleep')} />
+          </span>
+        </label>
+        <div className="grid gap-1.5">
+          <FieldLabel htmlFor="sleep-net-min" hint={t('hints.sleepNetMin')}>
+            {t('sim.sleepNetMin')}
+          </FieldLabel>
+          <Input
+            id="sleep-net-min"
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder={t('sim.sleepNetMinPlaceholder')}
+            value={sleepMinDraft}
+            onChange={(e) => {
+              const raw = e.target.value
+              setSleepMinDraft(raw)
+              const parsed = parseSleepNetMinNw(raw)
+              if (parsed === undefined) return
+              patch({ sleep_net_power_min_nw: parsed })
+            }}
+            onBlur={() => {
+              const parsed = parseSleepNetMinNw(sleepMinDraft)
+              if (parsed === undefined) {
+                setSleepMinDraft(
+                  request.sleep_net_power_min_nw == null
+                    ? ''
+                    : String(request.sleep_net_power_min_nw),
+                )
+                return
+              }
+              patch({ sleep_net_power_min_nw: parsed })
+              setSleepMinDraft(parsed == null ? '' : String(parsed))
+            }}
+          />
+        </div>
         <div className="grid gap-1.5">
           <FieldLabel htmlFor="seed" hint={t('hints.seed')}>
             {t('sim.seed')}

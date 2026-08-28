@@ -5,42 +5,40 @@
   "strategies": {
     "em": {
       "label": "EM, aperiodic paging",
-      "t50_s": 0.7000000000000001,
-      "t90_s": 4.25,
-      "t95_s": 6.15,
-      "t99_s": 9.850000000000001,
+      "t50_s": 1.1,
+      "t90_s": 6.65,
+      "t95_s": 9.850000000000001,
+      "t99_s": 14.65,
       "final_ratio_pct": 100.0,
-      "n_paging": 4505,
-      "n_msg1_attempts": 1297,
-      "n_collisions": 697,
-      "collision_rate": 0.5373939861218195
+      "n_paging": 4951,
+      "n_msg1_attempts": 980,
+      "n_collisions": 379,
+      "collision_rate": 0.386734693877551
     },
     "dcm_1_group": {
       "label": "DCM, periodic paging, 1 group",
-      "t50_s": 1.25,
-      "t90_s": 2.25,
-      "t95_s": 2.4000000000000004,
-      "t99_s": 2.5,
+      "t50_s": 1.35,
+      "t90_s": 9.200000000000001,
+      "t95_s": 13.350000000000001,
+      "t99_s": 17.2,
       "final_ratio_pct": 100.0,
-      "n_paging": 1623,
-      "n_msg1_attempts": 1834,
-      "n_collisions": 1234,
-      "collision_rate": 0.6728462377317339
+      "n_paging": 1695,
+      "n_msg1_attempts": 1185,
+      "n_collisions": 579,
+      "collision_rate": 0.48860759493670886
     },
     "dcm_4_group": {
       "label": "DCM, periodic paging, 4 groups",
-      "t50_s": 3.0,
-      "t90_s": null,
-      "t95_s": null,
-      "t99_s": null,
-      "final_ratio_pct": 61.666666666666664,
-      "n_paging": 2084,
-      "n_msg1_attempts": 108788,
-      "n_collisions": 108418,
-      "collision_rate": 0.9965988895834099
+      "t50_s": 1.2000000000000002,
+      "t90_s": 2.25,
+      "t95_s": 6.5,
+      "t99_s": 16.5,
+      "final_ratio_pct": 100.0,
+      "n_paging": 1812,
+      "n_msg1_attempts": 1509,
+      "n_collisions": 903,
+      "collision_rate": 0.5984095427435387
     }
   },
-  "warnings": [
-    "DCM, periodic paging, 4 groups: T99 not reached before max_time_s=25.0."
-  ]
+  "warnings": []
 }

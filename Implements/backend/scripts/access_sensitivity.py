@@ -22,7 +22,7 @@ from simulator.config import paper_device1_config, results_dir
 from simulator.scenario import Scenario
 from simulator.simulation import run_strategy
 
-MODES = ("poisson_idle", "poisson_idle_ungated", "fixed")
+MODES = ("occupancy_counts", "poisson_idle", "poisson_idle_ungated", "fixed")
 
 
 def main():

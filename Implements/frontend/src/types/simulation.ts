@@ -179,6 +179,14 @@ export interface SimulationResult {
     curves: Record<string, { time_ms: number[]; ratio_pct: number[]; file?: string }>
   }
   curve_error?: Record<string, { mae: number; rmse: number; t99_error_s?: number | null }>
+  fig5b_validation?: {
+    pass: boolean
+    status: 'PASS' | 'FAIL'
+    checks: Array<{ id: string; ok: boolean; detail?: Record<string, unknown> }>
+    t99_s?: Record<string, number | null>
+    reduction_4_vs_em?: number | null
+    note?: string
+  }
 }
 
 export interface SimulateRequest {
@@ -190,6 +198,9 @@ export interface SimulateRequest {
   snapshot_interval_ms: number
   collect_snapshots: boolean
   collect_paging_events: boolean
+  sleep_when_not_attempting: boolean
+  /** null = −∞ (paper). Finite nW is max(x, P_eh − P_sl). */
+  sleep_net_power_min_nw: number | null
 }
 
 export interface PaperConfig {

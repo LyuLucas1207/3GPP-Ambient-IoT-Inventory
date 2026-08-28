@@ -34,8 +34,16 @@ from simulator.config import (
 )
 from simulator.channel import pin_cdf_fingerprint
 from simulator.device import compact_snapshot, viz_from_scientific
-from simulator.energy import update_energy
+from simulator.energy import format_sleep_net_min, update_energy
 from simulator.metrics import summarize
+from simulator.fig5b_validation import evaluate_fig5b
+from simulator.grouping import (
+    FIRST_PAGING,
+    PRECONFIGURED,
+    assign_at_first_paging,
+    group_populations,
+    preconfigured_groups,
+)
 from simulator.paging import advance_after_cbra, is_periodic_epoch
 from simulator.paper_reference import compare_curves, fig5b_reference_payload
 from simulator.reader import make_reader
@@ -46,6 +54,7 @@ from simulator.strategies.dcm import (
     apply_elow,
     expire_synced_on_window,
     recover_keep_sync_off,
+    return_to_sleep,
 )
 from simulator.strategies.em import apply_em_thresholds
 
@@ -120,29 +129,43 @@ def _device_stats(
     last_sync_time: np.ndarray,
     sync_count: np.ndarray,
     lost_sync_count: np.ndarray,
+    n_paging_eligible: np.ndarray | None = None,
+    n_access_reject: np.ndarray | None = None,
+    n_energy_fail: np.ndarray | None = None,
+    initial_energy_j: np.ndarray | None = None,
+    initial_state: np.ndarray | None = None,
 ) -> list[dict]:
     out = []
     for i in range(n):
         done = bool(np.isfinite(completion[i]))
-        out.append(
-            {
-                "id": i,
-                "inventoried": done,
-                "completion_time_s": None if not done else float(completion[i]),
-                "group": int(group[i]) if group[i] >= 0 else None,
-                "attempts": int(attempts[i]),
-                "collisions": int(collisions[i]),
-                "first_paging_detected": bool(first_page[i]),
-                "first_paging_time_s": None
-                if not first_page[i]
-                else float(first_time[i]),
-                "last_sync_time_s": None
-                if not np.isfinite(last_sync_time[i])
-                else float(last_sync_time[i]),
-                "sync_count": int(sync_count[i]),
-                "lost_sync_count": int(lost_sync_count[i]),
-            }
-        )
+        rec = {
+            "id": i,
+            "inventoried": done,
+            "completion_time_s": None if not done else float(completion[i]),
+            "group": int(group[i]) if group[i] >= 0 else None,
+            "attempts": int(attempts[i]),
+            "collisions": int(collisions[i]),
+            "first_paging_detected": bool(first_page[i]),
+            "first_paging_time_s": None
+            if not first_page[i]
+            else float(first_time[i]),
+            "last_sync_time_s": None
+            if not np.isfinite(last_sync_time[i])
+            else float(last_sync_time[i]),
+            "sync_count": int(sync_count[i]),
+            "lost_sync_count": int(lost_sync_count[i]),
+        }
+        if n_paging_eligible is not None:
+            rec["n_paging_eligible"] = int(n_paging_eligible[i])
+        if n_access_reject is not None:
+            rec["n_access_reject"] = int(n_access_reject[i])
+        if n_energy_fail is not None:
+            rec["n_energy_fail"] = int(n_energy_fail[i])
+        if initial_energy_j is not None:
+            rec["initial_energy_nj"] = float(initial_energy_j[i] * 1e9)
+        if initial_state is not None:
+            rec["initial_state"] = int(initial_state[i])
+        out.append(rec)
     return out
 
 
@@ -167,14 +190,17 @@ def run_strategy(
     inventoried = np.zeros(n, dtype=bool)
     completion = np.full(n, np.nan, dtype=np.float64)
     synced = np.zeros(n, dtype=bool)
-    # Even partition (Fig. 4): group i listens on paging k iff k ≡ i (mod N_g).
-    # First paging only synchronizes the device to the reader epoch.
-    group = (np.arange(n, dtype=np.int16) % ng) if dcm else np.full(n, -1, dtype=np.int16)
-    use_first_paging_group = (
-        dcm and cfg.assumptions.group_assignment == "first_paging_mod"
-    )
-    if use_first_paging_group:
-        group[:] = -1
+    group_mode = cfg.assumptions.group_assignment
+    if dcm and group_mode in PRECONFIGURED:
+        group = preconfigured_groups(n, ng, group_mode, rng)
+    else:
+        group = np.full(n, -1, dtype=np.int16)
+    use_first_paging_group = dcm and group_mode in FIRST_PAGING
+    initial_energy_j = energy.copy()
+    initial_state = state.copy()
+    n_paging_eligible = np.zeros(n, dtype=np.int32)
+    n_access_reject = np.zeros(n, dtype=np.int32)
+    n_energy_fail_dev = np.zeros(n, dtype=np.int32)
     first_page = np.zeros(n, dtype=bool)
     first_time = np.full(n, np.nan)
     last_sync_time = np.full(n, np.nan)
@@ -187,7 +213,7 @@ def run_strategy(
     collision_flash = np.zeros(n, dtype=bool)
     flash_until = np.zeros(n, dtype=np.int32)
 
-    reader = make_reader(cfg, n_load=max(1, n // ng) if dcm else n)
+    reader = make_reader(cfg, n_load=max(1, n // ng) if dcm else n, n_groups=ng)
 
     snapshots: list[dict] = []
     paging_events: list[dict] = []
@@ -305,7 +331,15 @@ def run_strategy(
             apply_cbra_slot(plan, plan_offset, state, inventoried)
 
         update_energy(
-            energy, state, peh, dt, d.p_rx_w, d.p_tx_w, d.p_sl_w, d.e_max_j
+            energy,
+            state,
+            peh,
+            dt,
+            d.p_rx_w,
+            d.p_tx_w,
+            d.p_sl_w,
+            d.e_max_j,
+            sleep_net_min_w=cfg.assumptions.sleep_net_power_min_w,
         )
 
         if plan is not None:
@@ -317,6 +351,7 @@ def run_strategy(
                 extra = plan.actual_tx_ids
             dropped = drop_if_energy_fail(plan, energy, d.e_low_j, phase, extra_ids=extra)
             if dropped.size:
+                n_energy_fail_dev[dropped] += 1
                 note(dropped, f"energy_fail_{phase}", paging_index=plan.paging_index)
             if phase == "msg1" and t_ao >= 0:
                 last_of_ao = ((plan_offset - plan.paging_slots) % plan.msg1_slots) == (
@@ -328,8 +363,11 @@ def run_strategy(
         if dcm:
             apply_dcm_pre_inventory(energy, state, on_remaining, synced, cfg)
             skip_expire = np.zeros(n, dtype=bool)
-            if plan is not None and plan.pending_success.size:
-                skip_expire[plan.pending_success] = True
+            if plan is not None:
+                if plan.pending_success.size:
+                    skip_expire[plan.pending_success] = True
+                if plan.attempting_ids.size:
+                    skip_expire[plan.attempting_ids] = True
             expire_synced_on_window(
                 state, on_remaining, synced & (~skip_expire), inventoried
             )
@@ -337,6 +375,8 @@ def run_strategy(
             if np.any(hit_low):
                 was_synced = hit_low & synced
                 lost_sync_count[was_synced] += 1
+                if np.any(was_synced):
+                    note(np.flatnonzero(was_synced), "lost_sync")
                 if cfg.assumptions.off_clears_inventory_sync:
                     synced[hit_low] = False
                     wake_slot[hit_low] = -1
@@ -378,8 +418,12 @@ def run_strategy(
                         last_sync_time[newly] = t
                         sync_count[newly] += 1
                         synced[newly] = True
+                        note(np.flatnonzero(newly), "sync", paging_index=paging_index)
                         if use_first_paging_group:
-                            group[newly] = np.int16(this_g)
+                            ids = np.flatnonzero(newly)
+                            group[ids] = assign_at_first_paging(
+                                newly, paging_index, ng, group_mode, rng
+                            )
                     eligible_mask = (
                         (state == ON)
                         & (~inventoried)
@@ -398,6 +442,7 @@ def run_strategy(
                         first_page[newly_em] = True
                         first_time[newly_em] = t
                 eligible_ids = np.flatnonzero(eligible_mask)
+                p_now = reader.p_for_group(this_g if dcm else 0)
                 plan = plan_cbra(
                     cfg,
                     rng,
@@ -405,7 +450,7 @@ def run_strategy(
                     slot,
                     t,
                     eligible_ids,
-                    reader.p_access,
+                    p_now,
                     group_index=this_g if dcm else None,
                     n_on=n_on_now,
                 )
@@ -415,16 +460,33 @@ def run_strategy(
                     0, int(eligible_ids.size) - int(plan.attempting_ids.size)
                 )
                 if plan.eligible_ids.size:
+                    n_paging_eligible[plan.eligible_ids] += 1
                     note(plan.eligible_ids, "paging", paging_index=plan.paging_index)
+                    attempting_set = set(int(i) for i in plan.attempting_ids.tolist())
+                    ao_of = {
+                        int(did): (int(plan.time_ao[j]), int(plan.freq_ao[j]))
+                        for j, did in enumerate(plan.attempting_ids.tolist())
+                    }
+                    for j, did in enumerate(plan.eligible_ids.tolist()):
+                        u = float(plan.access_u[j]) if j < plan.access_u.size else None
+                        attempted = int(did) in attempting_set
+                        extra = {
+                            "p_access": plan.p_access,
+                            "u": u,
+                            "attempted": attempted,
+                            "paging_index": plan.paging_index,
+                        }
+                        if attempted and int(did) in ao_of:
+                            extra["time_ao"], extra["freq_ao"] = ao_of[int(did)]
+                        note([did], "access_draw", **extra)
+                    rejected = [int(i) for i in plan.eligible_ids.tolist() if int(i) not in attempting_set]
+                    if rejected:
+                        n_access_reject[np.asarray(rejected, dtype=int)] += 1
+                        note(rejected, "paging_rejected", paging_index=plan.paging_index)
                 if plan.attempting_ids.size:
                     note(plan.attempting_ids, "msg1_planned", paging_index=plan.paging_index)
                     access_flash[plan.attempting_ids] = True
                     flash_until[plan.attempting_ids] = slot + max(1, cfg.slots(0.05))
-                if plan.eligible_ids.size:
-                    attempting_set = set(int(i) for i in plan.attempting_ids.tolist())
-                    rejected = [int(i) for i in plan.eligible_ids.tolist() if int(i) not in attempting_set]
-                    if rejected:
-                        note(rejected, "paging_rejected", paging_index=plan.paging_index)
                 missed_mask = (state == ON) & (~inventoried) & (~eligible_mask)
                 missed = np.flatnonzero(missed_mask)
                 if missed.size:
@@ -432,13 +494,27 @@ def run_strategy(
 
                 if dcm:
                     own = synced & (~inventoried) & (group == this_g) & (state == ON)
-                    on_remaining[own] = ton_dcm_slots
                     wake_slot[own] = slot + ng * t_pg_slots
+                    att = np.zeros(n, dtype=bool)
+                    if plan.attempting_ids.size:
+                        att[plan.attempting_ids] = True
+                    attempters = own & att
+                    idle_own = own & ~att
+                    if np.any(attempters):
+                        # Keep the Table 1 T_on_DCM window open through Msg1.
+                        # CBRA may last longer (Msg2/Msg3); it must not be shorter.
+                        on_remaining[attempters] = ton_dcm_slots
+                    if cfg.assumptions.sleep_when_not_attempting and np.any(idle_own):
+                        # Experimental early-sleep: not the paper default.
+                        return_to_sleep(state, on_remaining, idle_own)
+                    elif np.any(idle_own):
+                        # Paper: T_on_DCM is the monitoring window after inventory
+                        # sync, including devices that draw “no access”.
+                        on_remaining[idle_own] = ton_dcm_slots
                     other = synced & (~inventoried) & (group != this_g) & (state == ON)
                     if np.any(other):
                         offset = (group.astype(np.int32) - this_g) % ng
-                        state[other] = SLEEP
-                        on_remaining[other] = 0
+                        return_to_sleep(state, on_remaining, other)
                         wake_slot[other] = slot + np.maximum(offset[other], 1) * t_pg_slots
 
                 apply_cbra_slot(plan, 0, state, inventoried)
@@ -462,6 +538,13 @@ def run_strategy(
                 else:
                     drop_if_energy_fail(plan, energy, d.e_low_j, "msg3")
                     plan.pending_success = np.array([], dtype=int)
+            if last and dcm and plan.attempting_ids.size:
+                # CBRA already occupied ≥ T_on_DCM (paging + Msg1, plus Msg2/Msg3
+                # if singleton). Do not start a second 3 ms ON after the occasion.
+                leftover = np.zeros(n, dtype=bool)
+                leftover[plan.attempting_ids] = True
+                leftover &= (~inventoried) & (state != DONE) & (state != OFF)
+                return_to_sleep(state, on_remaining, leftover)
             if last:
                 for stage, ids in plan.failed_energy.items():
                     key = stage if stage in energy_fail_counts else (
@@ -470,10 +553,13 @@ def run_strategy(
                     energy_fail_counts[key] = energy_fail_counts.get(key, 0) + len(set(ids))
                 cbra = finish_cbra(plan, cfg)
                 if reader.controller is not None:
-                    reader.p_access = reader.controller.observe(
+                    reader.observe(
                         cbra.idle_count,
                         n_eligible=len(cbra.eligible_ids),
                         n_transmitted=cbra.n_actual_tx,
+                        singleton_ao_count=cbra.success_ao_count,
+                        collision_ao_count=cbra.collision_ao_count,
+                        group_index=cbra.group_index,
                     )
                 cbra.p_access_after = reader.p_access
                 plan.p_access_after = reader.p_access
@@ -557,6 +643,22 @@ def run_strategy(
     metrics["t99_ms"] = None if metrics["t99_s"] is None else metrics["t99_s"] * 1e3
     metrics["n_heard_no_attempt"] = int(n_heard_no_attempt)
     metrics["energy_fail"] = energy_fail_counts
+    if dcm:
+        metrics["group_population"] = group_populations(group, ng)
+        metrics["group_assignment"] = group_mode
+    idle_frac = []
+    coll_frac = []
+    for ev in paging_events:
+        nao = max(1, len(ev.get("aos") or []))
+        idle_frac.append(ev["idle_count"] / nao)
+        coll_frac.append(ev["collision_ao_count"] / nao)
+    if idle_frac:
+        metrics["idle_ao_frac_mean"] = float(np.mean(idle_frac))
+        metrics["collision_ao_frac_mean"] = float(np.mean(coll_frac))
+    if paging_events:
+        metrics["attempts_per_ao_mean"] = float(
+            np.mean([ev.get("n_actual_tx", 0) / max(1, len(ev.get("aos") or [1])) for ev in paging_events])
+        )
     if metrics["t99_s"] is None:
         warnings.append(
             f"{strategy_label(strategy)}: T99 not reached before max_time_s={cfg.max_time_s}."
@@ -625,6 +727,11 @@ def run_strategy(
             last_sync_time,
             sync_count,
             lost_sync_count,
+            n_paging_eligible=n_paging_eligible,
+            n_access_reject=n_access_reject,
+            n_energy_fail=n_energy_fail_dev,
+            initial_energy_j=initial_energy_j,
+            initial_state=initial_state,
         ),
         n_paging=n_paging,
         n_msg1_attempts=int(n_attempts),
@@ -733,6 +840,7 @@ def result_to_web_payload(cfg: SimConfig, bundle: dict, run_id: str | None = Non
             "warmup_mode": a.warmup_mode,
             "pin_sampling": a.pin_sampling,
             "access_controller": a.access_controller,
+            "p_access_scope": a.p_access_scope,
             "cdf": cdf,
         },
         "paper_parameters": {
@@ -766,8 +874,9 @@ def result_to_web_payload(cfg: SimConfig, bundle: dict, run_id: str | None = Non
             ),
             "access_probability": (
                 f"Controller `{a.access_controller}` — unpublished. "
-                "Paper has no p_access equation. poisson_idle uses idle-AO Poisson "
-                "load estimate and holds p when actual Msg1 TX < n_AO/2."
+                "Paper has no p_access equation. occupancy_counts uses Schoute "
+                "n̂ = S + 2.39 C from AO occupancy (target ~1 attempt/AO). "
+                f"Scope `{a.p_access_scope}`."
             ),
             "aperiodic_paging": (
                 "EM: next paging at the slot after the previous CBRA ends."
@@ -777,10 +886,24 @@ def result_to_web_payload(cfg: SimConfig, bundle: dict, run_id: str | None = Non
                 "A CBRA that overruns an epoch skips that occasion."
             ),
             "off_clears_sync": a.off_clears_inventory_sync,
+            "sleep_when_not_attempting": a.sleep_when_not_attempting,
+            "dcm_on_mode": (
+                "experimental_early_sleep_after_access_rejection"
+                if a.sleep_when_not_attempting
+                else "strict_paper_fixed_ton_dcm"
+            ),
+            "sleep_net_power_min": format_sleep_net_min(a.sleep_net_power_min_w),
             "group_assignment": (
-                "Default even_id_mod: preconfigured g = device_id % N_groups "
-                "(reproduction assumption, not a published procedure). "
-                "first_paging_mod is an alternate assumption, not paper-equivalent."
+                f"`{a.group_assignment}`. Paper: first detected paging sets the "
+                "wake phase (odd/even example). first_paging_spread assigns a "
+                "group at first detection without stacking simultaneous hearers. "
+                "even_id_mod / random_preconfigured are preconfigured splits. "
+                "first_paging_mod uses paging_index % N_g (often unbalanced)."
+            ),
+            "p_access_scope": a.p_access_scope,
+            "channel_errors": (
+                "Noise / interference / decoding failures are NOT modelled. "
+                "Msg1 fails only on AO collision or energy depletion."
             ),
         },
         "reader": {
@@ -804,5 +927,6 @@ def result_to_web_payload(cfg: SimConfig, bundle: dict, run_id: str | None = Non
         "warmup_diagnostics": warmup_diagnostics,
         "paper_fig5b": ref_payload,
         "curve_error": curve_error,
+        "fig5b_validation": evaluate_fig5b(results, scenario.pin_dbm),
         "warnings": bundle["warnings"],
     }

@@ -27,7 +27,7 @@ arXiv Table I states times in **slots** (0.5 ms). Published Table 1 uses millise
 - arXiv emphasizes DCM leaving \(e_{es}\gtrsim 428\,\mathrm{nJ}\) and ~10 s for 99%.
 - Published Device 1: EM T99 \(\approx 20\,\mathrm{s}\); DCM without grouping does **not** help much; DCM + grouping \(\approx 50\%\) T99 reduction.
 
-This reproduction follows the **published** Device-1 comparison: EM aperiodic, DCM 1-group, DCM 4-groups.
+This implementation follows the **published** Device-1 comparison: EM aperiodic, DCM 1-group, DCM 4-groups. It is a **preliminary reproduction** until `scripts/validate_fig5b.py` PASSes.
 
 ## Figure 5(a)
 
@@ -37,12 +37,28 @@ Re-digitized from the published IEEE Figure 5(a) (page 7). Median \(p_{in}\appro
 
 ## Grouping
 
-Default reproduction assumption: \(g = i \bmod N_g\) (even split). First paging only synchronizes the device to the reader epoch. Alternative `first_paging_mod` exists in `AssumptionParams.group_assignment` but is not the default.
+Paper (Device Grouping for Congestion Control, Fig. 4): a device that receives odd-numbered paging continues odd-numbered paging (\(N_g=2\)). Wake period \(N_g T_{pg}\).
+
+Default here: `first_paging_spread` — grouping happens at first detection, but the group id is a uniform draw, **not** `paging_index % N_g`. Using the paging index would put every device that is ON at t=0 into group 0, which fights Fig. 4’s purpose. `first_paging_mod` is the paper-literal alternative and is compared in `scripts/compare_assumptions.py`. Preconfigured `even_id_mod` / `random_preconfigured` are also available.
+
+## DCM ON after paging
+
+Paper: \(T_{\mathrm{on}}^{\mathrm{DCM}}\) is the on duration for monitoring A-IoT paging after the device acquires the inventory stage. Device 1 Table 1: 3 ms. \(T_{\mathrm{sl}}^{\mathrm{DCM}}+T_{\mathrm{on}}^{\mathrm{DCM}}=T_{\mathrm{pg}}\). Paper configuration therefore keeps a **fixed 3 ms ON** each synced occasion (`sleep_when_not_attempting=False`).
+
+Do **not** claim that 3 ms applies only to devices that actually send Msg1 — the paper does not say that.
+
+`sleep_when_not_attempting=True` is an experimental early-sleep option in the left-hand panel (default unchecked). It was previously used as a paper default because the strict 3 ms 4-group curve had a P1 recharge tail slower than EM. That is outcome-driven and is not allowed as the published configuration.
 
 ## Access probability
 
-The paper does not give an update equation. This build uses an idle-AO Poisson load estimate. If no device is eligible, occupancy is not treated as “load too low” (p is left unchanged).
+The paper does not give an update equation. Default: Schoute occupancy counts (`occupancy_counts`) with **per-group** p (the paging message carries p). Target: about one attempt per AO (slotted ALOHA), not a T99 fit. Gated Poisson idle remains as a comparison mode.
 
 ## Warm-up
 
-Default `warmup_mode=stationary`: closed-form ON/OFF (EM) or \(T_{\mathrm{on}}^{\mathrm{timer}}\) (DCM) cycle phase. `warmup_mode=explicit` now actually runs that machine for `warmup_s` from \(E_{\mathrm{low}}\)/OFF with no paging. The two are **not** equivalent: a shared 60 s charge does not reproduce a uniform stationary phase, so EM T99 can differ by several seconds. The charging stage is **not** on the Figure 5(b) axis.
+Default `warmup_mode=stationary`: closed-form ON/OFF (EM) or \(T_{\mathrm{on}}^{\mathrm{timer}}\) (DCM) cycle phase. That is why EM’s 99% tail can approach ~20 s: some weak devices are near \(E_{\mathrm{low}}\) when inventory starts (paper P1).
+
+`explicit`: same machine for `warmup_s` from \(E_{\mathrm{low}}\)/OFF, no paging. `harvest_only`: all strategies stay OFF and harvest the same duration (comparable energy, not the paper default). Charging time is **not** on the Figure 5(b) axis.
+
+## Channel errors
+
+Noise, interference, and decoding failures are not modelled.

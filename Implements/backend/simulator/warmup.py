@@ -152,6 +152,23 @@ def _advance_dcm_one(
     return e_up - p_rx * left, ON, t_on_timer - left
 
 
+def harvest_only_warmup(cfg: SimConfig, peh_w: np.ndarray):
+    """Identical physical charge for every strategy: stay OFF, harvest warmup_s.
+
+    Devices that reach E_up remain OFF until inventory t=0 (no monitoring
+    during the charging stage). Used as a comparability experiment, not as
+    the paper default: the paper's EM T99 ≈ 20 s needs some devices near
+    E_low when inventory starts.
+    """
+    d = cfg.device
+    duration = float(cfg.assumptions.warmup_s)
+    energy = np.minimum(d.e_max_j, d.e_low_j + peh_w * duration)
+    state = np.full(int(peh_w.size), OFF, dtype=np.int8)
+    on_remaining = np.zeros(int(peh_w.size), dtype=np.int32)
+    np.clip(energy, 0.0, d.e_max_j, out=energy)
+    return energy, state, on_remaining
+
+
 def explicit_warmup(cfg: SimConfig, peh_w: np.ndarray, strategy: str):
     """Start at E_low / OFF, run warmup_s of the energy machine, no paging."""
     d = cfg.device
