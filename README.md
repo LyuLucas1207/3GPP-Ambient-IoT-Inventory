@@ -105,14 +105,14 @@ pytest
 
 ## What is simulated
 
-- RF energy harvesting \(P_{eh}=p_{in}\xi(p_{in})\)
+- RF energy harvesting $P_{\mathrm{eh}}=p_{\mathrm{in}}\,\xi(p_{\mathrm{in}})$
 - Energy storage and EM / DCM state machines
 - Device grouping from first detected paging
 - Access-probability control from AO occupancy
 - CBRA over 8 Device-1 AOs, Msg1 collision / retry
-- Inventory completion times \(\rightarrow\) Figure 5(b)
+- Inventory completion times $\rightarrow$ Figure 5(b)
 
-Factory \((x,y)\) is **illustrative visualization**. Device \(p_{in}\) is sampled from the digitized Figure 5(a) CDF, not from \(1/d^2\).
+Factory $(x,y)$ is **illustrative visualization**. Device $p_{\mathrm{in}}$ is sampled from the digitized Figure 5(a) CDF, not from $1/d^{2}$.
 
 ## Parameter categories
 
@@ -120,20 +120,20 @@ Factory \((x,y)\) is **illustrative visualization**. Device \(p_{in}\) is sample
 
 | Quantity | Value |
 | --- | --- |
-| \(N\) | 600 |
-| \(E_{\max}=E_{\mathrm{up}}\) | 500 nJ |
-| \(E_{\mathrm{low}}\) | 250 nJ |
-| \(P_{rx}=P_{tx}\) | 1 μW |
-| \(P_{sl}\) | 0.1 μW |
-| paging / \(T_{pg}\) | 1 ms / 12 ms |
+| $N$ | 600 |
+| $E_{\max}=E_{\mathrm{up}}$ | 500 nJ |
+| $E_{\mathrm{low}}$ | 250 nJ |
+| $P_{\mathrm{rx}}=P_{\mathrm{tx}}$ | 1 μW |
+| $P_{\mathrm{sl}}$ | 0.1 μW |
+| paging / $T_{\mathrm{pg}}$ | 1 ms / 12 ms |
 | Msg1 / Msg2 / Msg3 | 0.5 / 0.5 / 3 ms |
-| \(T_{\mathrm{on}}^{\mathrm{timer}}\) / \(T_{\mathrm{on}}^{\mathrm{DCM}}\) | 18 ms / 3 ms |
+| $T_{\mathrm{on}}^{\mathrm{timer}}$ / $T_{\mathrm{on}}^{\mathrm{DCM}}$ | 18 ms / 3 ms |
 | AOs | 4 time × 2 frequency = 8 |
 | slot | 0.5 ms |
 
 ### B. Digitized from a figure
 
-- `Implements/backend/data/fig5a_pin_cdf.csv` — Figure 5(a) \(p_{in}\) CDF.
+- `Implements/backend/data/fig5a_pin_cdf.csv` — Figure 5(a) $p_{\mathrm{in}}$ CDF.
 
 ### C. Reproduction assumptions (not fully specified by the paper)
 
@@ -164,5 +164,3 @@ Start from zero: [Docs/en/content.md](./Docs/en/content.md) → Preface → chap
 ## Acknowledgments
 
 This work was prepared under the supervision of **Prof. Lutz Lampe**. The inventory model and Figure 5(b) follow the IEEE paper cited above; this repository is an independent implementation, not a substitute for that publication.
-
-本实现在 **Lutz Lampe 教授** 指导下完成。盘点模型与 Figure 5(b) 依据上述 IEEE 论文；本仓库是对该流程的复现实现，不能代替原文。
