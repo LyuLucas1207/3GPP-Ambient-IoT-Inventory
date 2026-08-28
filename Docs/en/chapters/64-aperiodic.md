@@ -1,21 +1,21 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Periodic](./63-periodic.md) |
-| 下一章 | [T_on^timer ≥ T_pg →](./65-ton-timer-ge-tpg.md) |
+| Previous | [← Periodic](./63-periodic.md) |
+| Next | [\(T_{\mathrm{on}}^{\mathrm{timer}}\ge T_{pg}\) →](./65-ton-timer-ge-tpg.md) |
 
 ---
 
-# 64. Aperiodic 又是什么？
+# 64. What is aperiodic?
 
 ## Aperiodic
 
-就是：
+Aperiodic means:
 
-> 非周期性的。
+> not on a fixed schedule.
 
-例如：
+For example:
 
 ```text
 0ms
@@ -25,15 +25,15 @@
 ...
 ```
 
-时间不固定。
+The times are not fixed.
 
-论文比较里主要关注 periodic paging。
+The paper’s comparison mainly looks at periodic paging.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Periodic](./63-periodic.md) |
-| 下一章 | [T_on^timer ≥ T_pg →](./65-ton-timer-ge-tpg.md) |
+| Previous | [← Periodic](./63-periodic.md) |
+| Next | [\(T_{\mathrm{on}}^{\mathrm{timer}}\ge T_{pg}\) →](./65-ton-timer-ge-tpg.md) |

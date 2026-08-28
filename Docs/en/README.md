@@ -1,21 +1,21 @@
-# Docs · Ambient IoT 学习笔记
+# Docs · Ambient IoT lecture notes
 
-## 从这里开始
+## Start here
 
-→ **[content.md](./content.md)** · 讲义总目录  
-→ **[story.md](./story.md)** · 真实世界故事（工厂盘点 / RF 充电 / DCM / 拥塞）
+→ **[content.md](./content.md)** · lecture TOC  
+→ **[story.md](./story.md)** · real-world story (factory inventory / RF charging / DCM / congestion)
 
-## 结构约定
+## Structure
 
-- **一个 chapter = 一个 `.md` 文件**
-- **文件夹只用来分组**（例如 `chapters/`、`figures/`），不是“每章一个文件夹”
-- 章节编号与讲义 **0–97** 对齐（另有 Preface）
+- **One chapter = one `.md` file**
+- **Folders group files only** (`chapters/`, `figures/`); not “one folder per chapter”
+- Chapter numbers match the lecture **0–97** (plus a Preface)
 
 ```text
-Docs/
+Docs/en/
 ├── README.md
-├── content.md                 ← 总目录（点击跳转）
-├── story.md                   ← 真实世界故事（快速直觉）
+├── content.md                 ← TOC (click to jump)
+├── story.md                   ← real-world story (fast intuition)
 ├── chapters/
 │   ├── 00-research-fit.md
 │   ├── 00-warehouse-story.md
@@ -25,12 +25,14 @@ Docs/
 │   ├── README.md
 │   ├── figure-01-cbra.md
 │   └── ...
-└── ambient_iot_beginner_guide.md  ← 拆分前/单文件备份
+└── ambient_iot_beginner_guide.md  ← pre-split / single-file backup
 ```
 
-每章文件内都有：返回目录 / 上一章 / 下一章。
+Every chapter has: back to TOC / previous / next.
 
-## 论文与材料
+Chinese notes: [`../zh/`](../zh/).
+
+## Paper and materials
 
 - [`../Papers/`](../Papers/)
 - [`../Files/`](../Files/)

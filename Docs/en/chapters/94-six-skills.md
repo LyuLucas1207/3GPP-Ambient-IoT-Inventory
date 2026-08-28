@@ -1,35 +1,35 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么复现 5(b) 不是 Fig.1](./93-why-reproduce-5b.md) |
-| 下一章 | [学习阶段 1–7（别跳代码） →](./95-learning-stages.md) |
+| Previous | [← Why reproduce 5(b), not Fig. 1](./93-why-reproduce-5b.md) |
+| Next | [Learning stages 1–7 (do not skip to code) →](./95-learning-stages.md) |
 
 ---
 
-# 94. 他实际上在测试你哪些能力？
+# 94. Which skills is he actually testing?
 
-我认为大概有六层。
+I think there are roughly six layers.
 
-### 第一层：能不能读陌生论文
+### Layer 1: can you read an unfamiliar paper?
 
-你现在不懂：
+You do not understand it yet:
 
-> 完全正常。
+> that is completely normal.
 
-关键是：
+The real question is:
 
-> 能不能一点一点搞懂。
+> can you figure it out bit by bit.
 
 ---
 
-### 第二层：能不能把文字变成模型
+### Layer 2: can you turn text into a model?
 
-论文写：
+The paper writes:
 
-> device enters off state when energy falls below threshold。
+> device enters off state when energy falls below threshold.
 
-你需要转换成：
+You need to turn that into:
 
 ```python
 if energy <= E_low:
@@ -38,9 +38,9 @@ if energy <= E_low:
 
 ---
 
-### 第三层：能不能把 protocol 写成 algorithm
+### Layer 3: can you write the protocol as an algorithm?
 
-例如：
+For example:
 
 ```text
 Paging
@@ -62,61 +62,61 @@ success
 
 ---
 
-### 第四层：能不能处理 randomness
+### Layer 4: can you handle randomness?
 
-因为：
+Because:
 
-* device received power 不同
-* AO 随机选择
-* access probability 随机
+* device received power differs
+* AO is chosen at random
+* access probability is random
 * device grouping
 * collisions
 
-所以这不是 deterministic homework。
+So this is not a deterministic homework problem.
 
 ---
 
-### 第五层：能不能 debug
+### Layer 5: can you debug?
 
-你第一次结果很可能：
+Your first result will likely:
 
-> 完全不像 Figure 5(b)。
+> look nothing like Figure 5(b).
 
-然后需要问：
+Then you need to ask:
 
-> initial energy 怎么设？
+> how is initial energy set?
 
-> DCM transition 对吗？
+> is the DCM transition correct?
 
-> device after successful inventory 是否退出？
+> does a device leave after a successful inventory?
 
-> power 的 dBm 转 watt 对吗？
+> is the dBm-to-watt conversion correct?
 
-这才是 research。
+That is research.
 
 ---
 
-### 第六层：能不能解释
+### Layer 6: can you explain?
 
-最后教授可能真正问你的不是：
+In the end the professor may not really ask:
 
-> “你的 Python 有多少行？”
+> "How many lines of Python did you write?"
 
-而是：
+but:
 
-> “Why does DCM alone not improve device-1 performance?”
+> "Why does DCM alone not improve device-1 performance?"
 
-你需要说：
+You need to say:
 
 > Because heavy contention leads to a low access probability; grouping reduces the number of devices monitoring/contending for a given paging opportunity.
 
-这个“解释结果”的能力很重要。正式论文就是这么解释 Device 1 的。
+That ability to **explain the result** matters. The published paper explains Device 1 this way.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么复现 5(b) 不是 Fig.1](./93-why-reproduce-5b.md) |
-| 下一章 | [学习阶段 1–7（别跳代码） →](./95-learning-stages.md) |
+| Previous | [← Why reproduce 5(b), not Fig. 1](./93-why-reproduce-5b.md) |
+| Next | [Learning stages 1–7 (do not skip to code) →](./95-learning-stages.md) |

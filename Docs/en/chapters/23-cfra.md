@@ -1,43 +1,43 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CBRA](./22-cbra.md) |
-| 下一章 | [Contention（厕所类比） →](./24-contention.md) |
+| Previous | [← CBRA](./22-cbra.md) |
+| Next | [Contention (stall analogy) →](./24-contention.md) |
 
 ---
 
-# 23. CFRA 是什么？
+# 23. What is CFRA?
 
 ## CFRA = Contention-Free Random Access
 
-就是：
+That is:
 
-> **无竞争随机接入**
+> **random access with no competition — the reader has already assigned who speaks where.**
 
-Reader 可以事先安排：
+The reader can schedule in advance:
 
 ```text
-Tag A → 位置 1
-Tag B → 位置 2
-Tag C → 位置 3
+Tag A → position 1
+Tag B → position 2
+Tag C → position 3
 ```
 
-因此不会撞。
+So they will not collide.
 
-但问题是 inventory 刚开始的时候：
+The problem is that when inventory has just started:
 
-> Reader 甚至不知道附近有哪些设备。
+> the reader does not even know which devices are nearby.
 
-所以论文说：
+So the paper says:
 
-> 对未知数量设备的 inventory，通常使用 CBRA。
+> for inventory of an unknown number of devices, CBRA is typically used.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CBRA](./22-cbra.md) |
-| 下一章 | [Contention（厕所类比） →](./24-contention.md) |
+| Previous | [← CBRA](./22-cbra.md) |
+| Next | [Contention (stall analogy) →](./24-contention.md) |

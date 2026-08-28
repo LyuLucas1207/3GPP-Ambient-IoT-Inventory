@@ -1,23 +1,23 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← UHF](./16-uhf.md) |
-| 下一章 | [NR →](./18-nr.md) |
+| Previous | [← UHF](./16-uhf.md) |
+| Next | [NR →](./18-nr.md) |
 
 ---
 
-# 17. 那 Ambient IoT 和 RFID 是不是一个东西？
+# 17. Are Ambient IoT and RFID the same thing?
 
-不是完全一样。
+Not exactly the same.
 
-但是你作为新人可以先这样理解：
+But as a beginner you can start with this picture:
 
-> **A-IoT Device 1 ≈ 更加 3GPP / cellular 化的高级 RFID-like device**
+> **A-IoT Device 1 ≈ a more 3GPP / cellular-flavored, RFID-like device**
 
-传统 RFID 和 3GPP Ambient IoT：
+Traditional RFID and 3GPP Ambient IoT:
 
-共同点：
+What they share:
 
 * ultra-low-power
 * tag
@@ -25,13 +25,11 @@
 * backscatter
 * inventory
 
-区别在于：
-
-Ambient IoT 希望进入：
+The difference is that Ambient IoT wants to enter the:
 
 > 3GPP / cellular ecosystem
 
-和：
+and combine with:
 
 * 5G NR
 * BS
@@ -39,13 +37,11 @@ Ambient IoT 希望进入：
 * licensed spectrum
 * standardized cellular procedures
 
-结合。
-
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← UHF](./16-uhf.md) |
-| 下一章 | [NR →](./18-nr.md) |
+| Previous | [← UHF](./16-uhf.md) |
+| Next | [NR →](./18-nr.md) |

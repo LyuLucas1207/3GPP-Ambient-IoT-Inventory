@@ -1,41 +1,43 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么睡觉反而快（熬夜类比）](./60-why-sleeping-helps.md) |
-| 下一章 | [T_pg →](./62-t-pg.md) |
+| Previous | [← Why sleeping can be faster (all-nighter analogy)](./60-why-sleeping-helps.md) |
+| Next | [\(T_{pg}\) →](./62-t-pg.md) |
 
 ---
 
-# 61. On timer 是什么？
+# 61. What is the on timer?
 
-## Timer = 计时器
+## Timer
 
-DCM 加了：
+A timer is a countdown clock.
 
-> on timer。
+DCM adds:
 
-例如：
+> an on timer.
 
-> “我最多醒 18 ms。”
+For example:
 
-18 ms 到了，如果还没收到 paging：
+> “I stay awake at most 18 ms.”
 
-> 我自己去睡。
+When 18 ms is up, if paging has not arrived yet:
 
-这个时长论文记成：
+> I go to sleep on my own.
+
+The paper writes this duration as:
 
 $$
-T_{on}^{timer}
+T_{\mathrm{on}}^{\mathrm{timer}}
 $$
 
-正式版本 Device 1 使用：
+In the published version, Device 1 uses:
 
 $$
 18ms
 $$
 
-Device 2：
+Device 2:
 
 $$
 26ms
@@ -43,9 +45,9 @@ $$
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么睡觉反而快（熬夜类比）](./60-why-sleeping-helps.md) |
-| 下一章 | [T_pg →](./62-t-pg.md) |
+| Previous | [← Why sleeping can be faster (all-nighter analogy)](./60-why-sleeping-helps.md) |
+| Next | [\(T_{pg}\) →](./62-t-pg.md) |

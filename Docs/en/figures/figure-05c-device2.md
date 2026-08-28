@@ -1,41 +1,41 @@
-> **导航** · [逐图目录](./README.md) · [总目录 content.md](../content.md)
+> **Nav** · [Figure notes](./README.md) · [TOC content.md](../content.md)
 
 | | |
 |---|---|
-| 上一图 | [← Figure 5(b)：Successfully Inventoried Ratio vs Time](./figure-05b-inventory.md) |
-| 下一图 | _（逐图轨道结束）_ → [回总目录 / 进入讲义第 88–97 章](../content.md) |
+| Previous figure | [← Figure 5(b): Successfully inventoried ratio vs time](./figure-05b-inventory.md) |
+| Next figure | _(end of the figure track)_ → [Back to TOC / continue with lecture chapters 88–97](../content.md) |
 
 ---
 
-# Figure 5(c)：Device 2 Inventory Curve
+# Figure 5(c): Device 2 inventory curve
 
-和 Figure 5(b) 同类图，但是 **Device 2**。
+The same kind of plot as Figure 5(b), but for **Device 2**.
 
-## 和 Device 1 的差别直觉
+## Intuition: how Device 2 differs from Device 1
 
 | | Device 1 | Device 2 |
 |---|---|---|
-| 功耗 | ~1 µW 级 | 更高（如 Rx 50 µW） |
-| 通信 | 更像 backscatter RFID | 更强（amplifier / CW） |
-| DCM 单独效果 | 弱（拥塞主导） | 已经很强 |
-| 额外手段 | grouping 关键 | low-power wake-up receiver 很有用 |
+| Power consumption | ~1 µW class | Higher (e.g. Rx 50 µW) |
+| Communication | Closer to backscatter RFID | Stronger (amplifier / CW) |
+| DCM alone | Weak (congestion-dominated) | Already strong |
+| Extra tool | Grouping is the key | A low-power wake-up receiver helps a lot |
 
-论文量级印象：
+Order-of-magnitude impression from the paper:
 
-- DCM 单独：约 **66%** reduction
-- 再加 wake-up receiver：最多约 **83%** reduction
+- DCM alone: about **66%** reduction
+- Plus a wake-up receiver: up to about **83%** reduction
 
-## 第一阶段建议
+## Stage-1 advice
 
-> 先复现 **Figure 5(b) / Device 1**。  
-> Figure 5(c) 作为对照理解，不要一开始就并行两套参数。
+> Reproduce **Figure 5(b) / Device 1** first.  
+> Use Figure 5(c) as a contrast for understanding; do not run two parameter sets in parallel from the start.
 
 
 ---
 
-> **导航**
+> **Nav**
 >
-> - [↑ 逐图目录](./README.md)
-> - [↑ 总目录](../content.md)
-> - [← Figure 5(b)：Successfully Inventoried Ratio vs Time](./figure-05b-inventory.md)
-> - _（逐图轨道结束）_ → [回总目录 / 进入讲义第 88–97 章](../content.md)
+> - [↑ Figure notes](./README.md)
+> - [↑ TOC](../content.md)
+> - [← Figure 5(b): Successfully inventoried ratio vs time](./figure-05b-inventory.md)
+> - _(end of the figure track)_ → [Back to TOC / continue with lecture chapters 88–97](../content.md)

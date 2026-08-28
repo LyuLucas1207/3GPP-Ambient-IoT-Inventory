@@ -1,48 +1,48 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 3GPP（Samsung / Apple 例子）](./08-3gpp.md) |
-| 下一章 | [TR 38.769 →](./10-tr-38-769.md) |
+| Previous | [← 3GPP (Samsung / Apple example)](./08-3gpp.md) |
+| Next | [TR 38.769 →](./10-tr-38-769.md) |
 
 ---
 
-# 9. Release 18 / Release 19 是什么？
+# 9. What are Release 18 / Release 19?
 
-3GPP 的标准不是一次写完。
+3GPP standards are not written in one shot.
 
-它一代一代发布。
+They are published generation by generation.
 
-比如：
+For example:
 
 ## Release 18
 
-简称：
+Short name:
 
 > Rel-18
 
-是某一个版本阶段。
+That is one version stage.
 
-然后：
+Then:
 
 ## Release 19
 
-简称：
+Short name:
 
 > Rel-19
 
-继续加入新的功能。
+which keeps adding new features.
 
-这篇论文说：
+This paper says:
 
-* Release 18 做 A-IoT feasibility study
-* Release 19 进一步研究具体 solutions
+* Release 18 did an A-IoT feasibility study
+* Release 19 studies concrete solutions further
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 3GPP（Samsung / Apple 例子）](./08-3gpp.md) |
-| 下一章 | [TR 38.769 →](./10-tr-38-769.md) |
+| Previous | [← 3GPP (Samsung / Apple example)](./08-3gpp.md) |
+| Next | [TR 38.769 →](./10-tr-38-769.md) |

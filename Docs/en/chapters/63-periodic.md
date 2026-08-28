@@ -1,17 +1,21 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← T_pg](./62-t-pg.md) |
-| 下一章 | [Aperiodic →](./64-aperiodic.md) |
+| Previous | [← \(T_{pg}\)](./62-t-pg.md) |
+| Next | [Aperiodic →](./64-aperiodic.md) |
 
 ---
 
-# 63. Periodic 是什么意思？
+# 63. What does periodic mean?
 
-## Periodic = 周期性的
+## Periodic
 
-比如：
+Periodic means:
+
+> repeating on a fixed schedule.
+
+For example:
 
 ```text
 0 ms   Paging
@@ -21,15 +25,15 @@
 48 ms  Paging
 ```
 
-就是：
+that is:
 
-> 每 12 ms 一次。
+> once every 12 ms.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← T_pg](./62-t-pg.md) |
-| 下一章 | [Aperiodic →](./64-aperiodic.md) |
+| Previous | [← \(T_{pg}\)](./62-t-pg.md) |
+| Next | [Aperiodic →](./64-aperiodic.md) |

@@ -1,31 +1,31 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Synchronization](./68-synchronization.md) |
-| 下一章 | [T_on^DCM →](./70-t-on-dcm.md) |
+| Previous | [← Synchronization](./68-synchronization.md) |
+| Next | [\(T_{\mathrm{on}}^{\mathrm{DCM}}\) →](./70-t-on-dcm.md) |
 
 ---
 
-# 69. \(T_{sl}^{DCM}\) 是什么？
+# 69. What is \(T_{\mathrm{sl}}^{\mathrm{DCM}}\)?
 
 ## sl = sleep
 
-所以：
+So:
 
 $$
-T_{sl}^{DCM}
+T_{\mathrm{sl}}^{\mathrm{DCM}}
 $$
 
-就是：
+is:
 
-> DCM 的 sleep duration。
+> the sleep duration of DCM.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Synchronization](./68-synchronization.md) |
-| 下一章 | [T_on^DCM →](./70-t-on-dcm.md) |
+| Previous | [← Synchronization](./68-synchronization.md) |
+| Next | [\(T_{\mathrm{on}}^{\mathrm{DCM}}\) →](./70-t-on-dcm.md) |

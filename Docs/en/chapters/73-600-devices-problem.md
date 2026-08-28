@@ -1,15 +1,15 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← DCM 解决了什么](./72-what-dcm-solved.md) |
-| 下一章 | [Congestion Control →](./74-congestion-control.md) |
+| Previous | [← What DCM solved](./72-what-dcm-solved.md) |
+| Next | [Congestion control →](./74-congestion-control.md) |
 
 ---
 
-# 73. 但是还有一个巨大问题：600 台设备
+# 73. But there is still a huge problem: 600 devices
 
-想象：
+Imagine:
 
 ```text
 Reader:
@@ -19,17 +19,17 @@ Reader:
 "ME!"
 ```
 
-就爆炸了。
+then it blows up.
 
-所以还需要：
+So you still need:
 
 # Congestion Control
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← DCM 解决了什么](./72-what-dcm-solved.md) |
-| 下一章 | [Congestion Control →](./74-congestion-control.md) |
+| Previous | [← What DCM solved](./72-what-dcm-solved.md) |
+| Next | [Congestion control →](./74-congestion-control.md) |

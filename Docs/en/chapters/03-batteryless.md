@@ -1,69 +1,69 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← A-IoT（含手机对比）](./02-a-iot.md) |
-| 下一章 | [Energy Harvesting / RF / 天线链路 →](./04-energy-harvesting.md) |
+| Previous | [← A-IoT (vs. a phone)](./02-a-iot.md) |
+| Next | [Energy harvesting / RF / antenna link →](./04-energy-harvesting.md) |
 
 ---
 
-# 3. batteryless 是什么意思？
+# 3. What does batteryless mean?
 
-## batteryless = 没有传统电池
+## batteryless = no conventional battery
 
-不是说它完全不需要能量。
+That does not mean it needs no energy at all.
 
-任何电子设备都需要能量。
+Every electronic device needs energy.
 
-只是它可能没有：
+It just may not have:
 
-> AA 电池、锂电池之类长期储能。
+> an AA cell, a lithium battery, or other long-term energy storage.
 
-而是有一个：
+Instead it has a:
 
 ## Capacitor
 
-中文：
+In plain English:
 
-> **电容**
+> **a tiny energy-storage component — think of a very small cup of water.**
 
-你可以把电容想成一个非常非常小的水杯。
+You can picture the capacitor as an extremely small cup.
 
 ---
 
-手机电池：
+Phone battery:
 
 ```text
 ████████████████████
-很大的水箱
+a large water tank
 ```
 
-Ambient IoT：
+Ambient IoT:
 
 ```text
 █
-一个小杯子
+a small cup
 ```
 
-设备工作的时候：
+When the device works:
 
 ```text
-杯子里的水 ↓
+water in the cup ↓
 ```
 
-从无线电波收集能量：
+When it harvests energy from radio waves:
 
 ```text
-杯子里的水 ↑
+water in the cup ↑
 ```
 
-这就是后面整篇论文的核心。
+That is the core of the whole paper from here on.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← A-IoT（含手机对比）](./02-a-iot.md) |
-| 下一章 | [Energy Harvesting / RF / 天线链路 →](./04-energy-harvesting.md) |
+| Previous | [← A-IoT (vs. a phone)](./02-a-iot.md) |
+| Next | [Energy harvesting / RF / antenna link →](./04-energy-harvesting.md) |

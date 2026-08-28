@@ -1,51 +1,51 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Figure 5(b) 曲线含义](./90-figure-5b-curves.md) |
-| 下一章 | [整篇论文逻辑链 →](./92-full-paper-logic.md) |
+| Previous | [← Meaning of the Figure 5(b) curves](./90-figure-5b-curves.md) |
+| Next | [Logic chain of the whole paper →](./92-full-paper-logic.md) |
 
 ---
 
-# 91. 最关键的实验结论是什么？
+# 91. What are the key experimental results?
 
-Device 1：
+Device 1:
 
-> 单独 DCM 并没有明显改善。
+> DCM alone does not help much.
 
-为什么？
+Why?
 
-因为：
+Because:
 
-> 600 个 devices 太拥塞，access probability 会压得很低。
+> \(N=600\) devices are too congested, so the access probability \(p_{\mathrm{access}}\) is pushed very low.
 
-但：
+But:
 
 > DCM + device grouping
 
-可以把 99% inventory completion time 大约减少 50%。
+can cut the 99% inventory completion time (T99) by about 50%.
 
-正式论文明确这样解释。
-
----
-
-Device 2：
-
-DCM 单独已经很有效。
-
-论文报告大约：
-
-> 66% reduction。
-
-再加 low-power wake-up receiver：
-
-> 最多约 83% reduction。
+The published IEEE paper explains it this way.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+Device 2:
+
+DCM alone is already very effective.
+
+The paper reports about:
+
+> a 66% reduction.
+
+Add a low-power wake-up receiver:
+
+> up to about an 83% reduction.
+
+---
+
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Figure 5(b) 曲线含义](./90-figure-5b-curves.md) |
-| 下一章 | [整篇论文逻辑链 →](./92-full-paper-logic.md) |
+| Previous | [← Meaning of the Figure 5(b) curves](./90-figure-5b-curves.md) |
+| Next | [Logic chain of the whole paper →](./92-full-paper-logic.md) |

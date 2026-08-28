@@ -1,23 +1,23 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← R2D / D2R](./19-r2d-d2r.md) |
-| 下一章 | [Random Access →](./21-random-access.md) |
+| Previous | [← R2D / D2R](./19-r2d-d2r.md) |
+| Next | [Random access →](./21-random-access.md) |
 
 ---
 
-# 20. Paging 是什么？
+# 20. What is paging?
 
-这是你之后 simulation 必须非常熟悉的词。
+This is a word you must know well later in the simulation.
 
 ## Paging
 
-你可以理解成：
+You can picture it as:
 
-> **Reader 喊设备：“醒醒！现在轮到你们跟我通信了！”**
+> **the reader shouting at the devices: "Wake up! It is your turn to talk to me!"**
 
-例如：
+For example:
 
 ```text
 Reader:
@@ -25,19 +25,19 @@ Reader:
 "HELLO ALL TAGS, INVENTORY STARTING!"
 ```
 
-这条唤醒/触发消息就是：
+That wake-up / trigger message is:
 
 > A-IoT paging
 
-论文定义得很明确：
+The paper defines it clearly:
 
-> A-IoT paging 是一个 R2D message，用来触发 random access procedure。
+> A-IoT paging is an R2D message used to trigger the random access procedure.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← R2D / D2R](./19-r2d-d2r.md) |
-| 下一章 | [Random Access →](./21-random-access.md) |
+| Previous | [← R2D / D2R](./19-r2d-d2r.md) |
+| Next | [Random access →](./21-random-access.md) |

@@ -1,71 +1,71 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Carrier](./13-carrier.md) |
-| 下一章 | [RFID →](./15-rfid.md) |
+| Previous | [← Carrier](./13-carrier.md) |
+| Next | [RFID →](./15-rfid.md) |
 
 ---
 
-# 14. Backscatter 是什么？
+# 14. What is backscatter?
 
-这是 Ambient IoT / RFID 里非常重要的概念。
+This is a very important idea in Ambient IoT / RFID.
 
 ## Backscatter communication
 
-中文：
+In plain English:
 
-> **反向散射通信**
+> **talking by reflecting someone else's radio wave, instead of generating your own.**
 
-普通手机：
+An ordinary phone:
 
 ```text
-手机自己产生 RF signal
+the phone generates an RF signal
 → amplifier
 → antenna
-→ 发出去
+→ sends it out
 ```
 
-但是 ultra-low-power tag：
+But an ultra-low-power tag:
 
-> 没电做这个。
+> does not have the energy to do that.
 
-于是它使用 Reader 已经发来的无线波。
+So it uses the radio wave the reader is already sending.
 
-Reader：
+Reader:
 
 ```text
 ))))))))))))))))
 ```
 
-Tag 改变自己天线的电气特性：
+The tag changes the electrical properties of its own antenna:
 
 ```text
-反射强
-反射弱
-反射强
-反射弱
+strong reflection
+weak reflection
+strong reflection
+weak reflection
 ```
 
-Reader 检测这个变化：
+The reader detects that change:
 
 ```text
 1 0 1 0
 ```
 
-这就是：
+That is:
 
-> backscatter。
+> backscatter.
 
-非常像：
+It is a lot like:
 
-> 你没有手电筒，但别人拿手电照你；你用镜子改变反射方式来发送 Morse code。
+> you do not have a flashlight, but someone else shines one at you; you send Morse code by changing how a mirror reflects the light.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Carrier](./13-carrier.md) |
-| 下一章 | [RFID →](./15-rfid.md) |
+| Previous | [← Carrier](./13-carrier.md) |
+| Next | [RFID →](./15-rfid.md) |

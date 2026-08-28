@@ -1,44 +1,44 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← ID](./30-id.md) |
-| 下一章 | [Slotted ALOHA →](./32-slotted-aloha.md) |
+| Previous | [← ID](./30-id.md) |
+| Next | [Slotted ALOHA →](./32-slotted-aloha.md) |
 
 ---
 
-# 31. Collision 是什么？
+# 31. What is a collision?
 
-## Collision = 碰撞
+## Collision
 
-如果：
+If:
 
 ```text
 Tag A → AO 3
 Tag B → AO 3
 ```
 
-两个同时发 Msg1。
+both send Msg1 at the same time.
 
-Reader 很可能无法正确解码。
+The reader likely cannot decode correctly.
 
-于是：
+Then you get:
 
-> Msg1 collision。
+> Msg1 collision.
 
-论文 Figure 1 就专门画了一个 collision AO。
+Paper Figure 1 even draws a collision AO on purpose.
 
-你可以把它想象成两个人同时对你说话：
+You can picture two people talking to you at once:
 
-> “我是—我是—”
+> “I am—I am—”
 
-你一个都没听懂。
+You understood neither of them.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← ID](./30-id.md) |
-| 下一章 | [Slotted ALOHA →](./32-slotted-aloha.md) |
+| Previous | [← ID](./30-id.md) |
+| Next | [Slotted ALOHA →](./32-slotted-aloha.md) |

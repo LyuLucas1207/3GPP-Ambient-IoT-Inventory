@@ -1,30 +1,30 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 600 设备问题](./73-600-devices-problem.md) |
-| 下一章 | [Access Probability →](./75-access-probability.md) |
+| Previous | [← The 600-device problem](./73-600-devices-problem.md) |
+| Next | [Access probability →](./75-access-probability.md) |
 
 ---
 
-# 74. Congestion Control 是什么？
+# 74. What is congestion control?
 
-就是：
+It means:
 
-> **控制拥塞。**
+> **controlling congestion.**
 
-不能让所有设备同时 access。
+You cannot let every device access at the same time.
 
-这篇论文主要讲两个方法：
+This paper mainly discusses two methods:
 
 1. access probability
 2. device grouping
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 600 设备问题](./73-600-devices-problem.md) |
-| 下一章 | [Access Probability →](./75-access-probability.md) |
+| Previous | [← The 600-device problem](./73-600-devices-problem.md) |
+| Next | [Access probability →](./75-access-probability.md) |

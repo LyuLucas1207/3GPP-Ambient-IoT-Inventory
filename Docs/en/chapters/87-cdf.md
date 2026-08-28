@@ -1,55 +1,51 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Link Budget](./86-link-budget.md) |
-| 下一章 | [Figure 5(b) 在画什么 →](./88-figure-5b-meaning.md) |
+| Previous | [← Link budget](./86-link-budget.md) |
+| Next | [What Figure 5(b) plots →](./88-figure-5b-meaning.md) |
 
 ---
 
-# 87. CDF 是什么？
+# 87. What is a CDF?
 
-这个是 Figure 5 里面非常重要的数学概念。
+This is a very important math idea inside Figure 5.
 
 ## CDF = Cumulative Distribution Function
 
-中文：
+Do not let the name scare you.
 
-> **累积分布函数**
+Suppose 100 students' scores.
 
-别被名字吓到。
+You ask:
 
-例如 100 个学生成绩。
+> what fraction scored ≤ 60?
 
-你问：
+Then:
 
-> 分数 ≤ 60 的有多少比例？
+> ≤70?
 
-然后：
+> ≤80?
 
-> ≤70？
+> ≤90?
 
-> ≤80？
+Plot that fraction:
 
-> ≤90？
-
-把这个比例画出来：
-
-> 就是 CDF。
+> that is a CDF.
 
 ---
 
-Figure 5(a) 是 received power 的 CDF。
+Figure 5(a) is the CDF of received power.
 
-意思大致是：
+Roughly:
 
-> 有多少比例的设备 \(p_{in}\) 小于某个值。
+> what fraction of devices have \(p_{in}\) below a given value.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Link Budget](./86-link-budget.md) |
-| 下一章 | [Figure 5(b) 在画什么 →](./88-figure-5b-meaning.md) |
+| Previous | [← Link budget](./86-link-budget.md) |
+| Next | [What Figure 5(b) plots →](./88-figure-5b-meaning.md) |

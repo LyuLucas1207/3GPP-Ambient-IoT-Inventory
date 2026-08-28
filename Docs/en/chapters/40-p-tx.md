@@ -1,50 +1,50 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← P_rx](./39-p-rx.md) |
-| 下一章 | [P_eh = p_in · ξ →](./41-p-eh.md) |
+| Previous | [← \(P_{rx}\)](./39-p-rx.md) |
+| Next | [\(P_{eh}=p_{in}\cdot\xi\) →](./41-p-eh.md) |
 
 ---
 
-# 40. \(P_{tx}\) 是什么？
+# 40. What is \(P_{tx}\)?
 
 ## Tx = Transmit
 
-所以：
+So:
 
 $$
 P_{tx}
 $$
 
-是：
+is:
 
-> device 发信号时的功耗。
+> The device’s power consumption while sending a signal.
 
-Device 1：
+Device 1:
 
 $$
 1\mu W
 $$
 
-Device 2：
+Device 2:
 
 $$
 200\mu W
 $$
 
-以后看到：
+From now on, when you see:
 
 * Rx = receive
 * Tx = transmit
 
-直接条件反射。
+let it be a reflex.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← P_rx](./39-p-rx.md) |
-| 下一章 | [P_eh = p_in · ξ →](./41-p-eh.md) |
+| Previous | [← \(P_{rx}\)](./39-p-rx.md) |
+| Next | [\(P_{eh}=p_{in}\cdot\xi\) →](./41-p-eh.md) |

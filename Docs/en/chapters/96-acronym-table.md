@@ -1,55 +1,55 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 学习阶段 1–7（别跳代码）](./95-learning-stages.md) |
-| 下一章 | [第一阶段过关标准 →](./97-stage1-checkpoint.md) |
+| Previous | [← Learning stages 1–7 (do not skip to code)](./95-learning-stages.md) |
+| Next | [Stage-1 pass criteria →](./97-stage1-checkpoint.md) |
 
 ---
 
-# 96. 你目前最需要背下来的缩写，我给你做个“第一张词汇表”
+# 96. A first vocabulary table of the acronyms you most need
 
-不用今天一次全背完，但之后看到要认识：
+You do not have to memorize them all today, but you should recognize them when they show up:
 
-| 缩写    | 全称                                         | 你先怎么理解          |
-| ----- | ------------------------------------------ | --------------- |
-| IoT   | Internet of Things                         | 物联网             |
-| A-IoT | Ambient IoT                                | 超低功耗/无电池物联网设备   |
-| 3GPP  | 3rd Generation Partnership Project         | 移动通信标准体系        |
-| BS    | Base Station                               | 基站              |
-| UE    | User Equipment                             | 手机/终端           |
-| RF    | Radio Frequency                            | 无线射频            |
-| RFID  | Radio Frequency Identification             | 射频标签            |
-| UHF   | Ultra High Frequency                       | 特高频             |
-| CW    | Continuous Wave                            | 连续载波            |
-| NR    | New Radio                                  | 5G 无线接口         |
-| R2D   | Reader-to-Device                           | Reader → Device |
-| D2R   | Device-to-Reader                           | Device → Reader |
-| CBRA  | Contention-Based Random Access             | 竞争式随机接入         |
-| CFRA  | Contention-Free Random Access              | 无竞争随机接入         |
-| AO    | Access Occasion                            | 一次 Msg1 发送机会    |
-| ID    | Identifier                                 | 身份编号            |
-| EM    | Energy-Based Monitoring                    | 旧的能量监听机制        |
-| DCM   | Duty Cycled Monitoring                     | 间歇监听            |
-| Rx    | Receive                                    | 接收              |
-| Tx    | Transmit                                   | 发送              |
-| EH    | Energy Harvesting                          | 能量采集            |
-| IC    | Integrated Circuit                         | 芯片              |
-| CDF   | Cumulative Distribution Function           | 累积分布函数          |
-| OOK   | On-Off Keying                              | 开/关调制           |
-| BPSK  | Binary Phase Shift Keying                  | 二进制相移键控         |
-| OFDM  | Orthogonal Frequency-Division Multiplexing | 正交频分复用          |
-| FDMA  | Frequency-Domain Multiple Access           | 频分多址            |
-| FDD   | Frequency Division Duplex                  | 频分双工            |
-| TR    | Technical Report                           | 技术报告            |
+| Acronym | Full name | Gloss |
+| --- | --- | --- |
+| IoT | Internet of Things | networked everyday objects |
+| A-IoT | Ambient IoT | ultra-low-power / batteryless IoT devices |
+| 3GPP | 3rd Generation Partnership Project | the mobile-communications standards body |
+| BS | Base Station | cell tower / reader side |
+| UE | User Equipment | phone / terminal |
+| RF | Radio Frequency | wireless radio |
+| RFID | Radio Frequency Identification | radio tags |
+| UHF | Ultra High Frequency | a high radio-frequency band |
+| CW | Continuous Wave | a continuous carrier |
+| NR | New Radio | 5G radio interface |
+| R2D | Reader-to-Device | Reader → Device |
+| D2R | Device-to-Reader | Device → Reader |
+| CBRA | Contention-Based Random Access | devices compete to send |
+| CFRA | Contention-Free Random Access | reserved, no competition |
+| AO | Access Occasion | one Msg1 transmit opportunity |
+| ID | Identifier | identity number |
+| EM | Energy-Based Monitoring | baseline: listen whenever energy is high |
+| DCM | Duty-Cycled Monitoring | intermittent listening (sleep to save energy) |
+| Rx | Receive | receive |
+| Tx | Transmit | transmit |
+| EH | Energy Harvesting | collecting energy from RF |
+| IC | Integrated Circuit | the chip |
+| CDF | Cumulative Distribution Function | "what fraction is ≤ this value?" |
+| OOK | On-Off Keying | carrier on = 1, off = 0 |
+| BPSK | Binary Phase Shift Keying | two phases encode 0 and 1 |
+| OFDM | Orthogonal Frequency-Division Multiplexing | many small frequency subcarriers |
+| FDMA | Frequency-Domain Multiple Access | split users by frequency |
+| FDD | Frequency Division Duplex | uplink and downlink on different frequencies |
+| TR | Technical Report | a 3GPP technical report |
 
-这 30 个左右已经覆盖了 paper 绝大多数“看起来很吓人”的术语。
+These ~30 already cover most of the paper's "scary-looking" terms.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 学习阶段 1–7（别跳代码）](./95-learning-stages.md) |
-| 下一章 | [第一阶段过关标准 →](./97-stage1-checkpoint.md) |
+| Previous | [← Learning stages 1–7 (do not skip to code)](./95-learning-stages.md) |
+| Next | [Stage-1 pass criteria →](./97-stage1-checkpoint.md) |

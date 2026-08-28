@@ -1,19 +1,19 @@
-> **导航** · [逐图目录](./README.md) · [总目录 content.md](../content.md)
+> **Nav** · [Figure notes](./README.md) · [TOC content.md](../content.md)
 
 | | |
 |---|---|
-| 上一图 | [← Figure 3：EM vs DCM](./figure-03-em-vs-dcm.md) |
-| 下一图 | [Figure 5(a)：Received Power CDF →](./figure-05a-cdf.md) |
+| Previous figure | [← Figure 3: EM vs DCM](./figure-03-em-vs-dcm.md) |
+| Next figure | [Figure 5(a): Received-power CDF →](./figure-05a-cdf.md) |
 
 ---
 
-# Figure 4：Device Grouping
+# Figure 4: Device grouping
 
-Figure 4 在画：
+Figure 4 is drawing:
 
-> 不要让所有 Device 每轮都醒着抢同一波 Paging。
+> Do not let every Device wake up every round and contend for the same Paging wave.
 
-## 核心画面
+## The core picture
 
 ```text
 Paging 1 → Group A
@@ -24,40 +24,40 @@ Paging 5 → Group A
 ...
 ```
 
-## 为什么需要它？
+## Why is it needed?
 
-只有 access probability 时：
+With access probability alone:
 
 ```text
-醒了 → 耗电听 Paging → 随机抽签说“这轮别来” → 电白花了
+Wake up → spend energy listening to Paging → randomly draw “skip this round” → energy wasted
 ```
 
-Grouping：
+Grouping:
 
-- 降低同一轮 contention
-- 减少无意义 listening
-- 让 access probability 不必压得那么极端
+- Lowers contention in the same round
+- Cuts pointless listening
+- So access probability does not have to be pushed so extreme
 
-## 和 Figure 5(b) 的关系
+## Relation to Figure 5(b)
 
-Device 1：
+Device 1:
 
-> 单独 DCM 改善有限；**DCM + 4 groups** 才明显把 99% completion time 大约砍半。
+> DCM alone does not help much; **DCM + 4 groups** clearly cuts 99% completion time by about 50%.
 
-因为瓶颈从“没电”变成了“太挤”。
+Because the bottleneck shifted from “no energy” to “too crowded.”
 
-## 过关标准
+## Pass criterion
 
-能解释：
+You can explain:
 
-> 为什么 600 个 Device、8 个 AO 时，只靠 DCM 不够？
+> Why is DCM alone not enough with 600 Devices and 8 AOs?
 
 
 ---
 
-> **导航**
+> **Nav**
 >
-> - [↑ 逐图目录](./README.md)
-> - [↑ 总目录](../content.md)
-> - [← Figure 3：EM vs DCM](./figure-03-em-vs-dcm.md)
-> - [Figure 5(a)：Received Power CDF →](./figure-05a-cdf.md)
+> - [↑ Figure notes](./README.md)
+> - [↑ TOC](../content.md)
+> - [← Figure 3: EM vs DCM](./figure-03-em-vs-dcm.md)
+> - [Figure 5(a): Received-power CDF →](./figure-05a-cdf.md)

@@ -1,50 +1,50 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← IoT](./01-iot.md) |
-| 下一章 | [batteryless + 电容水杯类比 →](./03-batteryless.md) |
+| Previous | [← IoT](./01-iot.md) |
+| Next | [Batteryless + capacitor cup analogy →](./03-batteryless.md) |
 
 ---
 
-# 2. 那 A-IoT 又是什么？
+# 2. Then what is A-IoT?
 
 ## A-IoT = Ambient Internet of Things
 
-Ambient 在这里大概可以理解为：
+Ambient here roughly means:
 
-> 环境中的 / 极低功耗的 / 可以依靠周围能量工作的 IoT。
+> IoT that lives in the environment / uses extremely low power / can run on energy around it.
 
-这篇论文里的 A-IoT device 和你的手机差别非常大。
+The A-IoT device in this paper is very different from your phone.
 
-手机：
+Phone:
 
 ```text
-大电池
+large battery
 CPU
 Wi-Fi
 5G modem
-屏幕
-几瓦功耗
+screen
+a few watts of power
 ```
 
-A-IoT：
+A-IoT:
 
 ```text
-可能没有电池
-一个小电容
-极低功耗芯片
-靠 RF energy harvesting
-微瓦级功耗
+may have no battery
+a small capacitor
+an ultra-low-power chip
+runs on RF energy harvesting
+microwatt-level power
 ```
 
-论文明确说，3GPP 研究的是 batteryless、ultra-low-power 的设备，它们依靠 energy harvesting 和有限的 energy storage 工作。
+The paper is explicit: 3GPP is studying batteryless, ultra-low-power devices that work by energy harvesting and limited energy storage.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← IoT](./01-iot.md) |
-| 下一章 | [batteryless + 电容水杯类比 →](./03-batteryless.md) |
+| Previous | [← IoT](./01-iot.md) |
+| Next | [Batteryless + capacitor cup analogy →](./03-batteryless.md) |

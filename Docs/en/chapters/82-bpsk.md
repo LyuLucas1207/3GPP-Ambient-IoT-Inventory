@@ -1,23 +1,23 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← OOK + Modulation](./81-ook-modulation.md) |
-| 下一章 | [OFDM →](./83-ofdm.md) |
+| Previous | [← OOK + modulation](./81-ook-modulation.md) |
+| Next | [OFDM →](./83-ofdm.md) |
 
 ---
 
-# 82. BPSK 是什么？
+# 82. What is BPSK?
 
 ## BPSK = Binary Phase Shift Keying
 
-也是 modulation。
+Also a modulation.
 
-不同之处：
+The difference:
 
-> 不用“有波 / 没波”，而是用两个相位表示 0 和 1。
+> it does not use "wave present / wave absent"; it uses two phases to represent 0 and 1.
 
-例如：
+For example:
 
 $$
 0^\circ\rightarrow0
@@ -27,15 +27,15 @@ $$
 180^\circ\rightarrow1
 $$
 
-你现在知道名字就够了。
+Knowing the name is enough for now.
 
-Figure 5(b) reproduction 不需要你先成为 BPSK 专家。
+Reproducing Figure 5(b) does not require you to become a BPSK expert first.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← OOK + Modulation](./81-ook-modulation.md) |
-| 下一章 | [OFDM →](./83-ofdm.md) |
+| Previous | [← OOK + modulation](./81-ook-modulation.md) |
+| Next | [OFDM →](./83-ofdm.md) |

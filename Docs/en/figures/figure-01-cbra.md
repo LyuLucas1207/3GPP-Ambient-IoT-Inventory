@@ -1,167 +1,167 @@
-> **导航** · [逐图目录](./README.md) · [总目录 content.md](../content.md)
+> **Nav** · [Figure notes](./README.md) · [TOC content.md](../content.md)
 
 | | |
 |---|---|
-| 上一图 | _（已是第一张图）_ |
-| 下一图 | [Figure 2：EM 能量状态 →](./figure-02-em-energy.md) |
+| Previous figure | _(this is the first figure)_ |
+| Next figure | [Figure 2: EM energy state →](./figure-02-em-energy.md) |
 
 ---
 
-# Figure 1：CBRA Procedure（逐框拆解）
+# Figure 1: CBRA procedure (box-by-box)
 
-打开论文 PDF 里的 **Figure 1**，对照本页。
+Open **Figure 1** in the paper PDF and read this page beside it.
 
-这张图不是仿真结果，而是：
+This figure is not a simulation result. It is:
 
-> **协议示意图：一次 inventory 里，Reader 和多个 Device 怎么用 CBRA 说话。**
+> **A protocol diagram: in one inventory, how the Reader and multiple Devices talk using CBRA.**
 
-你读完这张图，必须能自己画出下面这条链：
+After you finish this figure, you must be able to draw this chain yourself:
 
 ```text
 Paging
-  → Device 选 AO 发 Msg1
-  → 成功 / collision
-  → Msg2（只给成功的）
-  → Msg3（报真正 ID）
+  → Device picks an AO and sends Msg1
+  → success / collision
+  → Msg2 (only to the successful ones)
+  → Msg3 (reports the real ID)
   → inventoried
 ```
 
 ---
 
-## 1. 图在说谁和谁？
+## 1. Who is talking to whom?
 
-横轴通常是：
+The horizontal axis is usually:
 
-> **Time（时间）**
+> **Time**
 
-纵轴方向上会看到：
+Along the vertical direction you will see:
 
-- **Reader** 发出的消息
-- 多个 **Device / Tag** 发出的消息
-- 若干 **AO（Access Occasion）**
+- messages sent by the **Reader**
+- messages sent by several **Devices / Tags**
+- several **AOs (Access Occasions)**
 
-记住角色：
+Remember the roles:
 
-| 角色 | 干什么 |
+| Role | What they do |
 |---|---|
-| Reader | 喊人、听 Msg1、回 Msg2、收 Msg3 |
-| Device | 听 Paging、抢 AO、发 Msg1/Msg3 |
-| AO | “这个时间/频率格子里，只该有一个人喊” |
+| Reader | Call out, listen for Msg1, reply with Msg2, receive Msg3 |
+| Device | Hear Paging, contend for an AO, send Msg1/Msg3 |
+| AO | “In this time/frequency slot, only one device should shout” |
 
 ---
 
-## 2. 第一步：Paging（R2D）
+## 2. Step 1: Paging (R2D)
 
-图的最左边 / 最上方通常先有：
+On the far left / top of the figure you usually see first:
 
 > **Paging**
 
-人话：
+In plain English:
 
 ```text
 Reader:
 “HELLO ALL TAGS, INVENTORY STARTING!
-谁在这里，来随机接入。”
+If you are here, come do random access.”
 ```
 
-关键点：
+Key points:
 
-1. Paging 是 **R2D**（Reader → Device）。
-2. 它 **触发** random access / CBRA。
-3. 只有当时 **醒着、听得到、能量够** 的 Device 才会进入后续流程。
+1. Paging is **R2D** (Reader → Device).
+2. It **triggers** random access / CBRA.
+3. Only Devices that are **awake, able to hear, and have enough energy** at that moment enter the rest of the procedure.
 
-如果你之后写仿真，Paging 时刻就是一轮 CBRA 的“发令枪”。
+When you later write the simulation, the Paging instant is the “starting gun” of one CBRA round.
 
 ---
 
-## 3. 第二步：多个 Device 同时想回 Msg1
+## 3. Step 2: many Devices try to reply with Msg1 at once
 
-收到 Paging 后，不是排队点名，而是：
+After Paging is received, it is not roll call in a queue. Instead:
 
-> 每个 Device **随机选一个 AO**，在那里发 **Msg1**。
+> each Device **randomly picks one AO** and sends **Msg1** there.
 
-Msg1 里通常带：
+Msg1 usually carries:
 
-> **临时 random ID**（论文例子常提 16-bit）
+> a **temporary random ID** (the paper’s example often mentions 16-bit)
 
-不是最终 device ID。
+It is not the final device ID.
 
-人话：
+In plain English:
 
 ```text
-Device A: “我申请接入，临时号 12345，我选 AO2”
-Device B: “我申请接入，临时号 77881，我选 AO5”
-Device C: “我申请接入，临时号 99012，我也选 AO2”   ← 危险
+Device A: “I request access, temporary ID 12345, I pick AO2”
+Device B: “I request access, temporary ID 77881, I pick AO5”
+Device C: “I request access, temporary ID 99012, I also pick AO2”   ← danger
 ```
 
 ---
 
-## 4. AO 在图上长什么样？
+## 4. What does an AO look like on the figure?
 
-图里会画出一排（或时间×频率网格）小格子：
+The figure draws a row of small slots (or a time × frequency grid):
 
 ```text
 AO1  AO2  AO3  AO4  ...
 ```
 
-每个格子三种常见结局：
+Each slot has three common outcomes:
 
-| 结局 | 图上常见含义 | 后果 |
+| Outcome | Typical meaning on the figure | Consequence |
 |---|---|---|
-| Empty | 没人发 | 资源浪费，但无碰撞 |
-| Success / Occupied | 恰好一个 Device | Reader 能解码 Msg1 |
-| Collision | ≥2 个 Device 同 AO | Msg1 失败，本轮作废 |
+| Empty | Nobody transmitted | Resource wasted, but no collision |
+| Success / Occupied | Exactly one Device | The Reader can decode Msg1 |
+| Collision | ≥2 Devices on the same AO | Msg1 fails; this round is wasted |
 
-Figure 1 专门会标出一个 **collision AO**。把它理解成：
+Figure 1 specifically marks a **collision AO**. Read it as:
 
 ```text
-两个人同时对你说话：
-“我是—我是—”
-你一个都没听懂。
+Two people talking to you at once:
+“I am—I am—”
+You understood neither of them.
 ```
 
 ---
 
-## 5. Msg2：Reader 只回答“听清的人”
+## 5. Msg2: the Reader only answers the ones it heard clearly
 
-对 **成功的 Msg1**：
+For a **successful Msg1**:
 
 ```text
 Reader → Device:
-“临时号 12345，我听到了。
-请按这个资源发 Msg3。”
+“Temporary ID 12345, I heard you.
+Please send Msg3 on this resource.”
 ```
 
-注意：
+Note:
 
-- Collision 的 Device **收不到有效 Msg2**（或等价地：本轮失败）。
-- Msg2 仍是 **R2D**。
-- Msg2 的作用是：确认 + 安排后续 Msg3 资源（contention resolution / grant 的直觉）。
+- Devices in a collision **do not receive a valid Msg2** (or equivalently: they fail this round).
+- Msg2 is still **R2D**.
+- Msg2’s job is: acknowledge + schedule the following Msg3 resource (the intuition of contention resolution / a grant).
 
 ---
 
-## 6. Msg3：真正报上身份
+## 6. Msg3: report the real identity
 
-成功走到 Msg3 的 Device：
+A Device that makes it to Msg3:
 
 ```text
 Device → Reader:
-“我的真正 device ID 是 ABCDEFG。”
+“My real device ID is ABCDEFG.”
 ```
 
-这一步成功后：
+After this step succeeds:
 
-> Reader 才算 **inventory 了这个设备**。
+> the Reader has **inventoried this device**.
 
-之后论文假设：
+The paper then assumes:
 
-> 该 Device **退出**后续 inventory（不再抢 AO）。
+> that Device **leaves** the remaining inventory (it no longer contends for AOs).
 
-所以 Figure 5(b) 的曲线才会单调往上走：已成功的人不再回来捣乱。
+That is why the Figure 5(b) curve is monotonically increasing: successful devices do not come back and interfere.
 
 ---
 
-## 7. 把 Figure 1 画成你脑子里的时序
+## 7. Draw Figure 1 as a timeline in your head
 
 ```mermaid
 sequenceDiagram
@@ -182,62 +182,62 @@ sequenceDiagram
     Note over R,B: B inventoried
 ```
 
-（上面只是教学示意：真实图里谁撞谁以论文为准。）
+(The above is only a teaching sketch: who collides with whom on the real figure follows the paper.)
 
 ---
 
-## 8. 你必须能回答的 8 个问题
+## 8. Eight questions you must be able to answer
 
-读完 Figure 1，合上 PDF，试着回答：
+After reading Figure 1, close the PDF and try to answer:
 
-1. Paging 是谁发给谁的？
-2. 为什么 inventory 用 CBRA 而不是 CFRA？
-3. AO 空着、成功、碰撞分别意味着什么？
-4. Msg1 为什么先用 random ID？
-5. Msg2 会发给 collision 的 Device 吗？
-6. 什么时候才算“成功 inventory”？
-7. 成功后 Device 还会继续抢下一轮吗？（论文假设）
-8. 若 600 个 Device、只有 8 个 AO，Figure 1 的世界会变成什么样？
+1. Who sends Paging to whom?
+2. Why does inventory use CBRA instead of CFRA?
+3. What do empty, success, and collision AOs each mean?
+4. Why does Msg1 use a random ID first?
+5. Does Msg2 go to Devices that collided?
+6. When does a device count as “successfully inventoried”?
+7. After success, does the Device keep contending in the next round? (paper assumption)
+8. If there are 600 Devices and only 8 AOs, what does Figure 1’s world become?
 
-如果第 8 题你立刻想到 **congestion / access probability / grouping**：
+If question 8 immediately makes you think **congestion / access probability / grouping**:
 
-> 你已经把 Figure 1 接到论文后半部分了。
+> you have already connected Figure 1 to the second half of the paper.
 
 ---
 
-## 9. 和后面仿真的关系
+## 9. How this connects to the later simulation
 
-复现 Figure 5(b) 时，**每一轮 Paging** 基本都在重复 Figure 1：
+When you reproduce Figure 5(b), **every Paging round** is basically repeating Figure 1:
 
 ```text
-谁醒着？
-→ 谁属于本 group？
-→ 谁通过 access probability？
-→ 各自选 AO
-→ 判 collision / success
-→ 成功者走 Msg2/Msg3
-→ 能量是否够走完
-→ 成功则标记 inventoried
+Who is awake?
+→ Who belongs to this group?
+→ Who passes the access probability?
+→ Each picks an AO
+→ Decide collision / success
+→ Successful ones go through Msg2/Msg3
+→ Is there enough energy to finish?
+→ If success, mark inventoried
 ```
 
-所以：
+So:
 
-> **Figure 1 = 仿真主循环的协议骨架。**
-
----
-
-## 10. 本图过关标准
-
-你可以不看论文，向别人讲清楚：
-
-> “Reader 先 paging；设备随机挑 AO 发 Msg1；同 AO 多人则碰撞失败；只有 Msg1 成功的才收到 Msg2，再发 Msg3 报真实 ID；报成功后就算被 inventory。”
-
+> **Figure 1 = the protocol skeleton of the simulation main loop.**
 
 ---
 
-> **导航**
+## 10. Pass criterion for this figure
+
+You should be able to explain this to someone else without looking at the paper:
+
+> “The Reader pages first; devices randomly pick an AO and send Msg1; if several share an AO they collide and fail; only a successful Msg1 gets Msg2, then Msg3 reports the real ID; after that report succeeds, the device is inventoried.”
+
+
+---
+
+> **Nav**
 >
-> - [↑ 逐图目录](./README.md)
-> - [↑ 总目录](../content.md)
-> - _（已是第一张图）_
-> - [Figure 2：EM 能量状态 →](./figure-02-em-energy.md)
+> - [↑ Figure notes](./README.md)
+> - [↑ TOC](../content.md)
+> - _(this is the first figure)_
+> - [Figure 2: EM energy state →](./figure-02-em-energy.md)

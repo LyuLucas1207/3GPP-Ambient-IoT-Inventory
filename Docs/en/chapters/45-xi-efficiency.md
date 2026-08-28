@@ -1,57 +1,57 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Receiver sensitivity −36 dBm](./44-receiver-sensitivity.md) |
-| 下一章 | [为什么充电速度不同 →](./46-why-different-charge-rates.md) |
+| Previous | [← Receiver sensitivity −36 dBm](./44-receiver-sensitivity.md) |
+| Next | [Why charging rates differ →](./46-why-different-charge-rates.md) |
 
 ---
 
-# 45. \(\xi(p_{in})\) 又是什么？
+# 45. What is \(\xi(p_{in})\)?
 
-希腊字母：
+The Greek letter:
 
 $$
 \xi
 $$
 
-读：
+is pronounced:
 
-> xi，近似“克赛”。
+> xi (roughly “ksai” or “zai”).
 
-这里表示：
+Here it means:
 
 ## Power Conversion Efficiency
 
-> RF 能量转成可用电能的效率。
+> The efficiency of turning RF energy into usable electrical energy.
 
-例如：
+For example:
 
 $$
 \xi=5\%
 $$
 
-意思：
+Meaning:
 
-你收到：
+You receive:
 
 ```text
 100 units RF energy
 ```
 
-最后真正存进去：
+and what actually gets stored is:
 
 ```text
 5 units
 ```
 
-其余损失了。
+The rest is lost.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Receiver sensitivity −36 dBm](./44-receiver-sensitivity.md) |
-| 下一章 | [为什么充电速度不同 →](./46-why-different-charge-rates.md) |
+| Previous | [← Receiver sensitivity −36 dBm](./44-receiver-sensitivity.md) |
+| Next | [Why charging rates differ →](./46-why-different-charge-rates.md) |

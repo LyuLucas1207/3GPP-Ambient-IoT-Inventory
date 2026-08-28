@@ -1,45 +1,45 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← IC](./49-ic.md) |
-| 下一章 | [Turn-off E_es^low →](./51-turn-off.md) |
+| Previous | [← IC](./49-ic.md) |
+| Next | [Turn-off \(E_{es}^{\mathrm{low}}\) →](./51-turn-off.md) |
 
 ---
 
-# 50. Turn-on threshold 是什么？
+# 50. What is the turn-on threshold?
 
-论文记：
-
-$$
-E_{es}^{up}
-$$
-
-就是：
-
-> **开机门槛。**
-
-例如 Device 1：
+The paper writes:
 
 $$
-E_{es}^{max}=500nJ
+E_{es}^{\mathrm{up}}
 $$
 
-论文设：
+That is:
+
+> **the turn-on threshold.**
+
+For Device 1, for example:
 
 $$
-E_{es}^{up}=E_{es}^{max}
+E_{es}^{\max}=500nJ
 $$
 
-所以：
+The paper sets:
 
-> 必须充到满附近才打开。
+$$
+E_{es}^{\mathrm{up}}=E_{es}^{\max}
+$$
+
+So:
+
+> it must charge up near full before it turns on.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← IC](./49-ic.md) |
-| 下一章 | [Turn-off E_es^low →](./51-turn-off.md) |
+| Previous | [← IC](./49-ic.md) |
+| Next | [Turn-off \(E_{es}^{\mathrm{low}}\) →](./51-turn-off.md) |

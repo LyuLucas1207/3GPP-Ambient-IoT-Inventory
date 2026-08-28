@@ -1,43 +1,43 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 何时 Inventory 成功](./35-when-inventory-succeeds.md) |
-| 下一章 | [nJ →](./37-nj.md) |
+| Previous | [← When inventory succeeds](./35-when-inventory-succeeds.md) |
+| Next | [nJ →](./37-nj.md) |
 
 ---
 
-# 36. 现在进入论文真正的核心：Energy
+# 36. Now we enter the paper’s real core: energy
 
-每个 device 有能量：
+Each device has energy:
 
 $$
 e_{es}
 $$
 
-你现在不要怕这个符号。
+Do not be afraid of this symbol.
 
 ---
 
 ## \(e_{es}\)
 
-意思：
+Meaning:
 
-> **当前 energy storage 里面还有多少 energy。**
+> **How much energy is still in energy storage.**
 
-就是：
+That is:
 
-> “杯子现在有多少水。”
+> “How much water is in the cup right now.”
 
 ---
 
 ## \(E_{es}^{max}\)
 
-意思：
+Meaning:
 
-> 最大容量。
+> Maximum capacity.
 
-例如 Device 1：
+For Device 1, for example:
 
 $$
 E_{es}^{max}=500nJ
@@ -45,9 +45,9 @@ $$
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 何时 Inventory 成功](./35-when-inventory-succeeds.md) |
-| 下一章 | [nJ →](./37-nj.md) |
+| Previous | [← When inventory succeeds](./35-when-inventory-succeeds.md) |
+| Next | [nJ →](./37-nj.md) |

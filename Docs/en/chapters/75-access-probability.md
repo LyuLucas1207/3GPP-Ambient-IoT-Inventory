@@ -1,37 +1,37 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Congestion Control](./74-congestion-control.md) |
-| 下一章 | [Occupancy →](./76-occupancy.md) |
+| Previous | [← Congestion control](./74-congestion-control.md) |
+| Next | [Occupancy →](./76-occupancy.md) |
 
 ---
 
-# 75. Access Probability 是什么？
+# 75. What is access probability?
 
-## Probability = 概率
+## Probability = chance of happening
 
-Reader 可以告诉设备：
+The reader can tell devices:
 
-> “虽然你收到 paging，但这一轮只有一定概率参加。”
+> "You received paging, but this round you only join with a certain probability."
 
-例如：
-
-$$
-p=0.1
-$$
-
-600 个设备中，大概只有：
+For example:
 
 $$
-600\times0.1=60
+p_{\mathrm{access}}=0.1
 $$
 
-个参加。
+Out of \(N=600\) devices, roughly only:
+
+$$
+N\times p_{\mathrm{access}}=600\times0.1=60
+$$
+
+join.
 
 ---
 
-每个 Tag：
+Each tag:
 
 ```text
 random number
@@ -43,15 +43,15 @@ random number
 → don't access
 ```
 
-这样就不会 600 个全冲进 AO。
+Then all 600 devices will not rush into the AOs at once.
 
-论文明确说 reader 可以根据先前 CBRA 的 congestion/occupancy 来决定 access probability。
+The paper states clearly that the reader can set the access probability from the congestion/occupancy of prior CBRA.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Congestion Control](./74-congestion-control.md) |
-| 下一章 | [Occupancy →](./76-occupancy.md) |
+| Previous | [← Congestion control](./74-congestion-control.md) |
+| Next | [Occupancy →](./76-occupancy.md) |

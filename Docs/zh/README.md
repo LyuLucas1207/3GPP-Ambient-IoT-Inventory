@@ -1,5 +1,7 @@
 # Docs · Ambient IoT 学习笔记
 
+英文版：[../en/](../en/)
+
 ## 从这里开始
 
 → **[content.md](./content.md)** · 讲义总目录  
@@ -12,7 +14,7 @@
 - 章节编号与讲义 **0–97** 对齐（另有 Preface）
 
 ```text
-Docs/
+Docs/zh/
 ├── README.md
 ├── content.md                 ← 总目录（点击跳转）
 ├── story.md                   ← 真实世界故事（快速直觉）

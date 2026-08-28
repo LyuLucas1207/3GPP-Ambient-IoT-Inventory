@@ -1,17 +1,17 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Access Probability 的缺点](./77-access-probability-drawback.md) |
-| 下一章 | [Low-Power Wake-Up Receiver（门铃） →](./79-wakeup-receiver.md) |
+| Previous | [← Drawback of access probability](./77-access-probability-drawback.md) |
+| Next | [Low-power wake-up receiver (doorbell) →](./79-wakeup-receiver.md) |
 
 ---
 
-# 78. Device Grouping 是什么？
+# 78. What is device grouping?
 
-## Grouping = 分组
+## Grouping = splitting devices into groups
 
-例如 600 个设备分四组：
+For example, \(N=600\) devices in \(N_g=4\) groups:
 
 ```text
 Group A
@@ -20,7 +20,7 @@ Group C
 Group D
 ```
 
-然后：
+Then:
 
 ```text
 Paging 1 → Group A
@@ -30,11 +30,11 @@ Paging 4 → Group D
 Paging 5 → Group A
 ```
 
-那么 Group A 不需要每轮都醒。
+So Group A does not need to wake up every round.
 
 ---
 
-例如：
+For example:
 
 ```text
 A:      ON            ON
@@ -43,19 +43,19 @@ C:                ON
 D:                     ON
 ```
 
-于是：
+Then:
 
-* collision 减少
-* 无意义 listening 减少
-* energy 消耗降低
+* collisions drop
+* pointless listening drops
+* energy consumption drops
 
-Figure 4 就是在画这个思想。
+Figure 4 is drawing this idea.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Access Probability 的缺点](./77-access-probability-drawback.md) |
-| 下一章 | [Low-Power Wake-Up Receiver（门铃） →](./79-wakeup-receiver.md) |
+| Previous | [← Drawback of access probability](./77-access-probability-drawback.md) |
+| Next | [Low-power wake-up receiver (doorbell) →](./79-wakeup-receiver.md) |

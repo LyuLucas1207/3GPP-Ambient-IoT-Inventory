@@ -1,15 +1,15 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← p_in](./42-p-in.md) |
-| 下一章 | [Receiver sensitivity −36 dBm →](./44-receiver-sensitivity.md) |
+| Previous | [← \(p_{in}\)](./42-p-in.md) |
+| Next | [Receiver sensitivity −36 dBm →](./44-receiver-sensitivity.md) |
 
 ---
 
-# 43. dBm 是什么？
+# 43. What is dBm?
 
-论文里会出现：
+In the paper you will see:
 
 $$
 -36dBm
@@ -17,11 +17,11 @@ $$
 
 ## dBm
 
-是无线通信里非常常见的 power 表示方法。
+is a very common way to write power in wireless communications.
 
-它是 logarithmic scale。
+It is a logarithmic scale.
 
-你现在不需要掌握完整公式，但需要有感觉：
+You do not need the full formula yet, but you need a feel for it:
 
 ```text
 0 dBm  = 1 mW
@@ -30,37 +30,35 @@ $$
 -30 dBm = 0.001 mW
 ```
 
-所以：
+So:
 
 $$
 -36dBm
 $$
 
-已经是非常微弱的信号。
+is already a very weak signal.
 
-注意：
+Note:
 
-> 越负，一般越弱。
+> More negative usually means weaker.
 
-例如：
+For example:
 
 $$
 -10dBm
 $$
 
-比：
+is much stronger than:
 
 $$
 -36dBm
 $$
 
-强很多。
-
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← p_in](./42-p-in.md) |
-| 下一章 | [Receiver sensitivity −36 dBm →](./44-receiver-sensitivity.md) |
+| Previous | [← \(p_{in}\)](./42-p-in.md) |
+| Next | [Receiver sensitivity −36 dBm →](./44-receiver-sensitivity.md) |

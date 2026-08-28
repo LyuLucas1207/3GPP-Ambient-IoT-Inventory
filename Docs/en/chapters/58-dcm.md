@@ -1,49 +1,49 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← P3](./57-p3.md) |
-| 下一章 | [DCM 核心思想 →](./59-dcm-core-idea.md) |
+| Previous | [← P3](./57-p3.md) |
+| Next | [Core idea of DCM →](./59-dcm-core-idea.md) |
 
 ---
 
-# 58. 于是论文提出 DCM
+# 58. So the paper proposes DCM
 
-## DCM = Duty Cycled Monitoring
+## DCM = Duty-Cycled Monitoring
 
-这个名字很重要。
+This name matters.
 
 ### Duty Cycle
 
-意思：
+Meaning:
 
-> 一个设备不是一直 ON，而是周期性 ON / OFF。
+> a device is not always ON; it periodically goes ON / OFF.
 
-比如：
+For example:
 
 ```text
 ON   OFF OFF OFF   ON   OFF OFF OFF   ON
 ```
 
-而不是：
+instead of:
 
 ```text
 ON ON ON ON ON ON ON ON ON
 ```
 
-所以：
+So:
 
-## Duty Cycled Monitoring
+## Duty-Cycled Monitoring
 
-就是：
+means:
 
-> **间歇式监听。**
+> **listening on and off, instead of staying awake the whole time.**
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← P3](./57-p3.md) |
-| 下一章 | [DCM 核心思想 →](./59-dcm-core-idea.md) |
+| Previous | [← P3](./57-p3.md) |
+| Next | [Core idea of DCM →](./59-dcm-core-idea.md) |

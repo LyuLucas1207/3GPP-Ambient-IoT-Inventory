@@ -1,29 +1,29 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Collision](./31-collision.md) |
-| 下一章 | [Slot（0.5 ms） →](./33-slot.md) |
+| Previous | [← Collision](./31-collision.md) |
+| Next | [Slot (0.5 ms) →](./33-slot.md) |
 
 ---
 
-# 32. Slotted ALOHA 是什么？
+# 32. What is slotted ALOHA?
 
-这个名字你也会看到。
+You will see this name too.
 
 ## ALOHA
 
-是一个经典 random access protocol。
+is a classic random access protocol.
 
-最简单思想：
+The simplest idea:
 
-> 谁想说就尝试说。
+> Whoever wants to speak tries to speak.
 
-Slotted ALOHA 增加：
+Slotted ALOHA adds:
 
-> 只能在规定的时间槽开始说。
+> You may only start speaking at the beginning of a prescribed time slot.
 
-于是：
+So you get:
 
 ```text
 slot 1
@@ -32,17 +32,17 @@ slot 3
 slot 4
 ```
 
-Tag 随机挑 slot。
+A tag randomly picks a slot.
 
-论文的 Msg1 random access 就是基于 slotted-ALOHA 思路。
+The paper’s Msg1 random access is based on the slotted-ALOHA idea.
 
-现在你不用学它的数学理论。
+You do not need its mathematical theory yet.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Collision](./31-collision.md) |
-| 下一章 | [Slot（0.5 ms） →](./33-slot.md) |
+| Previous | [← Collision](./31-collision.md) |
+| Next | [Slot (0.5 ms) →](./33-slot.md) |

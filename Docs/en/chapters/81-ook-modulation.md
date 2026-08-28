@@ -1,38 +1,38 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Preamble](./80-preamble.md) |
-| 下一章 | [BPSK →](./82-bpsk.md) |
+| Previous | [← Preamble](./80-preamble.md) |
+| Next | [BPSK →](./82-bpsk.md) |
 
 ---
 
-# 81. OOK 是什么？
+# 81. What is OOK?
 
 ## OOK = On-Off Keying
 
-这是一种非常简单的 modulation。
+This is a very simple modulation.
 
 ---
 
-## Modulation 是什么？
+## What is modulation?
 
-### Modulation = 调制
+### Modulation = putting bits onto a wave
 
-意思：
+It means:
 
-> 怎样把 0 和 1 放到无线波上。
+> how you put 0s and 1s onto a radio wave.
 
 ---
 
-OOK 特别简单：
+OOK is especially simple:
 
 ```text
 carrier ON  → 1
 carrier OFF → 0
 ```
 
-所以：
+So:
 
 ```text
 1 0 1 1 0
@@ -40,15 +40,15 @@ carrier OFF → 0
 ON OFF ON ON OFF
 ```
 
-这非常适合低复杂度设备。
+This is a very good fit for low-complexity devices.
 
-论文说 R2D 使用 OOK。
+The paper says R2D uses OOK.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Preamble](./80-preamble.md) |
-| 下一章 | [BPSK →](./82-bpsk.md) |
+| Previous | [← Preamble](./80-preamble.md) |
+| Next | [BPSK →](./82-bpsk.md) |

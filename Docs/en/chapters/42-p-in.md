@@ -1,13 +1,13 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← P_eh = p_in · ξ](./41-p-eh.md) |
-| 下一章 | [dBm →](./43-dbm.md) |
+| Previous | [← \(P_{eh}=p_{in}\cdot\xi\)](./41-p-eh.md) |
+| Next | [dBm →](./43-dbm.md) |
 
 ---
 
-# 42. \(p_{in}\) 是什么？
+# 42. What is \(p_{in}\)?
 
 ## in = input / incident
 
@@ -15,31 +15,31 @@ $$
 p_{in}
 $$
 
-就是：
+is:
 
-> **真正到达 tag 的 RF power。**
+> **The RF power that actually arrives at the tag.**
 
-Reader 虽然发：
+The reader may send:
 
-> 很强的 signal
+> a strong signal
 
-但是信号在空气里传播会衰减。
+but the signal fades as it travels through the air.
 
-所以：
+So:
 
 ```text
-离 Reader 很近
-→ pin 较高
+close to the reader
+→ pin is higher
 
-离 Reader 很远
-→ pin 较低
+far from the reader
+→ pin is lower
 ```
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← P_eh = p_in · ξ](./41-p-eh.md) |
-| 下一章 | [dBm →](./43-dbm.md) |
+| Previous | [← \(P_{eh}=p_{in}\cdot\xi\)](./41-p-eh.md) |
+| Next | [dBm →](./43-dbm.md) |

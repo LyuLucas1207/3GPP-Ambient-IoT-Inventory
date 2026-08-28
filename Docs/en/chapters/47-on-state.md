@@ -1,38 +1,38 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么充电速度不同](./46-why-different-charge-rates.md) |
-| 下一章 | [OFF state →](./48-off-state.md) |
+| Previous | [← Why charging rates differ](./46-why-different-charge-rates.md) |
+| Next | [OFF state →](./48-off-state.md) |
 
 ---
 
-# 47. ON state 是什么？
+# 47. What is the ON state?
 
 ## ON state
 
-意思：
+Meaning:
 
-> 设备打开，可以通信。
+> The device is on and can communicate.
 
-它可以：
+It can:
 
 * receive paging
 * transmit Msg1
 * receive Msg2
 * transmit Msg3
 
-但：
+But:
 
-> 会耗电。
+> It consumes energy.
 
-论文定义 ON state 为可用于 reception/transmission 的状态。
+The paper defines the ON state as a state that can be used for reception/transmission.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么充电速度不同](./46-why-different-charge-rates.md) |
-| 下一章 | [OFF state →](./48-off-state.md) |
+| Previous | [← Why charging rates differ](./46-why-different-charge-rates.md) |
+| Next | [OFF state →](./48-off-state.md) |

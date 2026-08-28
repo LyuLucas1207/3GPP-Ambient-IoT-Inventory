@@ -1,67 +1,67 @@
-> **导航** · [逐图目录](./README.md) · [总目录 content.md](../content.md)
+> **Nav** · [Figure notes](./README.md) · [TOC content.md](../content.md)
 
 | | |
 |---|---|
-| 上一图 | [← Figure 5(a)：Received Power CDF](./figure-05a-cdf.md) |
-| 下一图 | [Figure 5(c)：Device 2 Inventory Curve →](./figure-05c-device2.md) |
+| Previous figure | [← Figure 5(a): Received-power CDF](./figure-05a-cdf.md) |
+| Next figure | [Figure 5(c): Device 2 inventory curve →](./figure-05c-device2.md) |
 
 ---
 
-# Figure 5(b)：Successfully Inventoried Ratio vs Time
+# Figure 5(b): Successfully inventoried A-IoT device ratio vs time
 
-这是教授要你复现的图。
+This is the figure the professor asked you to reproduce.
 
-## 坐标
+## Axes
 
-| 轴 | 含义 |
+| Axis | Meaning |
 |---|---|
-| 横轴 | Time (ms) |
-| 纵轴 | Successfully inventoried A-IoT device ratio (%) |
+| Horizontal | Time (ms) |
+| Vertical | Successfully inventoried A-IoT device ratio (%) |
 
-对 \(N=600\)：
+For \(N=600\):
 
 \[
 R(t)=\frac{\#\{i:T_i^{\mathrm{success}}\le t\}}{600}\times 100\%
 \]
 
-## 常见曲线（Device 1，正式版）
+## Common curves (Device 1, published version)
 
 1. **EM, aperiodic paging**
 2. **DCM, periodic paging, 1 group**
 3. **DCM, periodic paging, 4 groups**
 
-关键结论：
+Key conclusions:
 
-- 单独 DCM：对 Device 1 **不明显**
-- DCM + 4 groups：99% completion time **约减少 50%**
+- DCM alone: for Device 1, **does not help much**
+- DCM + 4 groups: 99% completion time **≈ 50% reduction**
 
-原因一句话：
+The reason in one sentence:
 
-> 600 设备太挤，access probability 被压很低；grouping 同时减轻 contention 和无效监听。
+> 600 devices are too crowded, so access probability is pushed very low; grouping eases both contention and wasted listening.
 
-## 每个点怎么来的？
+## Where does each point come from?
 
-不是手动画曲线，而是仿真统计：
+The curve is not drawn by hand. It is simulation statistics:
 
 ```text
-跑完一轮 system simulation
-→ 每个 Device 记录成功时间 T_i
-→ 对每个 t 统计已成功比例
-→ 得到一条阶梯/平滑上升曲线
+Finish one system simulation
+→ Record each Device's success time T_i
+→ For each t, count the fraction already successful
+→ Get one stepwise / smoothly rising curve
 ```
 
-## 过关标准
+## Pass criterion
 
-能回答教授：
+You can answer the professor:
 
 > Why does DCM alone not improve Device 1 much?
 
 
 ---
 
-> **导航**
+> **Nav**
 >
-> - [↑ 逐图目录](./README.md)
-> - [↑ 总目录](../content.md)
-> - [← Figure 5(a)：Received Power CDF](./figure-05a-cdf.md)
-> - [Figure 5(c)：Device 2 Inventory Curve →](./figure-05c-device2.md)
+> - [↑ Figure notes](./README.md)
+> - [↑ TOC](../content.md)
+> - [← Figure 5(a): Received-power CDF](./figure-05a-cdf.md)
+> - [Figure 5(c): Device 2 inventory curve →](./figure-05c-device2.md)

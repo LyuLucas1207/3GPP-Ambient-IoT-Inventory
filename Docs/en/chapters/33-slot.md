@@ -1,39 +1,39 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Slotted ALOHA](./32-slotted-aloha.md) |
-| 下一章 | [Congestion →](./34-congestion.md) |
+| Previous | [← Slotted ALOHA](./32-slotted-aloha.md) |
+| Next | [Congestion →](./34-congestion.md) |
 
 ---
 
-# 33. Slot 是什么？
+# 33. What is a slot?
 
-## Slot = 时间槽
+## Slot = time slot
 
-就是把时间切成小格子。
+It means chopping time into small boxes.
 
-论文参数里：
+In the paper’s parameters:
 
 $$
 1\ slot=0.5ms
 $$
 
-arXiv 版本 Table I 就这么设置。
+arXiv Table I sets it this way.
 
 ---
 
-## ms 是什么？
+## What is ms?
 
 ### ms = millisecond
 
-毫秒。
+A millisecond.
 
 $$
 1ms=0.001s
 $$
 
-所以：
+So:
 
 $$
 0.5ms=0.0005s
@@ -41,9 +41,9 @@ $$
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Slotted ALOHA](./32-slotted-aloha.md) |
-| 下一章 | [Congestion →](./34-congestion.md) |
+| Previous | [← Slotted ALOHA](./32-slotted-aloha.md) |
+| Next | [Congestion →](./34-congestion.md) |

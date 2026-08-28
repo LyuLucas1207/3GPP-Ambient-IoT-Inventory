@@ -1,43 +1,43 @@
-> **导航** · [逐图目录](./README.md) · [总目录 content.md](../content.md)
+> **Nav** · [Figure notes](./README.md) · [TOC content.md](../content.md)
 
 | | |
 |---|---|
-| 上一图 | [← Figure 4：Device Grouping](./figure-04-grouping.md) |
-| 下一图 | [Figure 5(b)：Successfully Inventoried Ratio vs Time →](./figure-05b-inventory.md) |
+| Previous figure | [← Figure 4: Device grouping](./figure-04-grouping.md) |
+| Next figure | [Figure 5(b): Successfully inventoried ratio vs time →](./figure-05b-inventory.md) |
 
 ---
 
-# Figure 5(a)：Received Power CDF
+# Figure 5(a): Received-power CDF
 
-纵轴：累积比例  
-横轴：\(p_{in}\)（或 received power）
+Vertical axis: cumulative fraction  
+Horizontal axis: \(p_{in}\) (or received power)
 
-问的是：
+The question is:
 
-> 有多少比例的 Device，收到的 RF 功率 ≤ 某个值？
+> What fraction of Devices receive RF power ≤ some value?
 
-## 为什么重要？
+## Why does this matter?
 
 \[
 P_{eh}=p_{in}\,\xi(p_{in})
 \]
 
-远处 Device：\(p_{in}\) 低 → 充电慢 → 更容易拖慢 99% inventory。
+Far Devices: low \(p_{in}\) → slow charging → more likely to drag down 99% inventory.
 
-论文常用灵敏度门槛（如 \(-36\,\mathrm{dBm}\)）：更弱的不计入评估。
+The paper often uses a sensitivity threshold (e.g. \(-36\,\mathrm{dBm}\)): weaker devices are excluded from the evaluation.
 
-## 过关标准
+## Pass criterion
 
-看到 CDF 右/左尾时，能联想到：
+When you see the left/right tail of the CDF, you can connect it to:
 
-> “最后那几个难 inventory 的，往往是能量最差的那批。”
+> “The last few that are hard to inventory are usually the ones with the worst energy.”
 
 
 ---
 
-> **导航**
+> **Nav**
 >
-> - [↑ 逐图目录](./README.md)
-> - [↑ 总目录](../content.md)
-> - [← Figure 4：Device Grouping](./figure-04-grouping.md)
-> - [Figure 5(b)：Successfully Inventoried Ratio vs Time →](./figure-05b-inventory.md)
+> - [↑ Figure notes](./README.md)
+> - [↑ TOC](../content.md)
+> - [← Figure 4: Device grouping](./figure-04-grouping.md)
+> - [Figure 5(b): Successfully inventoried ratio vs time →](./figure-05b-inventory.md)

@@ -1,33 +1,31 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Aperiodic](./64-aperiodic.md) |
-| 下一章 | [Sleep state →](./66-sleep-state.md) |
+| Previous | [← Aperiodic](./64-aperiodic.md) |
+| Next | [Sleep state →](./66-sleep-state.md) |
 
 ---
 
-# 65. 为什么 \(T_{on}^{timer}\ge T_{pg}\)？
+# 65. Why \(T_{\mathrm{on}}^{\mathrm{timer}}\ge T_{pg}\)?
 
-因为设备醒来以后：
+Because after the device wakes up:
 
-> 至少应该保持醒着足够久，有机会碰到一次 paging。
+> it should stay awake long enough to have a chance to meet one paging.
 
-假设 paging 每：
+Suppose paging comes every:
 
 $$
 12ms
 $$
 
-一次。
-
-而你只醒：
+and you only stay awake:
 
 $$
 2ms
 $$
 
-很可能：
+then very likely:
 
 ```text
 wake
@@ -36,19 +34,19 @@ sleep
         paging
 ```
 
-完全错过。
+you miss it completely.
 
-所以论文说最好：
+So the paper says it is best to have:
 
 $$
-T_{on}^{timer}\ge T_{pg}
+T_{\mathrm{on}}^{\mathrm{timer}}\ge T_{pg}
 $$
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Aperiodic](./64-aperiodic.md) |
-| 下一章 | [Sleep state →](./66-sleep-state.md) |
+| Previous | [← Aperiodic](./64-aperiodic.md) |
+| Next | [Sleep state →](./66-sleep-state.md) |

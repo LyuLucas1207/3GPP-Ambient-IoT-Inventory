@@ -1,75 +1,75 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 研究适配度测试（Preface）](./00-research-fit.md) |
-| 下一章 | [IoT →](./01-iot.md) |
+| Previous | [← Preface · research-fit test](./00-research-fit.md) |
+| Next | [IoT →](./01-iot.md) |
 
 ---
 
-# 0. 先只记住一个故事
+# 0. First, remember just one story
 
-先完全不要管公式，不要管 3GPP。
+For now, ignore formulas. Ignore 3GPP.
 
-想象一个大型仓库。
+Imagine a large warehouse.
 
-仓库里有：
+Inside the warehouse there are:
 
-> **600 个非常非常小的电子标签。**
+> **600 extremely small electronic tags.**
 
-比如每个货箱上贴一个。
+For example, one sticker on each crate.
 
-这些标签类似 RFID 标签，但是是未来 5G/6G 网络体系里的超低功耗设备。
+These tags are similar to RFID tags, but they are ultra-low-power devices inside a future 5G/6G network.
 
-问题是：
+The catch:
 
-> **它们没有正常的电池。**
+> **They do not have a normal battery.**
 
-它们只能从空气中的无线电波里面收集一点点能量。
+They can only collect a tiny amount of energy from radio waves in the air.
 
-然后仓库里面有一个“大机器”：
+Then there is a "big machine" in the warehouse:
 
-> **Reader（读写器）**
+> **Reader**
 
-它想知道：
+It wants to know:
 
-> “仓库里现在到底有哪 600 个标签？”
+> "Which 600 tags are in the warehouse right now?"
 
-所以它喊：
+So it calls out:
 
-> “有人吗？”
+> "Is anyone there?"
 
-标签回答：
+The tags answer:
 
-> “我是 #382！”
+> "I am #382!"
 
-> “我是 #157！”
+> "I am #157!"
 
-> “我是 #491！”
+> "I am #491!"
 
-直到 reader 把大家都登记完成。
+until the reader has registered everyone.
 
-这个过程叫：
+That process is called:
 
 # Inventory
 
-也就是：
+In plain English:
 
-> **盘点 / 设备发现 / 把附近所有设备身份找出来。**
+> **stock-taking / device discovery / finding the identity of every nearby device.**
 
-整篇论文其实就研究一个问题：
+The whole paper studies one question:
 
-> **怎样让这 600 个没电池的小标签，更快地全部被 reader 找到？**
+> **How can these 600 batteryless little tags all be found by the reader, faster?**
 
-论文研究的正是 indoor inventory，而设备依赖 energy harvesting，因此可能因为缺电而暂时无法通信。
+The paper studies indoor inventory. Devices depend on energy harvesting, so they may temporarily be unable to communicate because they are short of energy.
 
-你现在先把这一个故事装进脑子。
+Put this one story in your head first.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 研究适配度测试（Preface）](./00-research-fit.md) |
-| 下一章 | [IoT →](./01-iot.md) |
+| Previous | [← Preface · research-fit test](./00-research-fit.md) |
+| Next | [IoT →](./01-iot.md) |

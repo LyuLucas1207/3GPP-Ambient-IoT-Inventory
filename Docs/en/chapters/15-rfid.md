@@ -1,34 +1,34 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Backscatter（镜子 / 手电筒）](./14-backscatter.md) |
-| 下一章 | [UHF →](./16-uhf.md) |
+| Previous | [← Backscatter (mirror / flashlight)](./14-backscatter.md) |
+| Next | [UHF →](./16-uhf.md) |
 
 ---
 
-# 15. RFID 是什么？
+# 15. What is RFID?
 
 ## RFID = Radio Frequency Identification
 
-中文：
+In plain English:
 
-> **射频识别**
+> **identifying an object with a radio tag, instead of looking at it or scanning a barcode by hand.**
 
-你应该见过：
+You have probably seen:
 
-* 门禁卡
-* 物流标签
-* 商场防盗标签
-* 仓库货物标签
+* access cards
+* logistics labels
+* store anti-theft tags
+* warehouse cargo tags
 
-这篇论文自己就说 Device 1 类似 UHF RFID。
+The paper itself says Device 1 is similar to UHF RFID.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Backscatter（镜子 / 手电筒）](./14-backscatter.md) |
-| 下一章 | [UHF →](./16-uhf.md) |
+| Previous | [← Backscatter (mirror / flashlight)](./14-backscatter.md) |
+| Next | [UHF →](./16-uhf.md) |

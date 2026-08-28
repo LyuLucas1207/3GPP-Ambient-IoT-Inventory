@@ -1,23 +1,23 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← nJ](./37-nj.md) |
-| 下一章 | [P_rx →](./39-p-rx.md) |
+| Previous | [← nJ](./37-nj.md) |
+| Next | [\(P_{rx}\) →](./39-p-rx.md) |
 
 ---
 
-# 38. Power 和 Energy 有什么区别？
+# 38. What is the difference between power and energy?
 
-这个基础一定要搞明白。
+You really need this foundation.
 
 ## Energy
 
-是：
+is:
 
-> “一共有多少能量。”
+> “How much energy there is in total.”
 
-单位：
+Unit:
 
 $$
 J
@@ -27,51 +27,51 @@ $$
 
 ## Power
 
-是：
+is:
 
-> “每秒使用多少能量。”
+> “How much energy is used per second.”
 
-单位：
+Unit:
 
 $$
 W
 $$
 
-关系是：
+The relation is:
 
 $$
 Energy=Power\times Time
 $$
 
-也就是：
+That is:
 
 $$
 E=P\cdot t
 $$
 
-因此：
+Therefore:
 
 $$
 t=\frac{E}{P}
 $$
 
-这个公式后面非常重要。
+This formula will matter a lot later.
 
 ---
 
-比如：
+For example:
 
 $$
 E=500nJ
 $$
 
-设备消耗：
+The device consumes:
 
 $$
 P=1\mu W
 $$
 
-那么理论上：
+Then in theory:
 
 $$
 t=\frac{500\times10^{-9}}
@@ -81,9 +81,9 @@ $$
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← nJ](./37-nj.md) |
-| 下一章 | [P_rx →](./39-p-rx.md) |
+| Previous | [← nJ](./37-nj.md) |
+| Next | [\(P_{rx}\) →](./39-p-rx.md) |

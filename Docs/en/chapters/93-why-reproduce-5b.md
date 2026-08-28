@@ -1,25 +1,25 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 整篇论文逻辑链](./92-full-paper-logic.md) |
-| 下一章 | [测试的六种能力 →](./94-six-skills.md) |
+| Previous | [← Logic chain of the whole paper](./92-full-paper-logic.md) |
+| Next | [Six skills being tested →](./94-six-skills.md) |
 
 ---
 
-# 93. 那教授为什么让你复现 Figure 5(b)，而不是 Figure 1？
+# 93. Why did the professor ask you to reproduce Figure 5(b), not Figure 1?
 
-因为 Figure 1 是：
+Because Figure 1 is:
 
-> protocol illustration。
+> a protocol illustration.
 
-你看懂就行。
+Understanding it is enough.
 
-Figure 5(b) 是：
+Figure 5(b) is:
 
-> simulation result。
+> a simulation result.
 
-要复现它，你必须真的理解：
+To reproduce it, you must really understand:
 
 * device state
 * energy
@@ -33,13 +33,13 @@ Figure 5(b) 是：
 * timing
 * statistics
 
-所以这是一个非常好的 research-fit test。
+So this is a very good research-fit test.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 整篇论文逻辑链](./92-full-paper-logic.md) |
-| 下一章 | [测试的六种能力 →](./94-six-skills.md) |
+| Previous | [← Logic chain of the whole paper](./92-full-paper-logic.md) |
+| Next | [Six skills being tested →](./94-six-skills.md) |

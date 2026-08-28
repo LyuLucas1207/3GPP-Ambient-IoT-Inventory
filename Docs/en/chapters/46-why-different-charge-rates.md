@@ -1,47 +1,47 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← ξ(p_in) 效率](./45-xi-efficiency.md) |
-| 下一章 | [ON state →](./47-on-state.md) |
+| Previous | [← \(\xi(p_{in})\) efficiency](./45-xi-efficiency.md) |
+| Next | [ON state →](./47-on-state.md) |
 
 ---
 
-# 46. 为什么不同 Tag 的充电速度不同？
+# 46. Why do different tags charge at different rates?
 
-因为：
+Because:
 
 $$
 P_{eh}=p_{in}\xi(p_{in})
 $$
 
-如果你离 Reader 很远：
+If you are far from the reader:
 
 $$
 p_{in}\downarrow
 $$
 
-通常：
+Usually:
 
 $$
 P_{eh}\downarrow
 $$
 
-所以：
+So:
 
-> 远处设备充电很慢。
+> Far devices charge very slowly.
 
-近处：
+Nearby:
 
-> 充得快。
+> They charge fast.
 
-这就是为什么最后几个设备可能把 inventory 时间拖得特别长。
+That is why the last few devices can drag inventory time out for so long.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← ξ(p_in) 效率](./45-xi-efficiency.md) |
-| 下一章 | [ON state →](./47-on-state.md) |
+| Previous | [← \(\xi(p_{in})\) efficiency](./45-xi-efficiency.md) |
+| Next | [ON state →](./47-on-state.md) |

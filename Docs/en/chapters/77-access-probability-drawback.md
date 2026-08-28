@@ -1,27 +1,27 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Occupancy](./76-occupancy.md) |
-| 下一章 | [Device Grouping →](./78-device-grouping.md) |
+| Previous | [← Occupancy](./76-occupancy.md) |
+| Next | [Device grouping →](./78-device-grouping.md) |
 
 ---
 
-# 77. 为什么 Access Probability 也有缺点？
+# 77. Why does access probability also have a drawback?
 
-假设：
+Suppose:
 
-Tag 为了听 paging：
+To hear paging, a tag:
 
-> 醒来了。
+> wakes up.
 
-消耗了 energy。
+That burns energy.
 
-但是 paging 告诉它通过随机概率判断：
+But paging tells it, after the random draw:
 
-> “这轮不参加。”
+> "Do not join this round."
 
-那么：
+Then:
 
 ```text
 wake up
@@ -31,15 +31,15 @@ burn energy
 do nothing
 ```
 
-很浪费。
+That is wasteful.
 
-论文正是因此提出 device grouping。
+That is exactly why the paper proposes device grouping.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Occupancy](./76-occupancy.md) |
-| 下一章 | [Device Grouping →](./78-device-grouping.md) |
+| Previous | [← Occupancy](./76-occupancy.md) |
+| Next | [Device grouping →](./78-device-grouping.md) |

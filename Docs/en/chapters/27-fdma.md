@@ -1,25 +1,25 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 时频资源](./26-time-frequency-resources.md) |
-| 下一章 | [Msg1 / Msg2 / Msg3 流程 →](./28-msg1-2-3.md) |
+| Previous | [← Time–frequency resources](./26-time-frequency-resources.md) |
+| Next | [Msg1 / Msg2 / Msg3 procedure →](./28-msg1-2-3.md) |
 
 ---
 
-# 27. FDMA 是什么？
+# 27. What is FDMA?
 
 ## FDMA = Frequency-Domain Multiple Access
 
-中文：
+In plain English:
 
-> **频分多址**
+> **Several devices share the medium by using different frequencies at the same time.**
 
-就是：
+That is:
 
-> 不同设备用不同频率同时通信。
+> Different devices communicate at the same time on different frequencies.
 
-比如：
+For example:
 
 ```text
 frequency 1 → Tag A
@@ -27,13 +27,13 @@ frequency 2 → Tag B
 frequency 3 → Tag C
 ```
 
-论文提到 A-IoT 可以利用 frequency-domain multiple access。
+The paper notes that A-IoT can use frequency-domain multiple access.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 时频资源](./26-time-frequency-resources.md) |
-| 下一章 | [Msg1 / Msg2 / Msg3 流程 →](./28-msg1-2-3.md) |
+| Previous | [← Time–frequency resources](./26-time-frequency-resources.md) |
+| Next | [Msg1 / Msg2 / Msg3 procedure →](./28-msg1-2-3.md) |

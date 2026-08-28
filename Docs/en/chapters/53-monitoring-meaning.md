@@ -1,35 +1,35 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← EM](./52-em.md) |
-| 下一章 | [为什么 EM 不好 → P1 P2 P3 →](./54-why-em-bad.md) |
+| Previous | [← EM](./52-em.md) |
+| Next | [Why EM is poor → P1 P2 P3 →](./54-why-em-bad.md) |
 
 ---
 
-# 53. Monitoring 是什么意思？
+# 53. What does monitoring mean?
 
 ## Monitoring
 
-这里就是：
+Here it means:
 
-> **设备保持 receiver 打开，等 Reader 的 paging。**
+> **the device keeps its receiver on, waiting for the reader's paging.**
 
-不是说：
+It does **not** mean:
 
-> 它正在持续传数据。
+> it is continuously transmitting data.
 
-而是：
+It means:
 
-> 耗着电、睁着耳朵听。
+> burning energy, with its ears open, listening.
 
-这恰恰很耗能。
+That is exactly what costs a lot of energy.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← EM](./52-em.md) |
-| 下一章 | [为什么 EM 不好 → P1 P2 P3 →](./54-why-em-bad.md) |
+| Previous | [← EM](./52-em.md) |
+| Next | [Why EM is poor → P1 P2 P3 →](./54-why-em-bad.md) |

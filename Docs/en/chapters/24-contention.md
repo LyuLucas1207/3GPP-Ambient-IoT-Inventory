@@ -1,45 +1,45 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CFRA](./23-cfra.md) |
-| 下一章 | [AO →](./25-ao.md) |
+| Previous | [← CFRA](./23-cfra.md) |
+| Next | [AO →](./25-ao.md) |
 
 ---
 
-# 24. Contention 是什么意思？
+# 24. What does contention mean?
 
-简单理解：
+A simple picture:
 
-> 多个人抢同一资源。
+> several people grabbing the same resource.
 
-例如四个厕所：
-
-```text
-Toilet 1
-Toilet 2
-Toilet 3
-Toilet 4
-```
-
-10 个人同时冲过去。
-
-如果：
+For example, four bathroom stalls:
 
 ```text
-Alice → Toilet 2
-Bob → Toilet 2
+Stall 1
+Stall 2
+Stall 3
+Stall 4
 ```
 
-就发生资源竞争。
+Ten people rush over at once.
 
-通信里也是一样。
+If:
+
+```text
+Alice → Stall 2
+Bob → Stall 2
+```
+
+then you have resource contention.
+
+Wireless communication works the same way.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CFRA](./23-cfra.md) |
-| 下一章 | [AO →](./25-ao.md) |
+| Previous | [← CFRA](./23-cfra.md) |
+| Next | [AO →](./25-ao.md) |

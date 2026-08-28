@@ -1,27 +1,27 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CDF](./87-cdf.md) |
-| 下一章 | [为什么看 99% →](./89-why-99.md) |
+| Previous | [← CDF](./87-cdf.md) |
+| Next | [Why look at 99% →](./89-why-99.md) |
 
 ---
 
-# 88. Figure 5(b) 到底是什么？
+# 88. What does Figure 5(b) actually plot?
 
-终于到了教授让你做的东西。
+This is finally the thing the professor asked you to do.
 
-Figure 5(b) 是：
+Figure 5(b) is:
 
-> **Device 1 在时间推移过程中，有多少比例已经成功被 inventory。**
+> **as time goes on, what fraction of Device 1 devices have already been successfully inventoried.**
 
-纵轴：
+Vertical axis:
 
 ```text
 Successfully inventoried A-IoT device ratio (%)
 ```
 
-横轴：
+Horizontal axis:
 
 ```text
 Time (ms)
@@ -29,19 +29,19 @@ Time (ms)
 
 ---
 
-开始：
+At the start:
 
 $$
 t=0
 $$
 
-可能：
+maybe:
 
 $$
 0\%
 $$
 
-然后：
+Then:
 
 ```text
 1 second → 40%
@@ -50,7 +50,7 @@ $$
 ...
 ```
 
-最终：
+Finally:
 
 $$
 99\%
@@ -58,9 +58,9 @@ $$
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CDF](./87-cdf.md) |
-| 下一章 | [为什么看 99% →](./89-why-99.md) |
+| Previous | [← CDF](./87-cdf.md) |
+| Next | [Why look at 99% →](./89-why-99.md) |

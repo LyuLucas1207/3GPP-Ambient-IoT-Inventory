@@ -1,15 +1,15 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← AO](./25-ao.md) |
-| 下一章 | [FDMA →](./27-fdma.md) |
+| Previous | [← AO](./25-ao.md) |
+| Next | [FDMA →](./27-fdma.md) |
 
 ---
 
-# 26. 为什么既有时间又有频率？
+# 26. Why both time and frequency?
 
-因为无线资源是二维的：
+Because wireless resources are two-dimensional:
 
 ```text
           frequency
@@ -20,31 +20,31 @@
               └────────→ time
 ```
 
-所以两台设备可以：
+So two devices can:
 
-### 时间不同
+### Differ in time
 
 ```text
 Tag A: now
 Tag B: later
 ```
 
-或者：
+or:
 
-### 频率不同
+### Differ in frequency
 
 ```text
 Tag A: frequency 1
 Tag B: frequency 2
 ```
 
-都能避免互相撞。
+Either way they can avoid colliding with each other.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← AO](./25-ao.md) |
-| 下一章 | [FDMA →](./27-fdma.md) |
+| Previous | [← AO](./25-ao.md) |
+| Next | [FDMA →](./27-fdma.md) |

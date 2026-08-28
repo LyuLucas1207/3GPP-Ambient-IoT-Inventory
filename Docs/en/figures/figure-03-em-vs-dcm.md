@@ -1,54 +1,54 @@
-> **导航** · [逐图目录](./README.md) · [总目录 content.md](../content.md)
+> **Nav** · [Figure notes](./README.md) · [TOC content.md](../content.md)
 
 | | |
 |---|---|
-| 上一图 | [← Figure 2：EM 能量状态](./figure-02-em-energy.md) |
-| 下一图 | [Figure 4：Device Grouping →](./figure-04-grouping.md) |
+| Previous figure | [← Figure 2: EM energy state](./figure-02-em-energy.md) |
+| Next figure | [Figure 4: Device grouping →](./figure-04-grouping.md) |
 
 ---
 
-# Figure 3：EM vs DCM
+# Figure 3: EM vs Duty-Cycled Monitoring (DCM)
 
-这是整篇论文最关键的直觉图之一。
+This is one of the most important intuition figures in the whole paper.
 
 ## EM
 
 ```text
-充满 → 一直听 → 听到很低 → OFF → 大缺口要补很久
+Charge full → keep listening → drain very low → OFF → a large gap that takes a long time to refill
 ```
 
 ## DCM
 
 ```text
-充满 → 只听一小段 → 主动睡 → 小缺口很快补回来
+Charge full → listen only a short while → sleep on purpose → a small gap that refills quickly
 ```
 
-## 反直觉点
+## The counter-intuitive point
 
-“更早睡觉”不是偷懒，而是：
+“Going to sleep earlier” is not laziness. It is:
 
-> **缩短 recharge time，提高下一次能参加 inventory 的概率。**
+> **shortening recharge time, which raises the chance of joining the next inventory.**
 
-对应公式直觉：
+Matching formula intuition:
 
 \[
 T_{recharge}=\frac{\Delta E}{P_{eh}}
 \]
 
-\(\Delta E\) 越小，恢复越快。
+The smaller \(\Delta E\), the faster recovery.
 
-## 过关标准
+## Pass criterion
 
-能用一句话对比：
+You can contrast them in one sentence:
 
-> EM 把杯子喝到半空再慢慢装满；DCM 只喝一小口就去接水，杯子始终比较满。
+> EM drinks the cup down to half empty, then slowly fills it; DCM takes only a sip and then goes to refill, so the cup stays relatively full.
 
 
 ---
 
-> **导航**
+> **Nav**
 >
-> - [↑ 逐图目录](./README.md)
-> - [↑ 总目录](../content.md)
-> - [← Figure 2：EM 能量状态](./figure-02-em-energy.md)
-> - [Figure 4：Device Grouping →](./figure-04-grouping.md)
+> - [↑ Figure notes](./README.md)
+> - [↑ TOC](../content.md)
+> - [← Figure 2: EM energy state](./figure-02-em-energy.md)
+> - [Figure 4: Device grouping →](./figure-04-grouping.md)

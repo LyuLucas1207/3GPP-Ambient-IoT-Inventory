@@ -1,15 +1,15 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Congestion](./34-congestion.md) |
-| 下一章 | [能量 e_es, E_es^max →](./36-energy-e-es.md) |
+| Previous | [← Congestion](./34-congestion.md) |
+| Next | [Energy \(e_{es}\), \(E_{es}^{\max}\) →](./36-energy-e-es.md) |
 
 ---
 
-# 35. Inventory 到底什么时候算成功？
+# 35. When does inventory actually count as success?
 
-对某一个 Tag：
+For a given tag:
 
 ```text
 Paging
@@ -23,17 +23,17 @@ Msg3 successfully reports device ID
 DONE
 ```
 
-之后论文假设：
+After that the paper assumes:
 
-> 这个 device 不再参加后续 inventory。
+> This device no longer takes part in later inventory.
 
-所以最开始：
+So at the start:
 
 ```text
 0 / 600 inventoried
 ```
 
-然后：
+Then:
 
 ```text
 100 / 600
@@ -44,7 +44,7 @@ DONE
 ...
 ```
 
-最终接近：
+Eventually approaching:
 
 ```text
 600 / 600
@@ -52,9 +52,9 @@ DONE
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Congestion](./34-congestion.md) |
-| 下一章 | [能量 e_es, E_es^max →](./36-energy-e-es.md) |
+| Previous | [← Congestion](./34-congestion.md) |
+| Next | [Energy \(e_{es}\), \(E_{es}^{\max}\) →](./36-energy-e-es.md) |

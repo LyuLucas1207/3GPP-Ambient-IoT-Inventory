@@ -1,47 +1,47 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← dBm](./43-dbm.md) |
-| 下一章 | [ξ(p_in) 效率 →](./45-xi-efficiency.md) |
+| Previous | [← dBm](./43-dbm.md) |
+| Next | [\(\xi(p_{in})\) efficiency →](./45-xi-efficiency.md) |
 
 ---
 
-# 44. Receiver sensitivity 是什么？
+# 44. What is receiver sensitivity?
 
 ## Receiver sensitivity
 
-中文：
+In plain English:
 
-> **接收机灵敏度**
+> **How strong the signal must be at least, before the receiver can work.**
 
-意思：
+Meaning:
 
-> 信号至少要强到什么程度，receiver 才有能力工作。
+> The signal has to reach a certain strength before the receiver is able to operate.
 
-论文设：
+The paper sets:
 
 $$
 -36dBm
 $$
 
-作为 receiver chain sensitivity。
+as receiver chain sensitivity.
 
-低于这个值的 devices 不计入 evaluation。
+Devices below this value are not included in the evaluation.
 
-意思：
+Meaning:
 
 ```text
 pin < -36 dBm
-→ 太弱
-→ 不算了
+→ too weak
+→ do not count them
 ```
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← dBm](./43-dbm.md) |
-| 下一章 | [ξ(p_in) 效率 →](./45-xi-efficiency.md) |
+| Previous | [← dBm](./43-dbm.md) |
+| Next | [\(\xi(p_{in})\) efficiency →](./45-xi-efficiency.md) |

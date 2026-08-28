@@ -1,35 +1,35 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | _（已是第一章）_ |
-| 下一章 | [仓库故事与 Inventory →](./00-warehouse-story.md) |
+| Previous | _(this is the first chapter)_ |
+| Next | [Warehouse story and inventory →](./00-warehouse-story.md) |
 
 ---
 
-# 研究适配度测试（Preface）
+# Preface · research-fit test
 
-对。更准确地说，**这不是“考试题”，而是一个 research-fit test（研究适配度测试）**。
+Yes. More precisely, **this is not an "exam" — it is a research-fit test**.
 
-教授在邮件里其实已经把目的说得很直接了：
+The professor already stated the purpose very directly in the email:
 
-> “to see if you would be a good fit for a specific topic for 499 thesis research”
+> "to see if you would be a good fit for a specific topic for 499 thesis research"
 
-意思就是：
+In other words:
 
-> “我先给你一个小型研究任务，看看你是否适合做我手上的这个 499 thesis topic。”
+> "I will give you a small research task first, to see whether you are a good fit for this 499 thesis topic I have in mind."
 
-所以你现在**不应该把它理解成“教授默认我已经懂 3GPP / wireless / IoT，然后考我专业知识”**。更可能是在看你能不能从一个陌生领域开始，自己把论文读懂、把模型拆出来、写 simulation、发现问题、最后清楚地解释结果。
+So you should **not** read this as "the professor assumes I already know 3GPP / wireless / IoT, and is quizzing me on specialist knowledge." It is more likely a check of whether you can start from an unfamiliar field, read the paper, pull the model apart, write a simulation, notice problems, and then explain the results clearly.
 
-而你说自己第一次进入这个领域，这一点反而非常重要：**我们接下来不能用通信专业研究生默认知识来讲。**
+You said this is your first time in this area. That matters a lot: **we will not teach this as if you already have a communications graduate student's default knowledge.**
 
-我下面就真的从“这些词我一个都不知道”的程度开始。
+I will start from the level of "I do not know any of these words yet."
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | _（已是第一章）_ |
-| 下一章 | [仓库故事与 Inventory →](./00-warehouse-story.md) |
+| Previous | _(this is the first chapter)_ |
+| Next | [Warehouse story and inventory →](./00-warehouse-story.md) |

@@ -1,36 +1,36 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Sleep state](./66-sleep-state.md) |
-| 下一章 | [Synchronization →](./68-synchronization.md) |
+| Previous | [← Sleep state](./66-sleep-state.md) |
+| Next | [Synchronization →](./68-synchronization.md) |
 
 ---
 
-# 67. 为什么第一次 Paging 特别重要？
+# 67. Why does the first paging matter so much?
 
-第一次之前：
+Before the first one:
 
-Tag 不知道：
+the tag does not know:
 
-> Reader 有没有开始 inventory。
+> whether the reader has started inventory.
 
-所以它只能：
+So it can only:
 
 ```text
-醒
-听
-睡
-醒
-听
-睡
+wake
+listen
+sleep
+wake
+listen
+sleep
 ```
 
-但是第一次收到 paging 后：
+But after it receives the first paging:
 
-> “哦！我现在知道 inventory 已经开始，而且 paging 每 12 ms 一次。”
+> “Ah! Now I know inventory has started, and paging comes every 12 ms.”
 
-于是以后可以：
+Then later it can:
 
 ```text
        paging
@@ -42,15 +42,15 @@ sleep sleep ON
 sleep sleep ON
 ```
 
-这叫：
+This is called:
 
 # Synchronization
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Sleep state](./66-sleep-state.md) |
-| 下一章 | [Synchronization →](./68-synchronization.md) |
+| Previous | [← Sleep state](./66-sleep-state.md) |
+| Next | [Synchronization →](./68-synchronization.md) |

@@ -1,41 +1,41 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么看 99%](./89-why-99.md) |
-| 下一章 | [关键结论：50% / 66% / 83% →](./91-key-conclusions.md) |
+| Previous | [← Why look at 99%](./89-why-99.md) |
+| Next | [Key results: 50% / 66% / 83% →](./91-key-conclusions.md) |
 
 ---
 
-# 90. Figure 5(b) 有哪几条线？
+# 90. What do the Figure 5(b) curves mean?
 
-正式版本比 arXiv 更完整。
+The published version is more complete than the arXiv one.
 
-Device 1 图包括：
+The Device 1 figure includes:
 
 * EM, aperiodic paging
 * DCM, periodic paging, 1 group
 * DCM, periodic paging, 4 groups
 
-你把它翻译成人话：
+In plain English:
 
 ### EM
 
-旧方案。
+The old scheme. EM = Energy-Based Monitoring.
 
 ### DCM + 1 group
 
-使用节能监听，但是基本不做真正的 group separation。
+Duty-Cycled Monitoring, but essentially no real group separation.
 
 ### DCM + 4 groups
 
-使用节能监听，而且把 devices 分四组。
+Duty-Cycled Monitoring, and devices are split into four groups.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 为什么看 99%](./89-why-99.md) |
-| 下一章 | [关键结论：50% / 66% / 83% →](./91-key-conclusions.md) |
+| Previous | [← Why look at 99%](./89-why-99.md) |
+| Next | [Key results: 50% / 66% / 83% →](./91-key-conclusions.md) |

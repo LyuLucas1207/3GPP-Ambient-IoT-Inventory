@@ -1,41 +1,41 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← ON state](./47-on-state.md) |
-| 下一章 | [IC →](./49-ic.md) |
+| Previous | [← ON state](./47-on-state.md) |
+| Next | [IC →](./49-ic.md) |
 
 ---
 
-# 48. OFF state 是什么？
+# 48. What is the OFF state?
 
 ## OFF state
 
-意思：
+Meaning:
 
-> 主电路关闭。
+> The main circuit is off.
 
-设备：
+The device:
 
-* 不能 receive
-* 不能 transmit
-* 可以 harvest energy
+* cannot receive
+* cannot transmit
+* can harvest energy
 
-所以：
+So:
 
 ```text
 OFF
-→ 充电
+→ charge
 
 ON
-→ 工作 / 耗电
+→ work / consume energy
 ```
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← ON state](./47-on-state.md) |
-| 下一章 | [IC →](./49-ic.md) |
+| Previous | [← ON state](./47-on-state.md) |
+| Next | [IC →](./49-ic.md) |

@@ -1,29 +1,29 @@
-# Story · 把论文放回真实世界
+# Story · Putting the paper back into the real world
 
-> **导航** · [目录 content.md](./content.md) · [Docs 首页](./README.md) · [短版仓库故事](./chapters/00-warehouse-story.md)
+> **Nav** · [TOC content.md](./content.md) · [Docs home](./README.md) · [short warehouse story](./chapters/00-warehouse-story.md)
 
-这篇是**快速建立现实直觉**的长故事版。  
-先别想成“一个很抽象的 5G 技术”——它真正想解决的是一个非常现实的问题：
+This is the **long story version** for quickly building real-world intuition.  
+Don't think of it as “some abstract 5G technique” yet—what it actually wants to solve is a very practical problem:
 
-> **有大量便宜、没电池、平时几乎不耗电的小标签散布在一个真实环境里，系统怎么快速知道“这些东西都还在不在、分别是谁”？**
-
----
-
-## 1. 论文在解决什么？
-
-论文自己列出的 A-IoT use cases 包括 **inventory、sensor、positioning、command**，而这篇文章专门研究的是 **indoor inventory**。
-
-也就是说，它最直接的现实落点就是：
-
-> **室内大规模自动盘点。**
+> **A large number of cheap, batteryless, almost-always-off little tags are scattered in a real environment. How can the system quickly know “are these things still here, and which is which”?**
 
 ---
 
-## 2. 工厂仓库：最容易理解的画面
+## 1. What problem is the paper solving?
 
-假设一个汽车零部件工厂有几万个箱子，每个箱子上贴一个超低成本 A-IoT tag。
+The paper itself lists A-IoT use cases including **inventory, sensor, positioning, command**, and this article specifically studies **indoor inventory**.
 
-传统做法可能是人工扫码，或者用普通 RFID reader 到处扫。A-IoT 想做的事情更像这样：
+In other words, its most direct real-world landing point is:
+
+> **Large-scale automatic indoor inventory.**
+
+---
+
+## 2. Factory warehouse: the easiest picture to understand
+
+Suppose an auto-parts factory has tens of thousands of boxes, and each box has an ultra-low-cost A-IoT tag stuck on it.
+
+The traditional approach might be scanning barcodes by hand, or walking around with an ordinary RFID reader. What A-IoT wants to do looks more like this:
 
 ```text
               Factory Base Station
@@ -35,11 +35,11 @@
     gearbox     motor     pallet
 ```
 
-基站一方面发 RF 信号，这些 tag 从信号里“吸一点电”；另一方面基站发 Paging：
+On one side, the base station sends an RF signal, and these tags “sip a little energy” from that signal; on the other side, the base station sends Paging:
 
-> “附近还没有被登记的设备，来报到。”
+> “Nearby devices that have not been registered yet, come report in.”
 
-于是各个 tag 回答自己的身份。基站最后得到：
+Then each tag answers with its own identity. The base station finally gets:
 
 ```text
 Pallet #124  ✓
@@ -49,33 +49,33 @@ Tool #247    ✓
 ...
 ```
 
-这就是 **inventory**。你可以把它想成：
+This is **inventory**—a warehouse roll-call. You can think of it as:
 
-> **仓库自己自动点名。**
+> **The warehouse calling roll by itself.**
 
-论文模拟的环境本身就非常像这个现实场景：它假设一个 **120 m × 60 m 的 indoor factory**，部署 18 个 base station，每次由一个 BS 做 inventory，而且不同位置的 tag 因为传播损耗不同，会收到不同强度的 RF 信号。
+The environment the paper simulates already looks a lot like this real scene: it assumes a **120 m × 60 m indoor factory**, deploys 18 base stations, and each time one BS does inventory. Tags at different locations receive RF signals of different strength because of different propagation loss.
 
 ---
 
-## 3. 真正麻烦：这些标签不是手机
+## 3. The real trouble: these tags are not phones
 
-手机有大电池：
+A phone has a large battery:
 
 ```text
-手机：
+phone:
 ████████████████
 ```
 
-A-IoT tag 可能只有一个很小的 capacitor：
+An A-IoT tag may have only a very small capacitor:
 
 ```text
-Tag：
+Tag:
 █
 ```
 
-所以会出现一种现实里非常尴尬的情况。
+So a very awkward real-world situation appears.
 
-比如一个箱子离基站很近：
+For example, one box is close to the base station:
 
 ```text
 Base Station
@@ -84,19 +84,19 @@ Base Station
     v
   Tag A
 
-充电快
-容易醒
-很快回应
+charges fast
+wakes easily
+responds quickly
 ```
 
-另一个箱子可能：
+Another box might be:
 
-* 在仓库角落；
-* 被金属货架挡住；
-* 离基站很远；
-* 接收到的 RF 很弱。
+* in a warehouse corner;
+* blocked by metal shelves;
+* far from the base station;
+* receiving very weak RF.
 
-于是：
+Then:
 
 ```text
 Base Station
@@ -106,49 +106,49 @@ Base Station
                             Tag B
 ```
 
-Tag B 可能需要很久才能攒够电。
+Tag B may need a long time to scrape together enough energy.
 
-所以 Reader 已经喊了：
+So the Reader has already shouted:
 
-> “开始盘点！”
+> “Inventory starts!”
 
-Tag B 却还在：
+But Tag B is still:
 
-> “等等，我还没充够电……”
+> “Wait, I haven't charged enough yet……”
 
-论文甚至给了一个典型最差例子：如果某个设备接收到的功率约为 \(-36\text{ dBm}\)，并且需要从低能量阈值充回高能量阈值，那么可能接近 **20 秒** 才重新可用。
+The paper even gives a typical worst-case example: if a device receives power of about \(-36\text{ dBm}\), and needs to charge from a low energy threshold back up to a high energy threshold, it may take close to **20 seconds** to become available again.
 
-这就是为什么这篇论文不是在解决“怎么发无线信号”这么简单，而是在解决一个很现实的系统问题：
+That is why this paper is not solving something as simple as “how to send a wireless signal,” but a very practical systems problem:
 
-> **几百个设备中，只要最后几台特别没电，整个盘点时间就被它们拖长。**
+> **Among hundreds of devices, as long as the last few are especially low on energy, the entire inventory time is stretched out by them.**
 
 ---
 
-## 4. 尾部拖慢整场盘点（Figure 5(b) 的现实意义）
+## 4. The tail slows down the whole inventory (the real-world meaning of Figure 5(b))
 
-想象超市关门后自动盘点。
+Imagine automatic inventory after a supermarket closes.
 
-假设有：
-
-```text
-600 个商品标签
-```
-
-前 5 秒：
+Suppose there are:
 
 ```text
-550 个已经识别
+600 product tags
 ```
 
-第 10 秒：
+First 5 seconds:
 
 ```text
-590 个已经识别
+550 already identified
 ```
 
-然后剩下 10 个在货架角落、信号很差。
+At 10 seconds:
 
-如果系统要等它们全部恢复：
+```text
+590 already identified
+```
+
+Then 10 remain in a shelf corner, with a very poor signal.
+
+If the system has to wait for all of them to recover:
 
 ```text
 10s
@@ -158,281 +158,281 @@ Tag B 却还在：
 20s
 ```
 
-那么你会发现：
+Then you will notice:
 
-> **前 98% 很快，最后 1–2% 特别慢。**
+> **The first 98% is fast; the last 1–2% is especially slow.**
 
-这正是 Figure 5(b) 那种曲线背后的现实意义。
+That is exactly the real-world meaning behind a curve like Figure 5(b).
 
 ---
 
-## 5. DCM：值夜班的人，不要一直睁着眼等
+## 5. DCM: the night-shift worker should not keep their eyes open waiting
 
-DCM 的现实意义，可以用“值夜班的人”来理解。
+The real-world meaning of DCM can be understood through “the person on night shift.”
 
-### 传统 EM
+### Traditional EM
 
-传统 EM 相当于这个标签：
+Traditional EM is like this tag saying:
 
-> “只要我现在还有电，我就一直开着耳朵听 Reader 有没有叫我。”
+> “As long as I still have energy right now, I keep my ears open listening for whether the Reader is calling me.”
 
-例如：
+For example:
 
 ```text
-满电
+fully charged
  ↓
-一直监听
+keep listening
  ↓
-一直监听
+keep listening
  ↓
-一直监听
+keep listening
  ↓
-快没电
+almost out of energy
  ↓
-关机充电
+power off and charge
 ```
 
-这个做法的问题是，它可能在真正 inventory 开始前已经把自己耗得很惨。
+The problem with this approach is that it may already have drained itself badly before inventory truly starts.
 
-比如仓库真正开始盘点是晚上 12 点。
+Suppose the warehouse actually starts inventory at 12:00 at night.
 
-但是 Tag 从 11:59:40 开始就一直开 receiver：
+But the tag has been keeping its receiver on since 11:59:40:
 
 ```text
 11:59:40   500 nJ
 11:59:45   430 nJ
 11:59:50   360 nJ
 11:59:55   290 nJ
-12:00:00   接近没电
+12:00:00   almost empty
 ```
 
-这时候 Reader：
+Then the Reader:
 
 > “Inventory starts!”
 
-Tag：
+Tag:
 
-> “不好意思，我得先充电。”
+> “Sorry, I have to charge first.”
 
-非常低效。
+Very inefficient.
 
-### DCM 的思路
+### The idea behind DCM
 
-> **不要一直睁着眼等。**
+> **Don't keep your eyes open waiting the whole time.**
 
-而是：
+Instead:
 
 ```text
-醒一下
+wake up briefly
 ↓
-没听到 Paging
+didn't hear Paging
 ↓
-睡一下，同时充电
+sleep a bit, while charging
 ↓
-再醒一下
+wake up again
 ↓
-再检查
+check again
 ```
 
-结果到了真正 inventory 开始的时候，它的 capacitor 里面往往还留着比较多的能量。
+As a result, when inventory truly starts, its capacitor often still has quite a lot of energy left.
 
-所以不是：
+So it is not:
 
-> “DCM 让通信本身更快。”
+> “DCM makes communication itself faster.”
 
-而是：
+but rather:
 
-> **DCM 让设备在“真正轮到它工作的时候”更可能处于有电状态。**
+> **DCM makes the device more likely to have energy when it is “truly its turn to work.”**
 
-这个区别特别重要。
+This distinction is especially important.
 
-再放到现实仓库里，就是：
+Mapped back to a real warehouse, that is:
 
 ```text
-传统方式：
-100 个 Tag 都一直监听
-→ 大量 Tag 白白耗电
-→ 真正需要回应时很多已经没电
+Traditional way:
+100 tags keep listening all the time
+→ lots of tags waste energy for nothing
+→ when they actually need to respond, many are already out of energy
 
-DCM：
-Tag 周期性短暂监听
-→ 其余时间 harvest
-→ 真正收到 inventory paging 时能量更健康
+DCM:
+tags listen briefly and periodically
+→ harvest the rest of the time
+→ when they actually receive inventory paging, their energy is healthier
 ```
 
 ---
 
-## 6. 有电了还不够：600 人同时大喊“我！”
+## 6. Having energy is still not enough: 600 people shout “Me!” at the same time
 
-假设 600 个标签终于都有电了。
+Suppose 600 tags finally all have energy.
 
-Reader 喊：
+The Reader shouts:
 
-> “来报名！”
+> “Come sign in!”
 
-600 个一起回答。
+All 600 answer together.
 
-这就跟老师问：
+That is just like a teacher asking:
 
-> “谁还没签到？”
+> “Who hasn't signed in yet?”
 
-结果 600 人同时大喊：
+and 600 people shouting at once:
 
-> “我！”
+> “Me!”
 
-一样。
+Same thing.
 
-系统根本听不清。
+The system cannot make anything out.
 
-所以才会有 **CBRA、AO、collision、access probability、device grouping**。
+That is why there are **CBRA, AO, collision, access probability, device grouping**.
 
-### Device grouping = 分流
+### Device grouping = splitting the crowd
 
-假设把 600 个 tag 分成 4 组：
+Suppose we split 600 tags into 4 groups:
 
 ```text
-A组：1–150
-B组：151–300
-C组：301–450
-D组：451–600
+Group A: 1–150
+Group B: 151–300
+Group C: 301–450
+Group D: 451–600
 ```
 
-Reader：
+Reader:
 
 ```text
-Paging #1 → A组
-Paging #2 → B组
-Paging #3 → C组
-Paging #4 → D组
+Paging #1 → Group A
+Paging #2 → Group B
+Paging #3 → Group C
+Paging #4 → Group D
 ```
 
-这样一次只有大约 150 台参与，而不是 600 台全挤在一起。
+Then only about 150 devices take part at a time, instead of all 600 crowding in together.
 
-就像机场安检：
+Like airport security:
 
 ```text
-600 人 → 一个入口
+600 people → one entrance
 ```
 
-很堵。
+Very congested.
 
-变成：
+It becomes:
 
 ```text
-A组 → 入口1
-B组 → 入口2
-C组 → 入口3
-D组 → 入口4
+Group A → entrance 1
+Group B → entrance 2
+Group C → entrance 3
+Group D → entrance 4
 ```
 
-或者按时间错开进入。
+Or they enter staggered in time.
 
-所以论文里的 **device grouping 本质上也是在做 traffic management**。
+So in the paper, **device grouping is essentially also doing traffic management**.
 
-### Access probability = 抽签进场
+### Access probability = drawing lots to enter
 
-Access probability 更像：
+Access probability is more like:
 
-> “这一轮你即使听到广播，也只有 10% 概率过来。”
+> “This round, even if you heard the broadcast, you only come over with 10% probability.”
 
-这样系统就可以动态控制：
+That way the system can dynamically control:
 
 ```text
-现在太拥挤
-→ 降低 access probability
+too congested now
+→ lower access probability
 
-现在空下来了
-→ 提高 access probability
+now it has quieted down
+→ raise access probability
 ```
 
 ---
 
-## 7. 两个问题，一个目标
+## 7. Two problems, one goal
 
-如果你把整篇论文放回现实，实际上就是在同时解决两个问题：
+If you put the whole paper back into the real world, it is actually solving two problems at the same time:
 
 ```text
-问题 1：Tag 没电
+Problem 1: tags have no energy
          ↓
        DCM
 
-问题 2：Tag 太多，全挤在一起
+Problem 2: too many tags, all crowding in together
          ↓
  access probability + grouping
 ```
 
-最后目标只有一个：
+There is only one final goal:
 
-> **让整个仓库/工厂的盘点尽可能快结束。**
+> **Make the whole warehouse/factory inventory finish as fast as possible.**
 
-而这类技术为什么有价值，核心是“规模”。
+Why this kind of technology is valuable: the core is “scale.”
 
-如果只有 3 个设备，根本不需要这么复杂。
+If there were only 3 devices, you would not need anything this complicated.
 
-但是未来可能是：
+But the future might be:
 
 ```text
-一个仓库：10,000 tags
-一个工厂：几十万物料
-一个物流中心：大量 pallet / package
-一个大型零售店：海量商品
+one warehouse: 10,000 tags
+one factory: hundreds of thousands of items
+one logistics center: lots of pallets / packages
+one large retail store: a huge number of products
 ```
 
-这时候每个 tag 如果都需要：
+If every tag then needed:
 
-* 换电池；
-* 定期维护；
-* 人工扫码；
+* battery replacement;
+* regular maintenance;
+* manual barcode scanning;
 
-成本会很高。
+the cost would be very high.
 
-所以 batteryless / ultra-low-power tag 的吸引力就是：
+So the appeal of batteryless / ultra-low-power tags is:
 
-> **标签可以非常便宜，而且长期几乎不用维护。**
+> **Tags can be very cheap, and need almost no maintenance over the long term.**
 
 ---
 
-## 8. 更广的 A-IoT 画面（但论文只验证了 inventory）
+## 8. A broader A-IoT picture (but the paper only verified inventory)
 
-论文里的 inventory 只是最直接的用途。A-IoT 还被考虑用于 sensor、positioning 和 command。
+Inventory in the paper is only the most direct use. A-IoT is also considered for sensor, positioning, and command.
 
-把这些放到现实里，你可以想象：
+Put these into the real world, and you can imagine:
 
 ```text
-仓库货物：
-“我是谁？”
+warehouse goods:
+“Who am I?”
 → Inventory
 
-温度标签：
-“这里现在 8°C。”
+temperature tag:
+“It's 8°C here now.”
 → Sensor
 
-工具：
-“我现在大概在哪？”
+tool:
+“Where am I roughly now?”
 → Positioning
 
-电子标签：
-“把状态改成已出库。”
+electronic tag:
+“Change status to shipped.”
 → Command
 ```
 
-不过需要注意：
+But note:
 
-> **这篇论文真正模拟并验证的是 indoor inventory，不是上面所有场景。**
+> **What this paper actually simulated and verified is indoor inventory, not all of the scenes above.**
 
-Sensor、positioning、command 是论文介绍的 broader A-IoT use cases；具体仓库、零售、物流的例子是把论文机制映射到现实应用的解释。
+Sensor, positioning, and command are the broader A-IoT use cases the paper introduces; the concrete warehouse, retail, and logistics examples are explanations that map the paper's mechanisms onto real applications.
 
 ---
 
-## 9. RF 为什么能给 Tag 充电？
+## 9. Why can RF charge a tag?
 
-这里最关键的点就是：
+The most important point here is:
 
-> **RF 本身就是一种电磁波，而电磁波本身携带能量，所以设备可以把收到的 RF 能量转换成电能。**
+> **RF itself is a kind of electromagnetic wave, and electromagnetic waves themselves carry energy, so a device can convert received RF energy into electrical energy.**
 
-RF = **Radio Frequency，射频**。你平时的 Wi-Fi、蓝牙、4G/5G，底层都是在空气里发射电磁波。它不仅能“携带信息”，也携带能量。
+RF = **Radio Frequency**. Everyday Wi-Fi, Bluetooth, and 4G/5G are, at the bottom, all transmitting electromagnetic waves through the air. They can not only “carry information,” they also carry energy.
 
-比如基站发出无线信号：
+For example, a base station sends a wireless signal:
 
 ```text
 Base Station / Reader
@@ -443,7 +443,7 @@ Base Station / Reader
 Tag antenna
 ```
 
-Tag 上有一个小天线。天线接收到 RF 后，会在电路里产生很小的交流电信号。然后再通过类似**整流器 rectifier**的电路，把这个高频交流信号转换成直流电，再存到一个小电容里：
+The tag has a small antenna. After the antenna receives RF, a very small AC electrical signal appears in the circuit. Then, through a circuit like a **rectifier**, that high-frequency AC signal is converted into DC, and stored in a small capacitor:
 
 ```text
 RF electromagnetic wave
@@ -461,49 +461,49 @@ tiny high-frequency electrical signal
  powers the chip
 ```
 
-所以它不是“无线电直接把电池隔空充满”那种概念，而是：
+So it is not the idea of “radio filling a battery through the air,” but:
 
-> **天线接收到一点点 RF power → 电路把它转成 DC electrical energy → 存到 capacitor → 芯片拿这点能量工作。**
+> **The antenna receives a little RF power → the circuit turns it into DC electrical energy → stores it in a capacitor → the chip uses that bit of energy to work.**
 
-### 论文怎么建模
+### How the paper models this
 
-这篇论文确实就是这么建模的：Reader **持续发送 RF signal**，A-IoT device 在 OFF 或 SLEEP 时从这个 RF signal 中 harvest energy；论文把到达设备的 RF power 记作 \(p_{in}\)，转换效率记作 \(\xi(p_{in})\)，真正获得的 charging power 是
+This paper really does model it this way: the Reader **continuously sends an RF signal**, and the A-IoT device harvests energy from that RF signal when it is OFF or SLEEP; the paper denotes the RF power arriving at the device as \(p_{in}\), the conversion efficiency as \(\xi(p_{in})\), and the charging power actually obtained is
 
 $$
 P_{eh}=p_{in}\xi(p_{in})
 $$
 
-也就是说：
+In other words:
 
-> 收到多少 RF power × 转换效率 = 实际充进去多少 power。
+> How much RF power is received × conversion efficiency = how much power is actually charged in.
 
-### 一个具体数字例子
+### A concrete numerical example
 
-假设 Reader 发出去很大的功率，但某个 Tag 离它比较远，到 Tag 天线这里真正只剩：
+Suppose the Reader transmits a large power, but a certain tag is relatively far away, and at the tag antenna only this remains:
 
 $$
 p_{in}=10\mu W
 $$
 
-假设 RF-to-DC conversion efficiency 是：
+Suppose the RF-to-DC conversion efficiency is:
 
 $$
 \xi=20\%
 $$
 
-那么实际能存进去的 power 只有：
+Then the power that can actually be stored is only:
 
 $$
 P_{eh}=10\mu W\times0.2=2\mu W
 $$
 
-如果 capacitor 还需要：
+If the capacitor still needs:
 
 $$
 100\mu J
 $$
 
-才能达到工作能量，那么理想情况下：
+to reach operating energy, then in the ideal case:
 
 $$
 t=\frac{E}{P}
@@ -513,7 +513,7 @@ t=\frac{E}{P}
 50s
 $$
 
-所以你现在应该能看出来为什么**距离特别重要**：
+So you should now be able to see why **distance is especially important**:
 
 ```text
 Reader
@@ -521,10 +521,10 @@ Reader
  | strong RF
  ↓
 Tag A
-充电快
+charges fast
 ```
 
-但是：
+But:
 
 ```text
 Reader
@@ -532,60 +532,60 @@ Reader
  |...................... weak RF
                          ↓
                        Tag B
-                       充电慢
+                       charges slowly
 ```
 
-无线波传播过程中会衰减，所以离 Reader 越远，或者中间有墙、货架、金属遮挡，Tag 收到的 \(p_{in}\) 通常越小，于是 charging power \(P_{eh}\) 也越小。
+Wireless waves attenuate as they propagate, so the farther from the Reader, or if there are walls, shelves, or metal blocking in between, the \(p_{in}\) the tag receives is usually smaller, and thus the charging power \(P_{eh}\) is also smaller.
 
-这就是这篇论文为什么会出现“某些 tag 要等接近 20 秒才能重新开机”的情况。论文里的 worst-case 例子就是：设备收到大约 \(-36\,\mathrm{dBm}\) 的 RF，转换效率约 5%，要补约 250 nJ 的能量，因此恢复可能接近 20 秒。
+That is why this paper has cases of “some tags have to wait close to 20 seconds before they can power on again.” The worst-case example in the paper is: the device receives about \(-36\,\mathrm{dBm}\) of RF, conversion efficiency is about 5%, and it needs to make up about 250 nJ of energy, so recovery may take close to 20 seconds.
 
 ---
 
-## 10. Reader 发 RF：充电还是通信？
+## 10. The Reader sends RF: charging or communication?
 
-你可能马上会问：
+You might immediately ask:
 
-> **“那这个 Reader 发 RF 是为了通信，还是为了充电？”**
+> **“So is this Reader sending RF for communication, or for charging?”**
 
-答案是：**两者都可以。**
+The answer is: **it can be both.**
 
-这篇论文的模型里，Reader 会持续提供 RF，让设备 harvest energy；而到了 inventory stage，它又在这个系统上发送 Paging 等通信消息。论文明确区分了：
+In this paper's model, the Reader continuously provides RF so devices can harvest energy; and when it reaches the inventory stage, it also sends Paging and other communication messages on this system. The paper explicitly distinguishes:
 
 ```text
 Charging stage:
-Reader 发 RF
-→ 主要让 devices harvest energy
-→ 不做 inventory communication
+Reader transmits RF
+→ mainly to let devices harvest energy
+→ no inventory communication
 
 Inventory stage:
-Reader 继续提供 RF
+Reader continues to provide RF
 +
-发送 Paging / 做通信
+sends Paging / does communication
 ```
 
-而且论文特别强调：即使 inventory 已经开始，Reader 仍然应该继续提供 RF，让暂时没电的 devices 能继续 charging。
+And the paper especially emphasizes: even after inventory has already started, the Reader should still keep providing RF, so that devices that temporarily have no energy can continue charging.
 
-所以你可以把整个东西想成一个**无线充电版门禁卡**：
+So you can think of the whole thing as a **wirelessly charged access-control card**:
 
-普通门禁 RFID 卡你贴到 reader 附近时，reader 发出的 RF 会给卡供一点电，卡因此能够启动并回答自己的 ID。
+When you hold an ordinary access-control RFID card near a reader, the RF the reader sends supplies a little energy to the card, and the card can therefore start up and answer with its own ID.
 
-Ambient IoT 想把类似这个概念扩展到：
+Ambient IoT wants to extend a similar idea to:
 
-> 更远的距离、更大的空间、更多设备，以及 3GPP cellular infrastructure。
+> farther distance, larger space, more devices, and 3GPP cellular infrastructure.
 
-但是千万别想成“手机无线充电板”那种功率。这里的能量非常小，往往只是：
+But do not picture the kind of power of a “phone wireless charging pad.” The energy here is very small, often only:
 
-> **够一个超低功耗芯片醒来几毫秒、听一个消息、回一个短 ID。**
+> **enough for an ultra-low-power chip to wake for a few milliseconds, hear one message, and reply with a short ID.**
 
-这也是为什么论文里 Device 1 的接收/发送功耗只有大约：
+That is also why Device 1's receive/transmit power consumption in the paper is only about:
 
 $$
 1\mu W
 $$
 
-——如果它是正常手机那种几百毫瓦甚至几瓦的设备，靠这种远距离 RF harvesting 根本撑不起来。
+—if it were a normal phone-like device of a few hundred milliwatts or even a few watts, this kind of long-distance RF harvesting could not support it at all.
 
-你现在只要把这个画面记住：
+For now, just remember this picture:
 
 ```text
               Reader / Base Station
@@ -604,37 +604,37 @@ $$
        chip     chip      chip
 ```
 
-**RF 是空气里的电磁波；天线把其中一小部分能量接收下来，整流电路把它变成 DC，再存进 capacitor。**
+**RF is an electromagnetic wave in the air; the antenna receives a small fraction of that energy, the rectifier circuit turns it into DC, and then stores it in a capacitor.**
 
-而这篇论文的全部“energy problem”，基本就是围绕这句话展开的。
+And this paper's entire “energy problem” basically unfolds around that sentence.
 
 ---
 
-## 11. 如果教授突然问你
+## 11. If a professor suddenly asks you
 
 > “What is the practical motivation of this paper?”
 
-你脑子里不要出现一堆公式。
+Do not let a pile of formulas pop into your head.
 
-你应该先想到这个画面：
+You should first picture this scene:
 
-> **一个大型工厂里面有几百甚至成千上万个几乎没电的小标签。基站想自动盘点它们。标签离基站远近不同，所以充电速度不同，而且几百个标签又会同时争抢无线资源。这篇论文就是试图让这些标签既不要因为一直监听而把电耗光，也不要同时冲进网络造成拥塞，从而更快完成整个 inventory。**
+> **Inside a large factory there are hundreds or even thousands of almost-empty little tags. The base station wants to inventory them automatically. Tags are at different distances from the base station, so they charge at different speeds, and hundreds of tags will also contend for wireless resources at the same time. This paper tries to keep these tags from draining themselves by listening all the time, and also from rushing into the network at once and causing congestion, so that the whole inventory can finish faster.**
 
-如果你真正理解这个现实画面，后面的 `DCM / CBRA / AO / access probability / grouping` 就不再是孤立的缩写了。
+If you truly understand this real-world picture, `DCM / CBRA / AO / access probability / grouping` later on are no longer isolated acronyms.
 
 ---
 
-## 下一步读哪里？
+## Where to read next?
 
-| 想继续… | 去这里 |
+| Want to continue… | Go here |
 |---|---|
-| 最短一页版仓库故事 | [0. 仓库故事与 Inventory](./chapters/00-warehouse-story.md) |
-| 按讲义系统学 | [content.md 总目录](./content.md) |
-| RF / 能量采集细节 | [4. Energy Harvesting](./chapters/04-energy-harvesting.md) |
+| shortest one-page warehouse story | [0. Warehouse story and inventory](./chapters/00-warehouse-story.md) |
+| Learn systematically from the lecture notes | [content.md TOC](./content.md) |
+| RF / energy harvesting details | [4. Energy Harvesting](./chapters/04-energy-harvesting.md) |
 | DCM | [58. DCM](./chapters/58-dcm.md) |
 | Device grouping | [78. Device grouping](./chapters/78-device-grouping.md) |
-| Figure 5(b) 含义 | [figures · Figure 5(b)](./figures/figure-05b-inventory.md) |
+| Meaning of Figure 5(b) | [figures · Figure 5(b)](./figures/figure-05b-inventory.md) |
 
 ---
 
-> **导航** · [目录 content.md](./content.md) · [Docs 首页](./README.md) · [短版仓库故事](./chapters/00-warehouse-story.md)
+> **Nav** · [TOC content.md](./content.md) · [Docs home](./README.md) · [short warehouse story](./chapters/00-warehouse-story.md)

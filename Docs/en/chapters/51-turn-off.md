@@ -1,61 +1,61 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Turn-on E_es^up](./50-turn-on.md) |
-| 下一章 | [EM →](./52-em.md) |
+| Previous | [← Turn-on \(E_{es}^{\mathrm{up}}\)](./50-turn-on.md) |
+| Next | [EM →](./52-em.md) |
 
 ---
 
-# 51. Turn-off threshold 是什么？
+# 51. What is the turn-off threshold?
 
-论文记：
-
-$$
-E_{es}^{low}
-$$
-
-就是：
-
-> **关机门槛。**
-
-论文设：
+The paper writes:
 
 $$
-E_{es}^{low}=0.5E_{es}^{max}
+E_{es}^{\mathrm{low}}
 $$
 
-Device 1：
+That is:
+
+> **the turn-off threshold.**
+
+The paper sets:
 
 $$
-E_{es}^{max}=500nJ
+E_{es}^{\mathrm{low}}=0.5E_{es}^{\max}
 $$
 
-所以：
+Device 1:
 
 $$
-E_{es}^{low}=250nJ
+E_{es}^{\max}=500nJ
+$$
+
+So:
+
+$$
+E_{es}^{\mathrm{low}}=250nJ
 $$
 
 ---
 
-因此：
+Therefore:
 
 ```text
 500 nJ
 ↑
 Turn ON
 
-工作
-工作
-工作
+work
+work
+work
 ↓
 250 nJ
 Turn OFF
 
-充电
-充电
-充电
+charge
+charge
+charge
 ↑
 500 nJ
 Turn ON
@@ -63,9 +63,9 @@ Turn ON
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Turn-on E_es^up](./50-turn-on.md) |
-| 下一章 | [EM →](./52-em.md) |
+| Previous | [← Turn-on \(E_{es}^{\mathrm{up}}\)](./50-turn-on.md) |
+| Next | [EM →](./52-em.md) |

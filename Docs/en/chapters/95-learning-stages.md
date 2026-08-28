@@ -1,54 +1,54 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 测试的六种能力](./94-six-skills.md) |
-| 下一章 | [缩写表 →](./96-acronym-table.md) |
+| Previous | [← Six skills being tested](./94-six-skills.md) |
+| Next | [Acronym table →](./96-acronym-table.md) |
 
 ---
 
-# 95. 所以你现在不要焦虑“我什么都不会”
+# 95. So do not panic that "I know nothing yet"
 
-你现在更适合把整个任务看成：
+It is better to treat the whole task as:
 
 ```text
-阶段 1
-学会语言
+Stage 1
+learn the language
 
-阶段 2
-看懂系统
+Stage 2
+understand the system
 
-阶段 3
-看懂公式
+Stage 3
+understand the formulas
 
-阶段 4
-把系统画成 state machine
+Stage 4
+draw the system as a state machine
 
-阶段 5
-把 state machine 写成 simulation
+Stage 5
+turn the state machine into a simulation
 
-阶段 6
-复现 Figure 5(b)
+Stage 6
+reproduce Figure 5(b)
 
-阶段 7
-解释为什么结果这样
+Stage 7
+explain why the result looks that way
 ```
 
-**不要直接跳阶段 5。**
+**Do not skip straight to stage 5.**
 
-如果你现在直接让我给你代码，我反而认为不是最好的做法。
+If you ask me for the code right now, I would actually think that is not the best move.
 
-因为教授如果之后问你：
+Because if the professor later asks:
 
 > Why did you model it this way?
 
-你很容易答不上来。
+you can easily have nothing to say.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 测试的六种能力](./94-six-skills.md) |
-| 下一章 | [缩写表 →](./96-acronym-table.md) |
+| Previous | [← Six skills being tested](./94-six-skills.md) |
+| Next | [Acronym table →](./96-acronym-table.md) |

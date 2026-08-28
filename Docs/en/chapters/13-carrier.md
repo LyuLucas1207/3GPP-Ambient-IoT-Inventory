@@ -1,47 +1,51 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CW](./12-cw.md) |
-| 下一章 | [Backscatter（镜子 / 手电筒） →](./14-backscatter.md) |
+| Previous | [← CW](./12-cw.md) |
+| Next | [Backscatter (mirror / flashlight) →](./14-backscatter.md) |
 
 ---
 
-# 13. Carrier 是什么？
+# 13. What is a carrier?
 
-## Carrier = 载波
+## Carrier
 
-无线通信最基础的概念之一。
+In plain English:
 
-例如：
+> **the high-frequency radio wave that actually travels through the air, carrying your bits.**
 
-你要传：
+One of the most basic ideas in wireless communication.
+
+For example:
+
+You want to send:
 
 ```text
 101101001
 ```
 
-不是把这些 0 和 1 凭空扔进空气。
+You do not throw those 0s and 1s into the air by themselves.
 
-通常需要一个高频波：
+Usually you need a high-frequency wave:
 
 $$
 \cos(2\pi f_ct)
 $$
 
-这个高频波就叫：
+That high-frequency wave is called a:
 
 > carrier wave
 
-简称：
+or just:
 
 > carrier
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← CW](./12-cw.md) |
-| 下一章 | [Backscatter（镜子 / 手电筒） →](./14-backscatter.md) |
+| Previous | [← CW](./12-cw.md) |
+| Next | [Backscatter (mirror / flashlight) →](./14-backscatter.md) |

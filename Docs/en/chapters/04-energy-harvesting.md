@@ -1,50 +1,50 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← batteryless + 电容水杯类比](./03-batteryless.md) |
-| 下一章 | [Reader（BS / UE） →](./05-reader.md) |
+| Previous | [← Batteryless + capacitor cup analogy](./03-batteryless.md) |
+| Next | [Reader (BS / UE) →](./05-reader.md) |
 
 ---
 
-# 4. Energy Harvesting 是什么？
+# 4. What is energy harvesting?
 
 ## Energy Harvesting
 
-直译：
+In plain English:
 
-> **能量采集**
+> **collecting energy from the outside world.**
 
-就是设备从外界获得能量。
+The device obtains energy from its surroundings.
 
-比如：
+For example:
 
-* 太阳能
-* 振动
-* 温差
-* RF 无线电波
+* sunlight
+* vibration
+* temperature difference
+* RF radio waves
 
-这篇 paper 主要讲：
+This paper is mainly about:
 
 # RF Energy Harvesting
 
 ---
 
-## RF 是什么？
+## What is RF?
 
 ### RF = Radio Frequency
 
-中文：
+In plain English:
 
-> **射频**
+> **radio waves.**
 
-简单理解就是：
+A simple picture:
 
-> 无线电信号。
+> wireless signals.
 
-Wi-Fi、5G、蓝牙、广播，都涉及 RF 信号。
+Wi-Fi, 5G, Bluetooth, and broadcast radio all involve RF signals.
 
-Reader 在空气里发 RF：
+The reader sends RF into the air:
 
 ```text
 Reader
@@ -53,7 +53,7 @@ Reader
                 Tag
 ```
 
-Tag 的天线收到一点能量：
+The tag's antenna receives a little energy:
 
 ```text
 RF signal
@@ -65,13 +65,13 @@ energy harvesting circuit
 capacitor
 ```
 
-于是 capacitor 被充一点电。
+So the capacitor is charged a little.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← batteryless + 电容水杯类比](./03-batteryless.md) |
-| 下一章 | [Reader（BS / UE） →](./05-reader.md) |
+| Previous | [← Batteryless + capacitor cup analogy](./03-batteryless.md) |
+| Next | [Reader (BS / UE) →](./05-reader.md) |

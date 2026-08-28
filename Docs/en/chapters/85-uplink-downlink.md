@@ -1,13 +1,13 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← FDD](./84-fdd.md) |
-| 下一章 | [Link Budget →](./86-link-budget.md) |
+| Previous | [← FDD](./84-fdd.md) |
+| Next | [Link budget →](./86-link-budget.md) |
 
 ---
 
-# 85. Uplink / Downlink 是什么？
+# 85. What are uplink / downlink?
 
 ## Downlink
 
@@ -15,7 +15,7 @@
 BS → device
 ```
 
-从基站下来。
+Coming down from the base station.
 
 ---
 
@@ -25,20 +25,20 @@ BS → device
 device → BS
 ```
 
-从用户设备上传。
+Going up from the user device.
 
-在本论文里和：
+In this paper they are close to:
 
 * R2D
 * D2R
 
-概念相近，但不是任何情况下完全等价。
+but they are not exactly the same in every situation.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← FDD](./84-fdd.md) |
-| 下一章 | [Link Budget →](./86-link-budget.md) |
+| Previous | [← FDD](./84-fdd.md) |
+| Next | [Link budget →](./86-link-budget.md) |

@@ -1,49 +1,49 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Random Access](./21-random-access.md) |
-| 下一章 | [CFRA →](./23-cfra.md) |
+| Previous | [← Random access](./21-random-access.md) |
+| Next | [CFRA →](./23-cfra.md) |
 
 ---
 
-# 22. CBRA 是什么？
+# 22. What is CBRA?
 
 ## CBRA = Contention-Based Random Access
 
-拆开：
+Break it apart:
 
 ### Contention
 
-竞争。
+Several devices competing for the same resource.
 
 ### Based
 
-基于。
+Built on that idea.
 
 ### Random Access
 
-随机接入。
+Random access.
 
-所以：
+So:
 
-> **基于竞争的随机接入。**
+> **random access where devices compete, instead of being given a private slot in advance.**
 
-意思是：
+Meaning:
 
-设备之间没有提前分配独占资源。
+Devices are not assigned exclusive resources ahead of time.
 
-大家自己随机选。
+Everyone picks at random.
 
-所以可能：
+So they may:
 
-> 撞车。
+> collide.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Random Access](./21-random-access.md) |
-| 下一章 | [CFRA →](./23-cfra.md) |
+| Previous | [← Random access](./21-random-access.md) |
+| Next | [CFRA →](./23-cfra.md) |

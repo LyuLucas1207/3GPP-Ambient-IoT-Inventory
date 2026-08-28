@@ -1,263 +1,259 @@
-# Ambient IoT 入门指南（单文件备份）
+# Ambient IoT beginner guide (single-file backup)
 
-> **注意**：本文件是讲义拆分前的备份。请以 **[content.md](./content.md)** 为入口；
-> 正式阅读请打开 `chapters/` 下对应章节（一章一个 `.md`，编号 0–97 + Preface）。
+> **Note**: This file is a backup from before the lecture was split. Use **[content.md](./content.md)** as the entry point;
+> for normal reading, open the matching chapter under `chapters/` (one `.md` per chapter, numbered 0–97 plus a Preface).
 
----
+# Preface · research-fit test
 
-# 研究适配度测试（Preface）
+Yes. More precisely, **this is not an "exam" — it is a research-fit test**.
 
-对。更准确地说，**这不是“考试题”，而是一个 research-fit test（研究适配度测试）**。
+The professor already stated the purpose very directly in the email:
 
-教授在邮件里其实已经把目的说得很直接了：
+> "to see if you would be a good fit for a specific topic for 499 thesis research"
 
-> “to see if you would be a good fit for a specific topic for 499 thesis research”
+In other words:
 
-意思就是：
+> "I will give you a small research task first, to see whether you are a good fit for this 499 thesis topic I have in mind."
 
-> “我先给你一个小型研究任务，看看你是否适合做我手上的这个 499 thesis topic。”
+So you should **not** read this as "the professor assumes I already know 3GPP / wireless / IoT, and is quizzing me on specialist knowledge." It is more likely a check of whether you can start from an unfamiliar field, read the paper, pull the model apart, write a simulation, notice problems, and then explain the results clearly.
 
-所以你现在**不应该把它理解成“教授默认我已经懂 3GPP / wireless / IoT，然后考我专业知识”**。更可能是在看你能不能从一个陌生领域开始，自己把论文读懂、把模型拆出来、写 simulation、发现问题、最后清楚地解释结果。
+You said this is your first time in this area. That matters a lot: **we will not teach this as if you already have a communications graduate student's default knowledge.**
 
-而你说自己第一次进入这个领域，这一点反而非常重要：**我们接下来不能用通信专业研究生默认知识来讲。**
-
-我下面就真的从“这些词我一个都不知道”的程度开始。
+I will start from the level of "I do not know any of these words yet."
 
 ---
 
----
+# 0. First, remember just one story
 
-# 0. 先只记住一个故事
+For now, ignore formulas. Ignore 3GPP.
 
-先完全不要管公式，不要管 3GPP。
+Imagine a large warehouse.
 
-想象一个大型仓库。
+Inside the warehouse there are:
 
-仓库里有：
+> **600 extremely small electronic tags.**
 
-> **600 个非常非常小的电子标签。**
+For example, one sticker on each crate.
 
-比如每个货箱上贴一个。
+These tags are similar to RFID tags, but they are ultra-low-power devices inside a future 5G/6G network.
 
-这些标签类似 RFID 标签，但是是未来 5G/6G 网络体系里的超低功耗设备。
+The catch:
 
-问题是：
+> **They do not have a normal battery.**
 
-> **它们没有正常的电池。**
+They can only collect a tiny amount of energy from radio waves in the air.
 
-它们只能从空气中的无线电波里面收集一点点能量。
+Then there is a "big machine" in the warehouse:
 
-然后仓库里面有一个“大机器”：
+> **Reader**
 
-> **Reader（读写器）**
+It wants to know:
 
-它想知道：
+> "Which 600 tags are in the warehouse right now?"
 
-> “仓库里现在到底有哪 600 个标签？”
+So it calls out:
 
-所以它喊：
+> "Is anyone there?"
 
-> “有人吗？”
+The tags answer:
 
-标签回答：
+> "I am #382!"
 
-> “我是 #382！”
+> "I am #157!"
 
-> “我是 #157！”
+> "I am #491!"
 
-> “我是 #491！”
+until the reader has registered everyone.
 
-直到 reader 把大家都登记完成。
-
-这个过程叫：
+That process is called:
 
 # Inventory
 
-也就是：
+In plain English:
 
-> **盘点 / 设备发现 / 把附近所有设备身份找出来。**
+> **stock-taking / device discovery / finding the identity of every nearby device.**
 
-整篇论文其实就研究一个问题：
+The whole paper studies one question:
 
-> **怎样让这 600 个没电池的小标签，更快地全部被 reader 找到？**
+> **How can these 600 batteryless little tags all be found by the reader, faster?**
 
-论文研究的正是 indoor inventory，而设备依赖 energy harvesting，因此可能因为缺电而暂时无法通信。
+The paper studies indoor inventory. Devices depend on energy harvesting, so they may temporarily be unable to communicate because they are short of energy.
 
-你现在先把这一个故事装进脑子。
+Put this one story in your head first.
 
 ---
 
-# 1. IoT 是什么？
+# 1. What is IoT?
 
 ## IoT = Internet of Things
 
-中文通常翻译：
+In plain English:
 
-> **物联网**
+> **a network of everyday objects that can talk to the network.**
 
-普通 Internet 是：
-
-```text
-电脑
-手机
-服务器
-```
-
-互相联网。
-
-IoT 则是：
+The ordinary Internet is:
 
 ```text
-温度传感器
-智能门锁
-货物标签
-摄像头
-工业机器人
-智能电表
-汽车
+computers
+phones
+servers
 ```
 
-这些“东西”也联网。
+talking to each other.
 
-所以：
+IoT is:
+
+```text
+temperature sensors
+smart door locks
+cargo tags
+cameras
+industrial robots
+smart meters
+cars
+```
+
+These "things" are also networked.
+
+So:
 
 $$
 IoT = Internet\ of\ Things
 $$
 
-就是：
+which means:
 
-> **让大量现实世界里的设备能够通信。**
+> **letting a huge number of real-world devices communicate.**
 
 ---
 
-# 2. 那 A-IoT 又是什么？
+# 2. Then what is A-IoT?
 
 ## A-IoT = Ambient Internet of Things
 
-Ambient 在这里大概可以理解为：
+Ambient here roughly means:
 
-> 环境中的 / 极低功耗的 / 可以依靠周围能量工作的 IoT。
+> IoT that lives in the environment / uses extremely low power / can run on energy around it.
 
-这篇论文里的 A-IoT device 和你的手机差别非常大。
+The A-IoT device in this paper is very different from your phone.
 
-手机：
+Phone:
 
 ```text
-大电池
+large battery
 CPU
 Wi-Fi
 5G modem
-屏幕
-几瓦功耗
+screen
+a few watts of power
 ```
 
-A-IoT：
+A-IoT:
 
 ```text
-可能没有电池
-一个小电容
-极低功耗芯片
-靠 RF energy harvesting
-微瓦级功耗
+may have no battery
+a small capacitor
+an ultra-low-power chip
+runs on RF energy harvesting
+microwatt-level power
 ```
 
-论文明确说，3GPP 研究的是 batteryless、ultra-low-power 的设备，它们依靠 energy harvesting 和有限的 energy storage 工作。
+The paper is explicit: 3GPP is studying batteryless, ultra-low-power devices that work by energy harvesting and limited energy storage.
 
 ---
 
-# 3. batteryless 是什么意思？
+# 3. What does batteryless mean?
 
-## batteryless = 没有传统电池
+## batteryless = no conventional battery
 
-不是说它完全不需要能量。
+That does not mean it needs no energy at all.
 
-任何电子设备都需要能量。
+Every electronic device needs energy.
 
-只是它可能没有：
+It just may not have:
 
-> AA 电池、锂电池之类长期储能。
+> an AA cell, a lithium battery, or other long-term energy storage.
 
-而是有一个：
+Instead it has a:
 
 ## Capacitor
 
-中文：
+In plain English:
 
-> **电容**
+> **a tiny energy-storage component — think of a very small cup of water.**
 
-你可以把电容想成一个非常非常小的水杯。
+You can picture the capacitor as an extremely small cup.
 
 ---
 
-手机电池：
+Phone battery:
 
 ```text
 ████████████████████
-很大的水箱
+a large water tank
 ```
 
-Ambient IoT：
+Ambient IoT:
 
 ```text
 █
-一个小杯子
+a small cup
 ```
 
-设备工作的时候：
+When the device works:
 
 ```text
-杯子里的水 ↓
+water in the cup ↓
 ```
 
-从无线电波收集能量：
+When it harvests energy from radio waves:
 
 ```text
-杯子里的水 ↑
+water in the cup ↑
 ```
 
-这就是后面整篇论文的核心。
+That is the core of the whole paper from here on.
 
 ---
 
-# 4. Energy Harvesting 是什么？
+# 4. What is energy harvesting?
 
 ## Energy Harvesting
 
-直译：
+In plain English:
 
-> **能量采集**
+> **collecting energy from the outside world.**
 
-就是设备从外界获得能量。
+The device obtains energy from its surroundings.
 
-比如：
+For example:
 
-* 太阳能
-* 振动
-* 温差
-* RF 无线电波
+* sunlight
+* vibration
+* temperature difference
+* RF radio waves
 
-这篇 paper 主要讲：
+This paper is mainly about:
 
 # RF Energy Harvesting
 
 ---
 
-## RF 是什么？
+## What is RF?
 
 ### RF = Radio Frequency
 
-中文：
+In plain English:
 
-> **射频**
+> **radio waves.**
 
-简单理解就是：
+A simple picture:
 
-> 无线电信号。
+> wireless signals.
 
-Wi-Fi、5G、蓝牙、广播，都涉及 RF 信号。
+Wi-Fi, 5G, Bluetooth, and broadcast radio all involve RF signals.
 
-Reader 在空气里发 RF：
+The reader sends RF into the air:
 
 ```text
 Reader
@@ -266,7 +262,7 @@ Reader
                 Tag
 ```
 
-Tag 的天线收到一点能量：
+The tag's antenna receives a little energy:
 
 ```text
 RF signal
@@ -278,260 +274,260 @@ energy harvesting circuit
 capacitor
 ```
 
-于是 capacitor 被充一点电。
+So the capacitor is charged a little.
 
 ---
 
-# 5. Reader 是谁？
+# 5. Who is the reader?
 
-论文一直说：
+The paper keeps saying:
 
 ## Reader
 
-你可以暂时理解成：
+You can temporarily think of it as:
 
-> **负责发现、控制 A-IoT device 的“大设备”。**
+> **the "big device" that discovers and controls A-IoT devices.**
 
-论文说 reader 可以是：
+The paper says the reader can be:
 
 * BS
 * UE
 
 ---
 
-# 6. BS 是什么？
+# 6. What is a BS?
 
 ## BS = Base Station
 
-中文：
+In plain English:
 
-> **基站**
+> **the cell site your phone talks to — a radio station on the network side.**
 
-你平时手机连接 4G/5G：
+When your phone connects to 4G/5G:
 
 ```text
-手机 ←→ 基站
+phone ←→ base station
 ```
 
-那个基站就是 BS。
+That base station is the BS.
 
-在论文的 factory simulation 里面：
+In the paper's factory simulation:
 
-> 工厂里有 18 个 base stations，一次选一个进行 inventory。
+> There are 18 base stations in the factory; one of them is chosen at a time to run inventory.
 
-正式论文设定是一个 \(120m\times60m\) 的室内工厂，18 个 BS 中一次一个负责 inventory，发射功率 33 dBm。
+The formal paper setting is a \(120m\times60m\) indoor factory. One of the 18 BSs is responsible for inventory at a time, with transmit power 33 dBm.
 
 ---
 
-# 7. UE 是什么？
+# 7. What is a UE?
 
 ## UE = User Equipment
 
-中文：
+In plain English:
 
-> **用户设备**
+> **the end-user gadget on the network — a phone, a tablet, or another 5G terminal.**
 
-比如：
+For example:
 
-* 手机
-* 平板
-* 某些 5G terminal
+* a phone
+* a tablet
+* some 5G terminals
 
-在 3GPP 语言里，你的手机不是通常叫 phone，而经常叫：
+In 3GPP language, your phone is not usually called a phone. It is often called:
 
 > UE
 
-所以论文说：
+So the paper says:
 
-> BS 和 UE 都可能充当 A-IoT reader。
+> Both a BS and a UE may act as an A-IoT reader.
 
 ---
 
-# 8. 3GPP 到底是什么？
+# 8. What is 3GPP, really?
 
-这个缩写你以后会看见无数次。
+You will see this acronym countless times.
 
 ## 3GPP = 3rd Generation Partnership Project
 
-不要被名字里的 “3rd Generation” 骗了。
+Do not be fooled by "3rd Generation" in the name.
 
-它最开始确实跟 3G 有关，但现在：
+It did start out related to 3G, but today:
 
 * 4G
 * LTE
 * 5G
 * 5G Advanced
-* 后续移动通信
+* later mobile generations
 
-大量标准都由它制定。
+a large share of the standards are written by it.
 
-你可以简单理解成：
+A simple picture:
 
-> **全球移动通信标准制定组织体系。**
+> **the global system for writing mobile-communication standards.**
 
-比如大家不能：
+For example, nobody can do this:
 
 ```text
-Samsung 自己发一种 5G
-Apple 自己发一种 5G
-Qualcomm 自己定义另一种
-Ericsson 再定义另一种
+Samsung ships one kind of 5G
+Apple ships another kind of 5G
+Qualcomm defines yet another
+Ericsson defines yet another
 ```
 
-否则彼此没法通信。
+Otherwise they could not talk to each other.
 
-所以需要规则：
+So you need rules:
 
-> 信号怎么发？
-> 频率怎么用？
-> 手机怎样接入？
-> 消息格式是什么？
+> How are signals sent?
+> How is spectrum used?
+> How does a phone get onto the network?
+> What is the message format?
 
-这些就是 standardization。
+That is standardization.
 
 ---
 
-# 9. Release 18 / Release 19 是什么？
+# 9. What are Release 18 / Release 19?
 
-3GPP 的标准不是一次写完。
+3GPP standards are not written in one shot.
 
-它一代一代发布。
+They are published generation by generation.
 
-比如：
+For example:
 
 ## Release 18
 
-简称：
+Short name:
 
 > Rel-18
 
-是某一个版本阶段。
+That is one version stage.
 
-然后：
+Then:
 
 ## Release 19
 
-简称：
+Short name:
 
 > Rel-19
 
-继续加入新的功能。
+which keeps adding new features.
 
-这篇论文说：
+This paper says:
 
-* Release 18 做 A-IoT feasibility study
-* Release 19 进一步研究具体 solutions
+* Release 18 did an A-IoT feasibility study
+* Release 19 studies concrete solutions further
 
 ---
 
-# 10. TR 是什么？
+# 10. What is a TR?
 
 ## TR = Technical Report
 
-中文：
+In plain English:
 
-> **技术报告**
+> **a technical study document (not yet a frozen standard).**
 
-3GPP 会有很多技术文档。
+3GPP publishes many technical documents.
 
-这篇 paper 引用了：
+This paper cites:
 
 > TR 38.769
 
-也就是：
+which means:
 
-> 3GPP 的某份 Ambient IoT 技术研究报告。
+> a 3GPP Ambient IoT technical study report.
 
-因此你看到：
+So when you see:
 
 ```text
 TR [3]
 ```
 
-不要怕。
+do not panic.
 
-就是：
+It just means:
 
-> Reference 3 那份 Technical Report。
+> Technical Report number 3 in the reference list.
 
 ---
 
-# 11. Device 1 和 Device 2 是什么？
+# 11. What are Device 1 and Device 2?
 
-论文把 A-IoT device 分成两个类型。
+The paper splits A-IoT devices into two types.
 
 ## Device 1
 
-非常省电。
+Extremely power-thrifty.
 
-峰值功耗大约：
+Peak power is about:
 
 $$
 1\mu W
 $$
 
-这里：
+Here:
 
 ## \(\mu W\)
 
-读作：
+Read it as:
 
-> microwatt，微瓦
+> microwatt — one millionth of a watt
 
 $$
 1\mu W=10^{-6}W
 $$
 
-也就是：
+which is:
 
 $$
 0.000001W
 $$
 
-非常非常小。
+Extremely small.
 
 ---
 
-Device 1：
+Device 1:
 
-* 没有自己的 carrier generator
-* 没有正常意义上的强 transmitter
-* 主要靠 backscatter
+* has no carrier generator of its own
+* has no strong transmitter in the usual sense
+* mainly uses backscatter
 
-很像 RFID。
+Very much like RFID.
 
 ---
 
 ## Device 2
 
-功耗更高：
+Higher power:
 
-> 几百 \(\mu W\)
+> a few hundred \(\mu W\)
 
-但它能力也更强：
+But it is also more capable:
 
 * amplifier
 * internal CW generator
-* 更好的通信性能
+* better communication performance
 
-论文给出的目标距离大概是：
+The paper's target ranges are roughly:
 
-* Device 1：10–15 m
-* Device 2：15–50 m
+* Device 1: 10–15 m
+* Device 2: 15–50 m
 
 ---
 
-# 12. CW 又是什么鬼？
+# 12. So what on earth is CW?
 
 ## CW = Continuous Wave
 
-中文一般叫：
+In plain English:
 
-> **连续波**
+> **a steady radio wave that is left on, without being turned into a message of its own.**
 
-最简单理解：
+The simplest picture:
 
-Reader 不断发一个稳定的无线载波：
+The reader keeps sending a stable wireless carrier:
 
 ```text
 ~~~~~~~~~~~~~~~
@@ -539,148 +535,152 @@ Reader 不断发一个稳定的无线载波：
 ~~~~~~~~~~~~~~~
 ```
 
-Device 1 没能力自己制造强无线信号。
+Device 1 cannot manufacture a strong radio signal by itself.
 
-所以它借用 Reader 发来的 CW。
+So it borrows the CW that the reader is already sending.
 
 ---
 
-# 13. Carrier 是什么？
+# 13. What is a carrier?
 
-## Carrier = 载波
+## Carrier
 
-无线通信最基础的概念之一。
+In plain English:
 
-例如：
+> **the high-frequency radio wave that actually travels through the air, carrying your bits.**
 
-你要传：
+One of the most basic ideas in wireless communication.
+
+For example:
+
+You want to send:
 
 ```text
 101101001
 ```
 
-不是把这些 0 和 1 凭空扔进空气。
+You do not throw those 0s and 1s into the air by themselves.
 
-通常需要一个高频波：
+Usually you need a high-frequency wave:
 
 $$
 \cos(2\pi f_ct)
 $$
 
-这个高频波就叫：
+That high-frequency wave is called a:
 
 > carrier wave
 
-简称：
+or just:
 
 > carrier
 
 ---
 
-# 14. Backscatter 是什么？
+# 14. What is backscatter?
 
-这是 Ambient IoT / RFID 里非常重要的概念。
+This is a very important idea in Ambient IoT / RFID.
 
 ## Backscatter communication
 
-中文：
+In plain English:
 
-> **反向散射通信**
+> **talking by reflecting someone else's radio wave, instead of generating your own.**
 
-普通手机：
+An ordinary phone:
 
 ```text
-手机自己产生 RF signal
+the phone generates an RF signal
 → amplifier
 → antenna
-→ 发出去
+→ sends it out
 ```
 
-但是 ultra-low-power tag：
+But an ultra-low-power tag:
 
-> 没电做这个。
+> does not have the energy to do that.
 
-于是它使用 Reader 已经发来的无线波。
+So it uses the radio wave the reader is already sending.
 
-Reader：
+Reader:
 
 ```text
 ))))))))))))))))
 ```
 
-Tag 改变自己天线的电气特性：
+The tag changes the electrical properties of its own antenna:
 
 ```text
-反射强
-反射弱
-反射强
-反射弱
+strong reflection
+weak reflection
+strong reflection
+weak reflection
 ```
 
-Reader 检测这个变化：
+The reader detects that change:
 
 ```text
 1 0 1 0
 ```
 
-这就是：
+That is:
 
-> backscatter。
+> backscatter.
 
-非常像：
+It is a lot like:
 
-> 你没有手电筒，但别人拿手电照你；你用镜子改变反射方式来发送 Morse code。
+> you do not have a flashlight, but someone else shines one at you; you send Morse code by changing how a mirror reflects the light.
 
 ---
 
-# 15. RFID 是什么？
+# 15. What is RFID?
 
 ## RFID = Radio Frequency Identification
 
-中文：
+In plain English:
 
-> **射频识别**
+> **identifying an object with a radio tag, instead of looking at it or scanning a barcode by hand.**
 
-你应该见过：
+You have probably seen:
 
-* 门禁卡
-* 物流标签
-* 商场防盗标签
-* 仓库货物标签
+* access cards
+* logistics labels
+* store anti-theft tags
+* warehouse cargo tags
 
-这篇论文自己就说 Device 1 类似 UHF RFID。
+The paper itself says Device 1 is similar to UHF RFID.
 
 ---
 
-# 16. UHF 是什么？
+# 16. What is UHF?
 
 ## UHF = Ultra High Frequency
 
-中文：
+In plain English:
 
-> **特高频**
+> **a slice of the radio spectrum often used by RFID tags.**
 
-这是无线频谱的一段范围。
+This is a range of wireless frequencies.
 
-这里你暂时不用研究具体频率。
+You do not need the exact frequencies for now.
 
-只要知道：
+Just remember:
 
-> UHF RFID 是一种常见 RFID 系统。
+> UHF RFID is a common kind of RFID system.
 
 ---
 
-# 17. 那 Ambient IoT 和 RFID 是不是一个东西？
+# 17. Are Ambient IoT and RFID the same thing?
 
-不是完全一样。
+Not exactly the same.
 
-但是你作为新人可以先这样理解：
+But as a beginner you can start with this picture:
 
-> **A-IoT Device 1 ≈ 更加 3GPP / cellular 化的高级 RFID-like device**
+> **A-IoT Device 1 ≈ a more 3GPP / cellular-flavored, RFID-like device**
 
-传统 RFID 和 3GPP Ambient IoT：
+Traditional RFID and 3GPP Ambient IoT:
 
-共同点：
+What they share:
 
 * ultra-low-power
 * tag
@@ -688,13 +688,11 @@ Reader 检测这个变化：
 * backscatter
 * inventory
 
-区别在于：
-
-Ambient IoT 希望进入：
+The difference is that Ambient IoT wants to enter the:
 
 > 3GPP / cellular ecosystem
 
-和：
+and combine with:
 
 * 5G NR
 * BS
@@ -702,77 +700,75 @@ Ambient IoT 希望进入：
 * licensed spectrum
 * standardized cellular procedures
 
-结合。
-
 ---
 
-# 18. NR 是什么？
+# 18. What is NR?
 
 ## NR = New Radio
 
-这是 5G 无线接口的正式名字。
+This is the official name of the 5G radio interface.
 
-你看到：
+When you see:
 
 > 5G NR
 
-可以理解成：
+you can read it as:
 
-> 5G 的无线通信技术体系。
+> the 5G wireless-communication technology family.
 
-不是：
+It is not:
 
-> “新的 radio 随便一种”。
+> "some new radio, any kind."
 
-是专有名词。
+It is a proper name.
 
 ---
 
-# 19. R2D 和 D2R 是什么？
+# 19. What are R2D and D2R?
 
-非常简单。
+Very simple.
 
 ## R2D = Reader-to-Device
 
-就是：
+That is:
 
 ```text
 Reader → Device
 ```
 
-例如：
+For example:
 
-> Reader 发 paging 给 tag。
+> The reader sends paging to the tag.
 
 ---
 
 ## D2R = Device-to-Reader
 
-就是：
+That is:
 
 ```text
 Device → Reader
 ```
 
-例如：
+For example:
 
-> tag 回复自己的 ID。
+> The tag replies with its own ID.
 
-论文专门把两个方向分别讨论。
+The paper discusses the two directions separately.
 
 ---
 
-# 20. Paging 是什么？
+# 20. What is paging?
 
-这是你之后 simulation 必须非常熟悉的词。
+This is a word you must know well later in the simulation.
 
 ## Paging
 
-你可以理解成：
+You can picture it as:
 
-> **Reader 喊设备：“醒醒！现在轮到你们跟我通信了！”**
+> **the reader shouting at the devices: "Wake up! It is your turn to talk to me!"**
 
-例如：
+For example:
 
 ```text
 Reader:
@@ -780,152 +776,152 @@ Reader:
 "HELLO ALL TAGS, INVENTORY STARTING!"
 ```
 
-这条唤醒/触发消息就是：
+That wake-up / trigger message is:
 
 > A-IoT paging
 
-论文定义得很明确：
+The paper defines it clearly:
 
-> A-IoT paging 是一个 R2D message，用来触发 random access procedure。
+> A-IoT paging is an R2D message used to trigger the random access procedure.
 
 ---
 
-# 21. Random Access 是什么？
+# 21. What is random access?
 
 ## Random Access
 
-中文：
+In plain English:
 
-> **随机接入**
+> **devices pick a chance to speak, instead of all shouting at once.**
 
-假设 600 台设备都想跟一个 Reader 讲话。
+Suppose 600 devices all want to talk to one reader.
 
-你不可能让大家同时喊：
+You cannot let everyone shout at the same time:
 
 ```text
 TAG1TAG27TAG384TAG503...
 ```
 
-完全听不清。
+You would hear nothing.
 
-所以需要某种：
+So you need some kind of:
 
-> 接入机制。
+> access mechanism.
 
-其中一种方法就是：
+One method is:
 
-> 每个 device 随机选一个机会说话。
+> each device randomly picks an opportunity to speak.
 
-这就是 random access。
+That is random access.
 
 ---
 
-# 22. CBRA 是什么？
+# 22. What is CBRA?
 
 ## CBRA = Contention-Based Random Access
 
-拆开：
+Break it apart:
 
 ### Contention
 
-竞争。
+Several devices competing for the same resource.
 
 ### Based
 
-基于。
+Built on that idea.
 
 ### Random Access
 
-随机接入。
+Random access.
 
-所以：
+So:
 
-> **基于竞争的随机接入。**
+> **random access where devices compete, instead of being given a private slot in advance.**
 
-意思是：
+Meaning:
 
-设备之间没有提前分配独占资源。
+Devices are not assigned exclusive resources ahead of time.
 
-大家自己随机选。
+Everyone picks at random.
 
-所以可能：
+So they may:
 
-> 撞车。
+> collide.
 
 ---
 
-# 23. CFRA 是什么？
+# 23. What is CFRA?
 
 ## CFRA = Contention-Free Random Access
 
-就是：
+That is:
 
-> **无竞争随机接入**
+> **random access with no competition — the reader has already assigned who speaks where.**
 
-Reader 可以事先安排：
+The reader can schedule in advance:
 
 ```text
-Tag A → 位置 1
-Tag B → 位置 2
-Tag C → 位置 3
+Tag A → position 1
+Tag B → position 2
+Tag C → position 3
 ```
 
-因此不会撞。
+So they will not collide.
 
-但问题是 inventory 刚开始的时候：
+The problem is that when inventory has just started:
 
-> Reader 甚至不知道附近有哪些设备。
+> the reader does not even know which devices are nearby.
 
-所以论文说：
+So the paper says:
 
-> 对未知数量设备的 inventory，通常使用 CBRA。
+> for inventory of an unknown number of devices, CBRA is typically used.
 
 ---
 
-# 24. Contention 是什么意思？
+# 24. What does contention mean?
 
-简单理解：
+A simple picture:
 
-> 多个人抢同一资源。
+> several people grabbing the same resource.
 
-例如四个厕所：
-
-```text
-Toilet 1
-Toilet 2
-Toilet 3
-Toilet 4
-```
-
-10 个人同时冲过去。
-
-如果：
+For example, four bathroom stalls:
 
 ```text
-Alice → Toilet 2
-Bob → Toilet 2
+Stall 1
+Stall 2
+Stall 3
+Stall 4
 ```
 
-就发生资源竞争。
+Ten people rush over at once.
 
-通信里也是一样。
+If:
+
+```text
+Alice → Stall 2
+Bob → Stall 2
+```
+
+then you have resource contention.
+
+Wireless communication works the same way.
 
 ---
 
-# 25. AO 是什么？
+# 25. What is an AO?
 
 ## AO = Access Occasion
 
-中文你可以先理解：
+You can first think of it as:
 
-> **一次可以发送 Msg1 的位置 / 机会。**
+> **A location / opportunity where a device can send Msg1.**
 
-AO 可以在：
+AOs can differ in:
 
-* 时间上不同
-* 频率上不同
+* time
+* frequency
 
-例如：
+For example:
 
 ```text
              Frequency
@@ -938,13 +934,13 @@ AO2       [     ]
            → Time
 ```
 
-每个 device 随机选择一个 AO。
+Each device randomly chooses an AO.
 
 ---
 
-# 26. 为什么既有时间又有频率？
+# 26. Why both time and frequency?
 
-因为无线资源是二维的：
+Because wireless resources are two-dimensional:
 
 ```text
           frequency
@@ -955,41 +951,41 @@ AO2       [     ]
               └────────→ time
 ```
 
-所以两台设备可以：
+So two devices can:
 
-### 时间不同
+### Differ in time
 
 ```text
 Tag A: now
 Tag B: later
 ```
 
-或者：
+or:
 
-### 频率不同
+### Differ in frequency
 
 ```text
 Tag A: frequency 1
 Tag B: frequency 2
 ```
 
-都能避免互相撞。
+Either way they can avoid colliding with each other.
 
 ---
 
-# 27. FDMA 是什么？
+# 27. What is FDMA?
 
 ## FDMA = Frequency-Domain Multiple Access
 
-中文：
+In plain English:
 
-> **频分多址**
+> **Several devices share the medium by using different frequencies at the same time.**
 
-就是：
+That is:
 
-> 不同设备用不同频率同时通信。
+> Different devices communicate at the same time on different frequencies.
 
-比如：
+For example:
 
 ```text
 frequency 1 → Tag A
@@ -997,19 +993,19 @@ frequency 2 → Tag B
 frequency 3 → Tag C
 ```
 
-论文提到 A-IoT 可以利用 frequency-domain multiple access。
+The paper notes that A-IoT can use frequency-domain multiple access.
 
 ---
 
-# 28. Msg1、Msg2、Msg3 到底是什么？
+# 28. What are Msg1, Msg2, and Msg3, really?
 
-这个非常重要。
+This is very important.
 
-不要把它们神秘化。
+Do not treat them as mysterious jargon.
 
 ## Msg = Message
 
-所以：
+So:
 
 * Msg1 = Message 1
 * Msg2 = Message 2
@@ -1017,7 +1013,7 @@ frequency 3 → Tag C
 
 ---
 
-整个流程：
+The whole procedure:
 
 ```text
 Reader
@@ -1043,131 +1039,131 @@ Reader
 
 ## Paging
 
-Reader：
+Reader:
 
-> “谁在这里？来接入。”
+> “Who is here? Come access.”
 
 ---
 
 ## Msg1
 
-Tag：
+Tag:
 
-> “我来申请接入，我临时随机 ID 是 12345。”
+> “I am requesting access. My temporary random ID is 12345.”
 
 ---
 
 ## Msg2
 
-Reader：
+Reader:
 
-> “随机 ID 12345，我听到了。”
+> “Random ID 12345, I heard you.”
 
 ---
 
 ## Msg3
 
-Tag：
+Tag:
 
-> “好，那我真正的 device ID 是 ABCDEFG。”
+> “Good. Then my real device ID is ABCDEFG.”
 
-当 Msg3 成功以后：
+Once Msg3 succeeds:
 
-> Reader 才正式 inventory 了这个设备。
+> The reader has officially inventoried this device.
 
-论文就是这样描述 CBRA 的。
+That is how the paper describes CBRA.
 
 ---
 
-# 29. 为什么 Msg1 用 random ID？
+# 29. Why does Msg1 use a random ID?
 
-论文给例子：
+The paper gives an example:
 
-> 16-bit random ID。
+> 16-bit random ID.
 
-因为 Reader 一开始还不知道：
+Because at the start the reader still does not know:
 
-> 你是谁。
+> who you are.
 
-Tag 先临时生成一个短 ID：
+The tag first generates a short temporary ID:
 
 ```text
 101001101011...
 ```
 
-用它完成初步 handshake。
+It uses that to finish the initial handshake.
 
-之后 Msg3 再报告真正 device ID。
+Then Msg3 reports the real device ID.
 
 ---
 
-# 30. ID 是什么？
+# 30. What is an ID?
 
 ## ID = Identifier
 
-就是：
+That is:
 
-> 身份标识符。
+> An identity label.
 
-类似：
+Similar to:
 
-* 学号
-* 身份证号
-* MAC address
-* serial number
+* a student number
+* a national ID number
+* a MAC address
+* a serial number
 
-这里就是：
+Here it means:
 
-> “这个 tag 到底是哪一个 tag？”
+> “Which tag is this tag, exactly?”
 
 ---
 
-# 31. Collision 是什么？
+# 31. What is a collision?
 
-## Collision = 碰撞
+## Collision
 
-如果：
+If:
 
 ```text
 Tag A → AO 3
 Tag B → AO 3
 ```
 
-两个同时发 Msg1。
+both send Msg1 at the same time.
 
-Reader 很可能无法正确解码。
+The reader likely cannot decode correctly.
 
-于是：
+Then you get:
 
-> Msg1 collision。
+> Msg1 collision.
 
-论文 Figure 1 就专门画了一个 collision AO。
+Paper Figure 1 even draws a collision AO on purpose.
 
-你可以把它想象成两个人同时对你说话：
+You can picture two people talking to you at once:
 
-> “我是—我是—”
+> “I am—I am—”
 
-你一个都没听懂。
+You understood neither of them.
 
 ---
 
-# 32. Slotted ALOHA 是什么？
+# 32. What is slotted ALOHA?
 
-这个名字你也会看到。
+You will see this name too.
 
 ## ALOHA
 
-是一个经典 random access protocol。
+is a classic random access protocol.
 
-最简单思想：
+The simplest idea:
 
-> 谁想说就尝试说。
+> Whoever wants to speak tries to speak.
 
-Slotted ALOHA 增加：
+Slotted ALOHA adds:
 
-> 只能在规定的时间槽开始说。
+> You may only start speaking at the beginning of a prescribed time slot.
 
-于是：
+So you get:
 
 ```text
 slot 1
@@ -1176,41 +1172,41 @@ slot 3
 slot 4
 ```
 
-Tag 随机挑 slot。
+A tag randomly picks a slot.
 
-论文的 Msg1 random access 就是基于 slotted-ALOHA 思路。
+The paper’s Msg1 random access is based on the slotted-ALOHA idea.
 
-现在你不用学它的数学理论。
+You do not need its mathematical theory yet.
 
 ---
 
-# 33. Slot 是什么？
+# 33. What is a slot?
 
-## Slot = 时间槽
+## Slot = time slot
 
-就是把时间切成小格子。
+It means chopping time into small boxes.
 
-论文参数里：
+In the paper’s parameters:
 
 $$
 1\ slot=0.5ms
 $$
 
-arXiv 版本 Table I 就这么设置。
+arXiv Table I sets it this way.
 
 ---
 
-## ms 是什么？
+## What is ms?
 
 ### ms = millisecond
 
-毫秒。
+A millisecond.
 
 $$
 1ms=0.001s
 $$
 
-所以：
+So:
 
 $$
 0.5ms=0.0005s
@@ -1218,34 +1214,34 @@ $$
 
 ---
 
-# 34. Congestion 是什么？
+# 34. What is congestion?
 
-## Congestion = 拥塞
+## Congestion
 
-Collision 是一次撞车。
+A collision is one crash.
 
-Congestion 是：
+Congestion is:
 
-> 整个系统人太多，导致大量撞车。
+> The whole system has too many people, so there are lots of crashes.
 
-例如：
+For example:
 
 ```text
 600 devices
 8 AOs
 ```
 
-这显然很挤。
+That is clearly crowded.
 
-就像：
+Like:
 
-> 600 辆车抢 8 条很短的入口。
+> 600 cars fighting over 8 very short on-ramps.
 
 ---
 
-# 35. Inventory 到底什么时候算成功？
+# 35. When does inventory actually count as success?
 
-对某一个 Tag：
+For a given tag:
 
 ```text
 Paging
@@ -1259,17 +1255,17 @@ Msg3 successfully reports device ID
 DONE
 ```
 
-之后论文假设：
+After that the paper assumes:
 
-> 这个 device 不再参加后续 inventory。
+> This device no longer takes part in later inventory.
 
-所以最开始：
+So at the start:
 
 ```text
 0 / 600 inventoried
 ```
 
-然后：
+Then:
 
 ```text
 100 / 600
@@ -1280,7 +1276,7 @@ DONE
 ...
 ```
 
-最终接近：
+Eventually approaching:
 
 ```text
 600 / 600
@@ -1288,37 +1284,37 @@ DONE
 
 ---
 
-# 36. 现在进入论文真正的核心：Energy
+# 36. Now we enter the paper’s real core: energy
 
-每个 device 有能量：
+Each device has energy:
 
 $$
 e_{es}
 $$
 
-你现在不要怕这个符号。
+Do not be afraid of this symbol.
 
 ---
 
 ## \(e_{es}\)
 
-意思：
+Meaning:
 
-> **当前 energy storage 里面还有多少 energy。**
+> **How much energy is still in energy storage.**
 
-就是：
+That is:
 
-> “杯子现在有多少水。”
+> “How much water is in the cup right now.”
 
 ---
 
 ## \(E_{es}^{max}\)
 
-意思：
+Meaning:
 
-> 最大容量。
+> Maximum capacity.
 
-例如 Device 1：
+For Device 1, for example:
 
 $$
 E_{es}^{max}=500nJ
@@ -1326,47 +1322,47 @@ $$
 
 ---
 
-# 37. nJ 是什么？
+# 37. What is an nJ?
 
 ## nJ = nanojoule
 
-J = Joule：
+J = joule:
 
-> 能量单位。
+> The unit of energy.
 
-nano：
+nano:
 
 $$
 10^{-9}
 $$
 
-所以：
+So:
 
 $$
 1nJ=10^{-9}J
 $$
 
-Device 1：
+Device 1:
 
 $$
 500nJ
 $$
 
-真的非常小。
+That is truly very small.
 
 ---
 
-# 38. Power 和 Energy 有什么区别？
+# 38. What is the difference between power and energy?
 
-这个基础一定要搞明白。
+You really need this foundation.
 
 ## Energy
 
-是：
+is:
 
-> “一共有多少能量。”
+> “How much energy there is in total.”
 
-单位：
+Unit:
 
 $$
 J
@@ -1376,51 +1372,51 @@ $$
 
 ## Power
 
-是：
+is:
 
-> “每秒使用多少能量。”
+> “How much energy is used per second.”
 
-单位：
+Unit:
 
 $$
 W
 $$
 
-关系是：
+The relation is:
 
 $$
 Energy=Power\times Time
 $$
 
-也就是：
+That is:
 
 $$
 E=P\cdot t
 $$
 
-因此：
+Therefore:
 
 $$
 t=\frac{E}{P}
 $$
 
-这个公式后面非常重要。
+This formula will matter a lot later.
 
 ---
 
-比如：
+For example:
 
 $$
 E=500nJ
 $$
 
-设备消耗：
+The device consumes:
 
 $$
 P=1\mu W
 $$
 
-那么理论上：
+Then in theory:
 
 $$
 t=\frac{500\times10^{-9}}
@@ -1430,27 +1426,27 @@ $$
 
 ---
 
-# 39. \(P_{rx}\) 是什么？
+# 39. What is \(P_{rx}\)?
 
 ## Rx = Receive
 
-所以：
+So:
 
 $$
 P_{rx}
 $$
 
-就是：
+is:
 
-> **device 接收信号时的功耗。**
+> **The device’s power consumption while receiving a signal.**
 
-Device 1：
+Device 1:
 
 $$
 P_{rx}=1\mu W
 $$
 
-Device 2：
+Device 2:
 
 $$
 P_{rx}=50\mu W
@@ -1458,66 +1454,66 @@ $$
 
 ---
 
-# 40. \(P_{tx}\) 是什么？
+# 40. What is \(P_{tx}\)?
 
 ## Tx = Transmit
 
-所以：
+So:
 
 $$
 P_{tx}
 $$
 
-是：
+is:
 
-> device 发信号时的功耗。
+> The device’s power consumption while sending a signal.
 
-Device 1：
+Device 1:
 
 $$
 1\mu W
 $$
 
-Device 2：
+Device 2:
 
 $$
 200\mu W
 $$
 
-以后看到：
+From now on, when you see:
 
 * Rx = receive
 * Tx = transmit
 
-直接条件反射。
+let it be a reflex.
 
 ---
 
-# 41. \(P_{eh}\) 是什么？
+# 41. What is \(P_{eh}\)?
 
 ## EH = Energy Harvesting
 
-所以：
+So:
 
 $$
 P_{eh}
 $$
 
-就是：
+is:
 
-> **设备收集能量的功率。**
+> **The power at which the device collects energy.**
 
-论文定义：
+The paper defines:
 
 $$
 P_{eh}=p_{in}\xi(p_{in})
 $$
 
-我们一个一个拆。
+We will unpack this one piece at a time.
 
 ---
 
-# 42. \(p_{in}\) 是什么？
+# 42. What is \(p_{in}\)?
 
 ## in = input / incident
 
@@ -1525,31 +1521,31 @@ $$
 p_{in}
 $$
 
-就是：
+is:
 
-> **真正到达 tag 的 RF power。**
+> **The RF power that actually arrives at the tag.**
 
-Reader 虽然发：
+The reader may send:
 
-> 很强的 signal
+> a strong signal
 
-但是信号在空气里传播会衰减。
+but the signal fades as it travels through the air.
 
-所以：
+So:
 
 ```text
-离 Reader 很近
-→ pin 较高
+close to the reader
+→ pin is higher
 
-离 Reader 很远
-→ pin 较低
+far from the reader
+→ pin is lower
 ```
 
 ---
 
-# 43. dBm 是什么？
+# 43. What is dBm?
 
-论文里会出现：
+In the paper you will see:
 
 $$
 -36dBm
@@ -1557,11 +1553,11 @@ $$
 
 ## dBm
 
-是无线通信里非常常见的 power 表示方法。
+is a very common way to write power in wireless communications.
 
-它是 logarithmic scale。
+It is a logarithmic scale.
 
-你现在不需要掌握完整公式，但需要有感觉：
+You do not need the full formula yet, but you need a feel for it:
 
 ```text
 0 dBm  = 1 mW
@@ -1570,286 +1566,284 @@ $$
 -30 dBm = 0.001 mW
 ```
 
-所以：
+So:
 
 $$
 -36dBm
 $$
 
-已经是非常微弱的信号。
+is already a very weak signal.
 
-注意：
+Note:
 
-> 越负，一般越弱。
+> More negative usually means weaker.
 
-例如：
+For example:
 
 $$
 -10dBm
 $$
 
-比：
+is much stronger than:
 
 $$
 -36dBm
 $$
-
-强很多。
 
 ---
 
-# 44. Receiver sensitivity 是什么？
+# 44. What is receiver sensitivity?
 
 ## Receiver sensitivity
 
-中文：
+In plain English:
 
-> **接收机灵敏度**
+> **How strong the signal must be at least, before the receiver can work.**
 
-意思：
+Meaning:
 
-> 信号至少要强到什么程度，receiver 才有能力工作。
+> The signal has to reach a certain strength before the receiver is able to operate.
 
-论文设：
+The paper sets:
 
 $$
 -36dBm
 $$
 
-作为 receiver chain sensitivity。
+as receiver chain sensitivity.
 
-低于这个值的 devices 不计入 evaluation。
+Devices below this value are not included in the evaluation.
 
-意思：
+Meaning:
 
 ```text
 pin < -36 dBm
-→ 太弱
-→ 不算了
+→ too weak
+→ do not count them
 ```
 
 ---
 
-# 45. \(\xi(p_{in})\) 又是什么？
+# 45. What is \(\xi(p_{in})\)?
 
-希腊字母：
+The Greek letter:
 
 $$
 \xi
 $$
 
-读：
+is pronounced:
 
-> xi，近似“克赛”。
+> xi (roughly “ksai” or “zai”).
 
-这里表示：
+Here it means:
 
 ## Power Conversion Efficiency
 
-> RF 能量转成可用电能的效率。
+> The efficiency of turning RF energy into usable electrical energy.
 
-例如：
+For example:
 
 $$
 \xi=5\%
 $$
 
-意思：
+Meaning:
 
-你收到：
+You receive:
 
 ```text
 100 units RF energy
 ```
 
-最后真正存进去：
+and what actually gets stored is:
 
 ```text
 5 units
 ```
 
-其余损失了。
+The rest is lost.
 
 ---
 
-# 46. 为什么不同 Tag 的充电速度不同？
+# 46. Why do different tags charge at different rates?
 
-因为：
+Because:
 
 $$
 P_{eh}=p_{in}\xi(p_{in})
 $$
 
-如果你离 Reader 很远：
+If you are far from the reader:
 
 $$
 p_{in}\downarrow
 $$
 
-通常：
+Usually:
 
 $$
 P_{eh}\downarrow
 $$
 
-所以：
+So:
 
-> 远处设备充电很慢。
+> Far devices charge very slowly.
 
-近处：
+Nearby:
 
-> 充得快。
+> They charge fast.
 
-这就是为什么最后几个设备可能把 inventory 时间拖得特别长。
+That is why the last few devices can drag inventory time out for so long.
 
 ---
 
-# 47. ON state 是什么？
+# 47. What is the ON state?
 
 ## ON state
 
-意思：
+Meaning:
 
-> 设备打开，可以通信。
+> The device is on and can communicate.
 
-它可以：
+It can:
 
 * receive paging
 * transmit Msg1
 * receive Msg2
 * transmit Msg3
 
-但：
+But:
 
-> 会耗电。
+> It consumes energy.
 
-论文定义 ON state 为可用于 reception/transmission 的状态。
+The paper defines the ON state as a state that can be used for reception/transmission.
 
 ---
 
-# 48. OFF state 是什么？
+# 48. What is the OFF state?
 
 ## OFF state
 
-意思：
+Meaning:
 
-> 主电路关闭。
+> The main circuit is off.
 
-设备：
+The device:
 
-* 不能 receive
-* 不能 transmit
-* 可以 harvest energy
+* cannot receive
+* cannot transmit
+* can harvest energy
 
-所以：
+So:
 
 ```text
 OFF
-→ 充电
+→ charge
 
 ON
-→ 工作 / 耗电
+→ work / consume energy
 ```
 
 ---
 
-# 49. IC 是什么？
+# 49. What is an IC?
 
 ## IC = Integrated Circuit
 
-中文：
+In plain English:
 
-> **集成电路 / 芯片**
+> **The chip.**
 
-论文说 OFF state 时：
+The paper says that in the OFF state:
 
 > IC turned off
 
-你就理解成：
+You can read that as:
 
-> 主芯片关闭，不进行正常通信。
-
----
-
-# 50. Turn-on threshold 是什么？
-
-论文记：
-
-$$
-E_{es}^{up}
-$$
-
-就是：
-
-> **开机门槛。**
-
-例如 Device 1：
-
-$$
-E_{es}^{max}=500nJ
-$$
-
-论文设：
-
-$$
-E_{es}^{up}=E_{es}^{max}
-$$
-
-所以：
-
-> 必须充到满附近才打开。
+> The main chip is off and is not doing normal communication.
 
 ---
 
-# 51. Turn-off threshold 是什么？
+# 50. What is the turn-on threshold?
 
-论文记：
-
-$$
-E_{es}^{low}
-$$
-
-就是：
-
-> **关机门槛。**
-
-论文设：
+The paper writes:
 
 $$
-E_{es}^{low}=0.5E_{es}^{max}
+E_{es}^{\mathrm{up}}
 $$
 
-Device 1：
+That is:
+
+> **the turn-on threshold.**
+
+For Device 1, for example:
 
 $$
-E_{es}^{max}=500nJ
+E_{es}^{\max}=500nJ
 $$
 
-所以：
+The paper sets:
 
 $$
-E_{es}^{low}=250nJ
+E_{es}^{\mathrm{up}}=E_{es}^{\max}
+$$
+
+So:
+
+> it must charge up near full before it turns on.
+
+---
+
+# 51. What is the turn-off threshold?
+
+The paper writes:
+
+$$
+E_{es}^{\mathrm{low}}
+$$
+
+That is:
+
+> **the turn-off threshold.**
+
+The paper sets:
+
+$$
+E_{es}^{\mathrm{low}}=0.5E_{es}^{\max}
+$$
+
+Device 1:
+
+$$
+E_{es}^{\max}=500nJ
+$$
+
+So:
+
+$$
+E_{es}^{\mathrm{low}}=250nJ
 $$
 
 ---
 
-因此：
+Therefore:
 
 ```text
 500 nJ
 ↑
 Turn ON
 
-工作
-工作
-工作
+work
+work
+work
 ↓
 250 nJ
 Turn OFF
 
-充电
-充电
-充电
+charge
+charge
+charge
 ↑
 500 nJ
 Turn ON
@@ -1857,39 +1851,39 @@ Turn ON
 
 ---
 
-# 52. EM 是什么？
+# 52. What is EM?
 
 ## EM = Energy-Based Monitoring
 
-中文可以理解成：
+In plain English:
 
-> **基于能量的监听机制**
+> **a scheme that listens for paging according to stored energy**
 
-这是论文里的 baseline。
+This is the baseline in the paper.
 
-Baseline 意思：
+Baseline means:
 
-> **拿来比较的旧方案 / 基准方案。**
+> **the old / reference scheme you compare against.**
 
-EM 的规则特别简单：
+The EM rule is very simple:
 
-> 有足够电 → ON
-> 电掉太低 → OFF
+> enough energy → ON
+> energy drops too low → OFF
 
-所以：
+So:
 
 ```text
 E reaches E_up
 ↓
 ON
 ↓
-一直监听
+keep monitoring
 ↓
 E reaches E_low
 ↓
 OFF
 ↓
-一直充电
+keep charging
 ↓
 E reaches E_up
 ↓
@@ -1898,67 +1892,67 @@ ON
 
 ---
 
-# 53. Monitoring 是什么意思？
+# 53. What does monitoring mean?
 
 ## Monitoring
 
-这里就是：
+Here it means:
 
-> **设备保持 receiver 打开，等 Reader 的 paging。**
+> **the device keeps its receiver on, waiting for the reader's paging.**
 
-不是说：
+It does **not** mean:
 
-> 它正在持续传数据。
+> it is continuously transmitting data.
 
-而是：
+It means:
 
-> 耗着电、睁着耳朵听。
+> burning energy, with its ears open, listening.
 
-这恰恰很耗能。
+That is exactly what costs a lot of energy.
 
 ---
 
-# 54. 论文为什么认为 EM 不够好？
+# 54. Why does the paper say EM is not good enough?
 
-论文列了：
+The paper lists:
 
 * P1
 * P2
 * P3
 
-这里 P 就是：
+Here P means:
 
-> Problem。
+> Problem.
 
 ---
 
-# 55. P1：设备可能要充太久
+# 55. P1: the device may need too long to charge
 
-假设 inventory 开始的时候：
+Suppose that when inventory starts:
 
-Tag 正好：
+the tag happens to have:
 
 $$
-e_{es}\approx E_{es}^{low}
+e_{es}\approx E_{es}^{\mathrm{low}}
 $$
 
-也就是：
+that is:
 
-> 快没电了。
+> almost out of energy.
 
-同时又离 Reader 很远：
+And it is also far from the reader:
 
 $$
 p_{in}\approx-36dBm
 $$
 
-所以充电特别慢。
+so charging is extremely slow.
 
-论文举例：
+The paper gives an example:
 
-> 从低阈值充到高阈值需要 250 nJ，在 \(p_{in}=-36dBm\)、效率 5% 的情况下，大约要 20 秒。
+> charging from the low threshold to the high threshold needs 250 nJ; at \(p_{in}=-36dBm\) and 5% efficiency, that takes about 20 seconds.
 
-这 20 秒 Tag：
+During those 20 seconds the tag:
 
 ```text
 Reader: PAGING!
@@ -1969,47 +1963,47 @@ Reader: PAGING!
 Tag: ...
 ```
 
-全错过。
+misses everything.
 
 ---
 
-# 56. P2：虽然醒着，但没电完成整个过程
+# 56. P2: awake, but not enough energy to finish the procedure
 
-这更像：
+This is more like:
 
-> 手机还有 1% 电。
+> a phone with 1% battery.
 
-它能亮屏。
+It can still light up the screen.
 
-但是你刚打开大型游戏：
+But the moment you open a heavy game:
 
-> 关机了。
+> it shuts off.
 
-Tag 也是：
+The tag is the same:
 
 ```text
-收到 Paging ✓
+received paging ✓
 
-发 Msg1 ✓
+send Msg1 ✓
 
-收 Msg2 ...
+receive Msg2 ...
 
-没电
+out of energy
 ```
 
-结果：
+Result:
 
-> CBRA 没完成。
+> CBRA is not completed.
 
-论文把这定义为 P2。
+The paper defines this as P2.
 
 ---
 
-# 57. P3：一直撞车，重试，把电耗光
+# 57. P3: keep colliding, retrying, and draining the energy
 
-假设设备有电。
+Suppose the device has energy.
 
-但是：
+But:
 
 ```text
 Attempt 1 → collision
@@ -2018,160 +2012,162 @@ Attempt 3 → collision
 Attempt 4 → collision
 ```
 
-它每一次都需要：
+Each attempt still needs:
 
-* 醒来
+* wake up
 * receive
 * transmit
 * wait
 
-于是一直耗电。
+so it keeps burning energy.
 
-最后：
+In the end:
 
 ```text
-没成功
+not successful
 +
-没电了
+out of energy
 ```
 
-这就是 P3。
+That is P3.
 
 ---
 
-# 58. 于是论文提出 DCM
+# 58. So the paper proposes DCM
 
-## DCM = Duty Cycled Monitoring
+## DCM = Duty-Cycled Monitoring
 
-这个名字很重要。
+This name matters.
 
 ### Duty Cycle
 
-意思：
+Meaning:
 
-> 一个设备不是一直 ON，而是周期性 ON / OFF。
+> a device is not always ON; it periodically goes ON / OFF.
 
-比如：
+For example:
 
 ```text
 ON   OFF OFF OFF   ON   OFF OFF OFF   ON
 ```
 
-而不是：
+instead of:
 
 ```text
 ON ON ON ON ON ON ON ON ON
 ```
 
-所以：
+So:
 
-## Duty Cycled Monitoring
+## Duty-Cycled Monitoring
 
-就是：
+means:
 
-> **间歇式监听。**
+> **listening on and off, instead of staying awake the whole time.**
 
 ---
 
-# 59. DCM 的核心思想到底是什么？
+# 59. What is the core idea of DCM?
 
-一句话：
+In one sentence:
 
-> **不要把电一直耗到最低再去充电。**
+> **do not drain the energy all the way to the bottom before you recharge.**
 
-传统 EM：
+Traditional EM:
 
 ```text
 500 nJ
 ↓
-一直监听
+keep monitoring
 ↓
-一直监听
+keep monitoring
 ↓
-一直监听
+keep monitoring
 ↓
 250 nJ
 ↓
 OFF
 ↓
-需要补 250 nJ
+need to top up 250 nJ
 ```
 
-DCM：
+DCM:
 
 ```text
 500 nJ
 ↓
-只监听一小段
+monitor only a short while
 ↓
-比如还有 470 nJ
+still has ~470 nJ, for example
 ↓
-主动睡觉
+sleep on purpose
 ↓
-只需要补 30 nJ
+only need to top up 30 nJ
 ```
 
-所以恢复得快。
+So it recovers faster.
 
 ---
 
-# 60. 为什么主动睡觉反而会变快？
+# 60. Why can sleeping on purpose make things faster?
 
-这点第一次看很反直觉。
+This looks counterintuitive at first.
 
-你可能觉得：
+You might think:
 
-> “我要尽快接收 paging，不是应该一直醒着吗？”
+> “If I want to catch paging as soon as possible, shouldn’t I stay awake the whole time?”
 
-问题是：
+The problem is:
 
-一直醒：
+staying awake:
 
-> 会把电耗光。
+> drains the energy.
 
-一旦耗光：
+Once it is drained:
 
-> 可能需要十几秒才能恢复。
+> recovery may take more than ten seconds.
 
-所以 DCM 的思想像：
+So DCM is like:
 
-> 不要连续熬夜到昏迷，再睡 20 小时。
+> do not pull an all-nighter until you collapse, then sleep 20 hours.
 
-而是：
+Instead:
 
-> 每次工作一小段就休息，始终保持状态。
+> work a short stretch, then rest, and stay in a usable state.
 
 ---
 
-# 61. On timer 是什么？
+# 61. What is the on timer?
 
-## Timer = 计时器
+## Timer
 
-DCM 加了：
+A timer is a countdown clock.
 
-> on timer。
+DCM adds:
 
-例如：
+> an on timer.
 
-> “我最多醒 18 ms。”
+For example:
 
-18 ms 到了，如果还没收到 paging：
+> “I stay awake at most 18 ms.”
 
-> 我自己去睡。
+When 18 ms is up, if paging has not arrived yet:
 
-这个时长论文记成：
+> I go to sleep on my own.
+
+The paper writes this duration as:
 
 $$
-T_{on}^{timer}
+T_{\mathrm{on}}^{\mathrm{timer}}
 $$
 
-正式版本 Device 1 使用：
+In the published version, Device 1 uses:
 
 $$
 18ms
 $$
 
-Device 2：
+Device 2:
 
 $$
 26ms
@@ -2179,7 +2175,7 @@ $$
 
 ---
 
-# 62. \(T_{pg}\) 是什么？
+# 62. What is \(T_{pg}\)?
 
 ## pg = paging
 
@@ -2187,17 +2183,17 @@ $$
 T_{pg}
 $$
 
-就是：
+is:
 
-> 两次 periodic paging 之间的周期。
+> the period between two periodic pagings.
 
-Device 1：
+Device 1:
 
 $$
 T_{pg}=12ms
 $$
 
-Device 2：
+Device 2:
 
 $$
 14ms
@@ -2205,11 +2201,15 @@ $$
 
 ---
 
-# 63. Periodic 是什么意思？
+# 63. What does periodic mean?
 
-## Periodic = 周期性的
+## Periodic
 
-比如：
+Periodic means:
+
+> repeating on a fixed schedule.
+
+For example:
 
 ```text
 0 ms   Paging
@@ -2219,21 +2219,21 @@ $$
 48 ms  Paging
 ```
 
-就是：
+that is:
 
-> 每 12 ms 一次。
+> once every 12 ms.
 
 ---
 
-# 64. Aperiodic 又是什么？
+# 64. What is aperiodic?
 
 ## Aperiodic
 
-就是：
+Aperiodic means:
 
-> 非周期性的。
+> not on a fixed schedule.
 
-例如：
+For example:
 
 ```text
 0ms
@@ -2243,33 +2243,31 @@ $$
 ...
 ```
 
-时间不固定。
+The times are not fixed.
 
-论文比较里主要关注 periodic paging。
+The paper’s comparison mainly looks at periodic paging.
 
 ---
 
-# 65. 为什么 \(T_{on}^{timer}\ge T_{pg}\)？
+# 65. Why \(T_{\mathrm{on}}^{\mathrm{timer}}\ge T_{pg}\)?
 
-因为设备醒来以后：
+Because after the device wakes up:
 
-> 至少应该保持醒着足够久，有机会碰到一次 paging。
+> it should stay awake long enough to have a chance to meet one paging.
 
-假设 paging 每：
+Suppose paging comes every:
 
 $$
 12ms
 $$
 
-一次。
-
-而你只醒：
+and you only stay awake:
 
 $$
 2ms
 $$
 
-很可能：
+then very likely:
 
 ```text
 wake
@@ -2278,59 +2276,59 @@ sleep
         paging
 ```
 
-完全错过。
+you miss it completely.
 
-所以论文说最好：
+So the paper says it is best to have:
 
 $$
-T_{on}^{timer}\ge T_{pg}
+T_{\mathrm{on}}^{\mathrm{timer}}\ge T_{pg}
 $$
 
 ---
 
-# 66. Sleep state 又是什么？
+# 66. What is the sleep state?
 
-DCM 里面增加一个：
+DCM adds one more state:
 
 ## Sleep state
 
-区别于完全 OFF。
+It is different from fully OFF.
 
-Sleep：
+SLEEP:
 
-* 不能正常 Rx/Tx
-* 可以 harvest energy
-* 还保持一个低功耗 timer
-* 知道什么时候该醒
+* cannot do normal Rx/Tx
+* can harvest energy
+* still keeps a low-power timer
+* knows when it should wake
 
-论文说 sleep state 中 device 可以维持 sleep timer，同时 harvesting，但不能 transmit/receive。
+The paper says that in the sleep state the device can keep a sleep timer and harvest energy, but cannot transmit/receive.
 
 ---
 
-# 67. 为什么第一次 Paging 特别重要？
+# 67. Why does the first paging matter so much?
 
-第一次之前：
+Before the first one:
 
-Tag 不知道：
+the tag does not know:
 
-> Reader 有没有开始 inventory。
+> whether the reader has started inventory.
 
-所以它只能：
+So it can only:
 
 ```text
-醒
-听
-睡
-醒
-听
-睡
+wake
+listen
+sleep
+wake
+listen
+sleep
 ```
 
-但是第一次收到 paging 后：
+But after it receives the first paging:
 
-> “哦！我现在知道 inventory 已经开始，而且 paging 每 12 ms 一次。”
+> “Ah! Now I know inventory has started, and paging comes every 12 ms.”
 
-于是以后可以：
+Then later it can:
 
 ```text
        paging
@@ -2342,77 +2340,77 @@ sleep sleep ON
 sleep sleep ON
 ```
 
-这叫：
+This is called:
 
 # Synchronization
 
 ---
 
-# 68. Synchronization 是什么？
+# 68. What is synchronization?
 
-## Synchronization = 同步
+## Synchronization
 
-就是：
+Synchronization means:
 
-> 两边时间对齐。
+> lining up the clocks on both sides.
 
-Reader 知道：
+The reader knows:
 
 ```text
 Paging at t=12,24,36...
 ```
 
-Tag 也知道。
+The tag knows too.
 
-所以 Tag 可以：
+So the tag can:
 
-> 只在 paging 快来时醒。
+> wake only when paging is about to arrive.
 
-这是非常经典的通信思想。
+This is a classic idea in communications.
 
 ---
 
-# 69. \(T_{sl}^{DCM}\) 是什么？
+# 69. What is \(T_{\mathrm{sl}}^{\mathrm{DCM}}\)?
 
 ## sl = sleep
 
-所以：
+So:
 
 $$
-T_{sl}^{DCM}
+T_{\mathrm{sl}}^{\mathrm{DCM}}
 $$
 
-就是：
+is:
 
-> DCM 的 sleep duration。
+> the sleep duration of DCM.
 
 ---
 
-# 70. \(T_{on}^{DCM}\) 是什么？
+# 70. What is \(T_{\mathrm{on}}^{\mathrm{DCM}}\)?
 
-就是：
+It is:
 
-> 每个 paging 周期里面 ON 多久。
+> how long the device stays ON inside each paging period.
 
-论文要求：
+The paper requires:
 
 $$
-T_{sl}^{DCM}+T_{on}^{DCM}=T_{pg}
+T_{\mathrm{sl}}^{\mathrm{DCM}}+T_{\mathrm{on}}^{\mathrm{DCM}}=T_{pg}
 $$
 
-也就是：
+that is:
 
 ```text
-一个 paging 周期
+one paging period
 =
-sleep 时间
+sleep duration
 +
-醒着时间
+on duration
 ```
 
 ---
 
-# 71. \(P_{sl}\) 是什么？
+# 71. What is \(P_{sl}\)?
 
 ## sl = sleep
 
@@ -2420,53 +2418,53 @@ $$
 P_{sl}
 $$
 
-就是：
+is:
 
-> sleep state 功耗。
+> the sleep-state power consumption.
 
-论文：
+The paper:
 
 $$
 P_{sl}=0.1\mu W
 $$
 
-而：
+and:
 
 $$
 P_{sl}<P_{rx}
 $$
 
-所以睡觉比一直开 receiver 省很多电。
+so sleeping uses far less energy than keeping the receiver on.
 
 ---
 
-# 72. DCM 到这里解决了什么？
+# 72. What has DCM solved so far?
 
-大概：
+Roughly:
 
 ### P1
 
-不会把 energy 降得太低。
+It does not let energy drop too low.
 
-所以 recharge 快。
+So recharge is fast.
 
 ### P2
 
-收到 paging 时，通常剩余 energy 比较高。
+When paging arrives, remaining energy is usually still fairly high.
 
-所以更有机会完成 CBRA。
+So there is a better chance to finish CBRA.
 
 ### P3
 
-不用一直 ON。
+It does not stay ON the whole time.
 
-所以即使多次 retry，也不容易把电很快耗光。
+So even with many retries, it is less likely to drain the energy quickly.
 
 ---
 
-# 73. 但是还有一个巨大问题：600 台设备
+# 73. But there is still a huge problem: 600 devices
 
-想象：
+Imagine:
 
 ```text
 Reader:
@@ -2476,54 +2474,54 @@ Reader:
 "ME!"
 ```
 
-就爆炸了。
+then it blows up.
 
-所以还需要：
+So you still need:
 
 # Congestion Control
 
 ---
 
-# 74. Congestion Control 是什么？
+# 74. What is congestion control?
 
-就是：
+It means:
 
-> **控制拥塞。**
+> **controlling congestion.**
 
-不能让所有设备同时 access。
+You cannot let every device access at the same time.
 
-这篇论文主要讲两个方法：
+This paper mainly discusses two methods:
 
 1. access probability
 2. device grouping
 
 ---
 
-# 75. Access Probability 是什么？
+# 75. What is access probability?
 
-## Probability = 概率
+## Probability = chance of happening
 
-Reader 可以告诉设备：
+The reader can tell devices:
 
-> “虽然你收到 paging，但这一轮只有一定概率参加。”
+> "You received paging, but this round you only join with a certain probability."
 
-例如：
-
-$$
-p=0.1
-$$
-
-600 个设备中，大概只有：
+For example:
 
 $$
-600\times0.1=60
+p_{\mathrm{access}}=0.1
 $$
 
-个参加。
+Out of \(N=600\) devices, roughly only:
+
+$$
+N\times p_{\mathrm{access}}=600\times0.1=60
+$$
+
+join.
 
 ---
 
-每个 Tag：
+Each tag:
 
 ```text
 random number
@@ -2535,21 +2533,21 @@ random number
 → don't access
 ```
 
-这样就不会 600 个全冲进 AO。
+Then all 600 devices will not rush into the AOs at once.
 
-论文明确说 reader 可以根据先前 CBRA 的 congestion/occupancy 来决定 access probability。
+The paper states clearly that the reader can set the access probability from the congestion/occupancy of prior CBRA.
 
 ---
 
-# 76. Occupancy 是什么？
+# 76. What is occupancy?
 
 ## Occupancy
 
-就是：
+It means:
 
-> AO 有多满。
+> how full the AOs are.
 
-例如 8 个 AO：
+For example, 8 AOs:
 
 ```text
 AO1 occupied
@@ -2562,27 +2560,27 @@ AO7 collision
 AO8 occupied
 ```
 
-Reader 可以从这些情况估计：
+From these outcomes the reader can estimate:
 
-> 现在是不是太挤了。
+> whether things are too crowded right now.
 
 ---
 
-# 77. 为什么 Access Probability 也有缺点？
+# 77. Why does access probability also have a drawback?
 
-假设：
+Suppose:
 
-Tag 为了听 paging：
+To hear paging, a tag:
 
-> 醒来了。
+> wakes up.
 
-消耗了 energy。
+That burns energy.
 
-但是 paging 告诉它通过随机概率判断：
+But paging tells it, after the random draw:
 
-> “这轮不参加。”
+> "Do not join this round."
 
-那么：
+Then:
 
 ```text
 wake up
@@ -2592,17 +2590,17 @@ burn energy
 do nothing
 ```
 
-很浪费。
+That is wasteful.
 
-论文正是因此提出 device grouping。
+That is exactly why the paper proposes device grouping.
 
 ---
 
-# 78. Device Grouping 是什么？
+# 78. What is device grouping?
 
-## Grouping = 分组
+## Grouping = splitting devices into groups
 
-例如 600 个设备分四组：
+For example, \(N=600\) devices in \(N_g=4\) groups:
 
 ```text
 Group A
@@ -2611,7 +2609,7 @@ Group C
 Group D
 ```
 
-然后：
+Then:
 
 ```text
 Paging 1 → Group A
@@ -2621,11 +2619,11 @@ Paging 4 → Group D
 Paging 5 → Group A
 ```
 
-那么 Group A 不需要每轮都醒。
+So Group A does not need to wake up every round.
 
 ---
 
-例如：
+For example:
 
 ```text
 A:      ON            ON
@@ -2634,132 +2632,132 @@ C:                ON
 D:                     ON
 ```
 
-于是：
+Then:
 
-* collision 减少
-* 无意义 listening 减少
-* energy 消耗降低
+* collisions drop
+* pointless listening drops
+* energy consumption drops
 
-Figure 4 就是在画这个思想。
+Figure 4 is drawing this idea.
 
 ---
 
-# 79. Low-Power Wake-Up Receiver 又是什么？
+# 79. What is a low-power wake-up receiver?
 
-名字拆开：
+Split the name:
 
 ## Receiver
 
-接收机。
+A receiver.
 
 ## Wake-up
 
-唤醒。
+Wake up.
 
 ## Low-power
 
-低功耗。
+Uses very little power.
 
-所以：
+So:
 
-> **一个专门负责“有没有人在叫我”的超低功耗小接收机。**
-
----
-
-你可以把正常 receiver 想成：
-
-> 一台大电脑。
-
-Wake-up receiver：
-
-> 一个非常简单的小门铃。
-
-平时不用把大电脑全部开着。
-
-只让：
-
-> 门铃监听。
-
-一旦听到：
-
-> “PING！”
-
-再把主系统唤醒。
+> **a tiny ultra-low-power receiver whose only job is "is anyone calling me?"**
 
 ---
 
-论文特别说这个对 Device 2 有帮助，因为 Device 2 正常 receiver：
+Think of the normal receiver as:
+
+> a big computer.
+
+The wake-up receiver:
+
+> a very simple little doorbell.
+
+You do not keep the big computer fully on all the time.
+
+You only let:
+
+> the doorbell listen.
+
+Once it hears:
+
+> "PING!"
+
+then wake the main system.
+
+---
+
+The paper especially says this helps Device 2, because Device 2's normal receiver is:
 
 $$
 P_{rx}=50\mu W
 $$
 
-而 low-power wake-up receiver：
+while a low-power wake-up receiver is:
 
 $$
 1\mu W
 $$
 
-差很多。
+A big difference.
 
 ---
 
-# 80. Preamble 是什么？
+# 80. What is a preamble?
 
-论文说 paging 带：
+The paper says paging carries a:
 
-> preamble。
+> preamble.
 
-## Preamble = 前导序列
+## Preamble = a known lead-in sequence
 
-就是正式消息之前先发一个已知 pattern：
+Before the real message, send a known pattern first:
 
 ```text
 101010101...
 ```
 
-设备知道：
+The device knows:
 
-> “只要我检测到这个 pattern，就说明 paging 要来了。”
+> "If I detect this pattern, paging is about to arrive."
 
-很像你敲门：
+A lot like knocking on a door:
 
 ```text
-咚咚—咚咚咚
+knock-knock—knock-knock-knock
 ```
 
-里面的人听到这个特殊节奏：
+People inside hear that special rhythm:
 
-> “哦，是自己人。”
+> "Ah, it's one of us."
 
 ---
 
-# 81. OOK 是什么？
+# 81. What is OOK?
 
 ## OOK = On-Off Keying
 
-这是一种非常简单的 modulation。
+This is a very simple modulation.
 
 ---
 
-## Modulation 是什么？
+## What is modulation?
 
-### Modulation = 调制
+### Modulation = putting bits onto a wave
 
-意思：
+It means:
 
-> 怎样把 0 和 1 放到无线波上。
+> how you put 0s and 1s onto a radio wave.
 
 ---
 
-OOK 特别简单：
+OOK is especially simple:
 
 ```text
 carrier ON  → 1
 carrier OFF → 0
 ```
 
-所以：
+So:
 
 ```text
 1 0 1 1 0
@@ -2767,23 +2765,23 @@ carrier OFF → 0
 ON OFF ON ON OFF
 ```
 
-这非常适合低复杂度设备。
+This is a very good fit for low-complexity devices.
 
-论文说 R2D 使用 OOK。
+The paper says R2D uses OOK.
 
 ---
 
-# 82. BPSK 是什么？
+# 82. What is BPSK?
 
 ## BPSK = Binary Phase Shift Keying
 
-也是 modulation。
+Also a modulation.
 
-不同之处：
+The difference:
 
-> 不用“有波 / 没波”，而是用两个相位表示 0 和 1。
+> it does not use "wave present / wave absent"; it uses two phases to represent 0 and 1.
 
-例如：
+For example:
 
 $$
 0^\circ\rightarrow0
@@ -2793,46 +2791,46 @@ $$
 180^\circ\rightarrow1
 $$
 
-你现在知道名字就够了。
+Knowing the name is enough for now.
 
-Figure 5(b) reproduction 不需要你先成为 BPSK 专家。
+Reproducing Figure 5(b) does not require you to become a BPSK expert first.
 
 ---
 
-# 83. OFDM 是什么？
+# 83. What is OFDM?
 
 ## OFDM = Orthogonal Frequency-Division Multiplexing
 
-这是现代通信非常重要的技术。
+This is a very important technique in modern communications.
 
-4G/5G/Wi-Fi 都大量使用。
+4G / 5G / Wi-Fi all use it heavily.
 
-最粗暴的理解：
+The crudest picture:
 
-> 把一个高速信号拆到很多小的 frequency subcarriers 上。
+> split one high-speed signal onto many small frequency subcarriers.
 
-像：
+Like:
 
 ```text
 frequency →
 |_|_|_|_|_|_|_|_|
 ```
 
-论文提到 Reader 可以利用 NR OFDM transmitter 产生 OOK waveform。
+The paper mentions that the reader can use an NR OFDM transmitter to generate an OOK waveform.
 
-但是对你复现 Figure 5(b)：
+But for reproducing Figure 5(b):
 
-> OFDM 不是第一优先级。
+> OFDM is not the first priority.
 
 ---
 
-# 84. FDD 是什么？
+# 84. What is FDD?
 
 ## FDD = Frequency Division Duplex
 
-通信双方两个方向用不同 frequency。
+The two directions of communication use different frequencies.
 
-比如：
+For example:
 
 ```text
 frequency A:
@@ -2842,19 +2840,19 @@ frequency B:
 UE → BS
 ```
 
-叫：
+Called:
 
-> uplink/downlink 分频。
+> splitting uplink/downlink by frequency.
 
-论文介绍 A-IoT spectrum 时提到 FDD spectrum。
+The paper mentions FDD spectrum when introducing the A-IoT spectrum.
 
-同样：
+Again:
 
-> 不是你第一阶段 simulation 的核心。
+> this is not the core of your stage-1 simulation.
 
 ---
 
-# 85. Uplink / Downlink 是什么？
+# 85. What are uplink / downlink?
 
 ## Downlink
 
@@ -2862,7 +2860,7 @@ UE → BS
 BS → device
 ```
 
-从基站下来。
+Coming down from the base station.
 
 ---
 
@@ -2872,28 +2870,28 @@ BS → device
 device → BS
 ```
 
-从用户设备上传。
+Going up from the user device.
 
-在本论文里和：
+In this paper they are close to:
 
 * R2D
 * D2R
 
-概念相近，但不是任何情况下完全等价。
+but they are not exactly the same in every situation.
 
 ---
 
-# 86. Link Budget 是什么？
+# 86. What is a link budget?
 
 ## Link Budget
 
-这是无线通信很重要的概念。
+This is an important idea in wireless communications.
 
-简单理解：
+In plain terms:
 
-> 发射端发了多少功率，经过各种增益和损耗，到接收端最后还剩多少。
+> how much power the transmitter sent, minus gains and losses along the way, and how much is left at the receiver.
 
-例如：
+For example:
 
 ```text
 Tx power
@@ -2903,69 +2901,65 @@ Tx power
 = received power
 ```
 
-如果最后太弱：
+If the leftover is too weak:
 
-> 接收失败。
+> reception fails.
 
-论文用它讨论 Device 1 / Device 2 可能覆盖多远。
+The paper uses it to discuss how far Device 1 / Device 2 coverage can reach.
 
 ---
 
-# 87. CDF 是什么？
+# 87. What is a CDF?
 
-这个是 Figure 5 里面非常重要的数学概念。
+This is a very important math idea inside Figure 5.
 
 ## CDF = Cumulative Distribution Function
 
-中文：
+Do not let the name scare you.
 
-> **累积分布函数**
+Suppose 100 students' scores.
 
-别被名字吓到。
+You ask:
 
-例如 100 个学生成绩。
+> what fraction scored ≤ 60?
 
-你问：
+Then:
 
-> 分数 ≤ 60 的有多少比例？
+> ≤70?
 
-然后：
+> ≤80?
 
-> ≤70？
+> ≤90?
 
-> ≤80？
+Plot that fraction:
 
-> ≤90？
-
-把这个比例画出来：
-
-> 就是 CDF。
+> that is a CDF.
 
 ---
 
-Figure 5(a) 是 received power 的 CDF。
+Figure 5(a) is the CDF of received power.
 
-意思大致是：
+Roughly:
 
-> 有多少比例的设备 \(p_{in}\) 小于某个值。
+> what fraction of devices have \(p_{in}\) below a given value.
 
 ---
 
-# 88. Figure 5(b) 到底是什么？
+# 88. What does Figure 5(b) actually plot?
 
-终于到了教授让你做的东西。
+This is finally the thing the professor asked you to do.
 
-Figure 5(b) 是：
+Figure 5(b) is:
 
-> **Device 1 在时间推移过程中，有多少比例已经成功被 inventory。**
+> **as time goes on, what fraction of Device 1 devices have already been successfully inventoried.**
 
-纵轴：
+Vertical axis:
 
 ```text
 Successfully inventoried A-IoT device ratio (%)
 ```
 
-横轴：
+Horizontal axis:
 
 ```text
 Time (ms)
@@ -2973,19 +2967,19 @@ Time (ms)
 
 ---
 
-开始：
+At the start:
 
 $$
 t=0
 $$
 
-可能：
+maybe:
 
 $$
 0\%
 $$
 
-然后：
+Then:
 
 ```text
 1 second → 40%
@@ -2994,7 +2988,7 @@ $$
 ...
 ```
 
-最终：
+Finally:
 
 $$
 99\%
@@ -3002,143 +2996,145 @@ $$
 
 ---
 
-# 89. 为什么只说 99%，不一定说 100%？
+# 89. Why talk about 99%, not necessarily 100%?
 
-通信系统里最后：
+In a communications system, at the end:
 
-> 最差的那几个 device
+> the worst few devices
 
-可能特别慢。
+can be especially slow.
 
-所以常用：
+So people often use:
 
 * 90%
 * 95%
 * 99%
 
-作为完成指标。
+as a completion metric.
 
-论文主要比较：
+The paper mainly compares:
 
-> 达到 99% inventory 需要多久。
+> how long it takes to reach 99% inventory.
+
+That time is the **99% inventory completion time (T99)**.
 
 ---
 
-# 90. Figure 5(b) 有哪几条线？
+# 90. What do the Figure 5(b) curves mean?
 
-正式版本比 arXiv 更完整。
+The published version is more complete than the arXiv one.
 
-Device 1 图包括：
+The Device 1 figure includes:
 
 * EM, aperiodic paging
 * DCM, periodic paging, 1 group
 * DCM, periodic paging, 4 groups
 
-你把它翻译成人话：
+In plain English:
 
 ### EM
 
-旧方案。
+The old scheme. EM = Energy-Based Monitoring.
 
 ### DCM + 1 group
 
-使用节能监听，但是基本不做真正的 group separation。
+Duty-Cycled Monitoring, but essentially no real group separation.
 
 ### DCM + 4 groups
 
-使用节能监听，而且把 devices 分四组。
+Duty-Cycled Monitoring, and devices are split into four groups.
 
 ---
 
-# 91. 最关键的实验结论是什么？
+# 91. What are the key experimental results?
 
-Device 1：
+Device 1:
 
-> 单独 DCM 并没有明显改善。
+> DCM alone does not help much.
 
-为什么？
+Why?
 
-因为：
+Because:
 
-> 600 个 devices 太拥塞，access probability 会压得很低。
+> \(N=600\) devices are too congested, so the access probability \(p_{\mathrm{access}}\) is pushed very low.
 
-但：
+But:
 
 > DCM + device grouping
 
-可以把 99% inventory completion time 大约减少 50%。
+can cut the 99% inventory completion time (T99) by about 50%.
 
-正式论文明确这样解释。
-
----
-
-Device 2：
-
-DCM 单独已经很有效。
-
-论文报告大约：
-
-> 66% reduction。
-
-再加 low-power wake-up receiver：
-
-> 最多约 83% reduction。
+The published IEEE paper explains it this way.
 
 ---
 
-# 92. 所以整篇论文真正的逻辑是一条链
+Device 2:
 
-你现在一定要先建立这个脑图：
+DCM alone is already very effective.
+
+The paper reports about:
+
+> a 66% reduction.
+
+Add a low-power wake-up receiver:
+
+> up to about an 83% reduction.
+
+---
+
+# 92. So the whole paper is really one logic chain
+
+You should build this mental picture first:
 
 ```text
-A-IoT device 没电池
+A-IoT device has no battery
         ↓
-必须 energy harvesting
+must use energy harvesting
         ↓
-有时候没电
+sometimes has no energy
         ↓
-没电就收不到 paging
+no energy → cannot receive paging
         ↓
-inventory 变慢
+inventory gets slower
         ↓
-传统 EM 会把能量消耗太低
+traditional EM drains energy too low
         ↓
-需要很久 recharge
+needs a long recharge
         ↓
-提出 DCM
+propose DCM
         ↓
-不要一直醒着
+do not stay awake all the time
         ↓
-保留更多 energy
+keep more energy
         ↓
-更容易参与 inventory
+easier to join inventory
 ```
 
-但是：
+But:
 
 ```text
 600 devices
    ↓
-同时 access
+access at the same time
    ↓
 congestion / collision
    ↓
-需要 access probability
+need access probability
 ```
 
-但是：
+But:
 
 ```text
 access probability
    ↓
-很多 device 醒了却不能发
+many devices wake up but cannot transmit
    ↓
-浪费 energy
+waste energy
    ↓
 device grouping
 ```
 
-最后：
+Finally:
 
 ```text
 DCM
@@ -3152,23 +3148,23 @@ optional low-power wake-up receiver
 faster inventory
 ```
 
-这就是整篇 paper。
+That is the whole paper.
 
 ---
 
-# 93. 那教授为什么让你复现 Figure 5(b)，而不是 Figure 1？
+# 93. Why did the professor ask you to reproduce Figure 5(b), not Figure 1?
 
-因为 Figure 1 是：
+Because Figure 1 is:
 
-> protocol illustration。
+> a protocol illustration.
 
-你看懂就行。
+Understanding it is enough.
 
-Figure 5(b) 是：
+Figure 5(b) is:
 
-> simulation result。
+> a simulation result.
 
-要复现它，你必须真的理解：
+To reproduce it, you must really understand:
 
 * device state
 * energy
@@ -3182,33 +3178,33 @@ Figure 5(b) 是：
 * timing
 * statistics
 
-所以这是一个非常好的 research-fit test。
+So this is a very good research-fit test.
 
 ---
 
-# 94. 他实际上在测试你哪些能力？
+# 94. Which skills is he actually testing?
 
-我认为大概有六层。
+I think there are roughly six layers.
 
-### 第一层：能不能读陌生论文
+### Layer 1: can you read an unfamiliar paper?
 
-你现在不懂：
+You do not understand it yet:
 
-> 完全正常。
+> that is completely normal.
 
-关键是：
+The real question is:
 
-> 能不能一点一点搞懂。
+> can you figure it out bit by bit.
 
 ---
 
-### 第二层：能不能把文字变成模型
+### Layer 2: can you turn text into a model?
 
-论文写：
+The paper writes:
 
-> device enters off state when energy falls below threshold。
+> device enters off state when energy falls below threshold.
 
-你需要转换成：
+You need to turn that into:
 
 ```python
 if energy <= E_low:
@@ -3217,9 +3213,9 @@ if energy <= E_low:
 
 ---
 
-### 第三层：能不能把 protocol 写成 algorithm
+### Layer 3: can you write the protocol as an algorithm?
 
-例如：
+For example:
 
 ```text
 Paging
@@ -3241,175 +3237,179 @@ success
 
 ---
 
-### 第四层：能不能处理 randomness
+### Layer 4: can you handle randomness?
 
-因为：
+Because:
 
-* device received power 不同
-* AO 随机选择
-* access probability 随机
+* device received power differs
+* AO is chosen at random
+* access probability is random
 * device grouping
 * collisions
 
-所以这不是 deterministic homework。
+So this is not a deterministic homework problem.
 
 ---
 
-### 第五层：能不能 debug
+### Layer 5: can you debug?
 
-你第一次结果很可能：
+Your first result will likely:
 
-> 完全不像 Figure 5(b)。
+> look nothing like Figure 5(b).
 
-然后需要问：
+Then you need to ask:
 
-> initial energy 怎么设？
+> how is initial energy set?
 
-> DCM transition 对吗？
+> is the DCM transition correct?
 
-> device after successful inventory 是否退出？
+> does a device leave after a successful inventory?
 
-> power 的 dBm 转 watt 对吗？
+> is the dBm-to-watt conversion correct?
 
-这才是 research。
+That is research.
 
 ---
 
-### 第六层：能不能解释
+### Layer 6: can you explain?
 
-最后教授可能真正问你的不是：
+In the end the professor may not really ask:
 
-> “你的 Python 有多少行？”
+> "How many lines of Python did you write?"
 
-而是：
+but:
 
-> “Why does DCM alone not improve device-1 performance?”
+> "Why does DCM alone not improve device-1 performance?"
 
-你需要说：
+You need to say:
 
 > Because heavy contention leads to a low access probability; grouping reduces the number of devices monitoring/contending for a given paging opportunity.
 
-这个“解释结果”的能力很重要。正式论文就是这么解释 Device 1 的。
+That ability to **explain the result** matters. The published paper explains Device 1 this way.
 
 ---
 
-# 95. 所以你现在不要焦虑“我什么都不会”
+# 95. So do not panic that "I know nothing yet"
 
-你现在更适合把整个任务看成：
+It is better to treat the whole task as:
 
 ```text
-阶段 1
-学会语言
+Stage 1
+learn the language
 
-阶段 2
-看懂系统
+Stage 2
+understand the system
 
-阶段 3
-看懂公式
+Stage 3
+understand the formulas
 
-阶段 4
-把系统画成 state machine
+Stage 4
+draw the system as a state machine
 
-阶段 5
-把 state machine 写成 simulation
+Stage 5
+turn the state machine into a simulation
 
-阶段 6
-复现 Figure 5(b)
+Stage 6
+reproduce Figure 5(b)
 
-阶段 7
-解释为什么结果这样
+Stage 7
+explain why the result looks that way
 ```
 
-**不要直接跳阶段 5。**
+**Do not skip straight to stage 5.**
 
-如果你现在直接让我给你代码，我反而认为不是最好的做法。
+If you ask me for the code right now, I would actually think that is not the best move.
 
-因为教授如果之后问你：
+Because if the professor later asks:
 
 > Why did you model it this way?
 
-你很容易答不上来。
+you can easily have nothing to say.
 
 ---
 
-# 96. 你目前最需要背下来的缩写，我给你做个“第一张词汇表”
+# 96. A first vocabulary table of the acronyms you most need
 
-不用今天一次全背完，但之后看到要认识：
+You do not have to memorize them all today, but you should recognize them when they show up:
 
-| 缩写    | 全称                                         | 你先怎么理解          |
-| ----- | ------------------------------------------ | --------------- |
-| IoT   | Internet of Things                         | 物联网             |
-| A-IoT | Ambient IoT                                | 超低功耗/无电池物联网设备   |
-| 3GPP  | 3rd Generation Partnership Project         | 移动通信标准体系        |
-| BS    | Base Station                               | 基站              |
-| UE    | User Equipment                             | 手机/终端           |
-| RF    | Radio Frequency                            | 无线射频            |
-| RFID  | Radio Frequency Identification             | 射频标签            |
-| UHF   | Ultra High Frequency                       | 特高频             |
-| CW    | Continuous Wave                            | 连续载波            |
-| NR    | New Radio                                  | 5G 无线接口         |
-| R2D   | Reader-to-Device                           | Reader → Device |
-| D2R   | Device-to-Reader                           | Device → Reader |
-| CBRA  | Contention-Based Random Access             | 竞争式随机接入         |
-| CFRA  | Contention-Free Random Access              | 无竞争随机接入         |
-| AO    | Access Occasion                            | 一次 Msg1 发送机会    |
-| ID    | Identifier                                 | 身份编号            |
-| EM    | Energy-Based Monitoring                    | 旧的能量监听机制        |
-| DCM   | Duty Cycled Monitoring                     | 间歇监听            |
-| Rx    | Receive                                    | 接收              |
-| Tx    | Transmit                                   | 发送              |
-| EH    | Energy Harvesting                          | 能量采集            |
-| IC    | Integrated Circuit                         | 芯片              |
-| CDF   | Cumulative Distribution Function           | 累积分布函数          |
-| OOK   | On-Off Keying                              | 开/关调制           |
-| BPSK  | Binary Phase Shift Keying                  | 二进制相移键控         |
-| OFDM  | Orthogonal Frequency-Division Multiplexing | 正交频分复用          |
-| FDMA  | Frequency-Domain Multiple Access           | 频分多址            |
-| FDD   | Frequency Division Duplex                  | 频分双工            |
-| TR    | Technical Report                           | 技术报告            |
+| Acronym | Full name | Gloss |
+| --- | --- | --- |
+| IoT | Internet of Things | networked everyday objects |
+| A-IoT | Ambient IoT | ultra-low-power / batteryless IoT devices |
+| 3GPP | 3rd Generation Partnership Project | the mobile-communications standards body |
+| BS | Base Station | cell tower / reader side |
+| UE | User Equipment | phone / terminal |
+| RF | Radio Frequency | wireless radio |
+| RFID | Radio Frequency Identification | radio tags |
+| UHF | Ultra High Frequency | a high radio-frequency band |
+| CW | Continuous Wave | a continuous carrier |
+| NR | New Radio | 5G radio interface |
+| R2D | Reader-to-Device | Reader → Device |
+| D2R | Device-to-Reader | Device → Reader |
+| CBRA | Contention-Based Random Access | devices compete to send |
+| CFRA | Contention-Free Random Access | reserved, no competition |
+| AO | Access Occasion | one Msg1 transmit opportunity |
+| ID | Identifier | identity number |
+| EM | Energy-Based Monitoring | baseline: listen whenever energy is high |
+| DCM | Duty-Cycled Monitoring | intermittent listening (sleep to save energy) |
+| Rx | Receive | receive |
+| Tx | Transmit | transmit |
+| EH | Energy Harvesting | collecting energy from RF |
+| IC | Integrated Circuit | the chip |
+| CDF | Cumulative Distribution Function | "what fraction is ≤ this value?" |
+| OOK | On-Off Keying | carrier on = 1, off = 0 |
+| BPSK | Binary Phase Shift Keying | two phases encode 0 and 1 |
+| OFDM | Orthogonal Frequency-Division Multiplexing | many small frequency subcarriers |
+| FDMA | Frequency-Domain Multiple Access | split users by frequency |
+| FDD | Frequency Division Duplex | uplink and downlink on different frequencies |
+| TR | Technical Report | a 3GPP technical report |
 
-这 30 个左右已经覆盖了 paper 绝大多数“看起来很吓人”的术语。
+These ~30 already cover most of the paper's "scary-looking" terms.
 
 ---
 
-# 97. 你现在应该达到什么程度？
+# 97. What level should you be at now?
 
-现在**完全不要求**你会：
+Right now you are **not** required to know:
 
 $$
 OFDM
 $$
 
-推导。
+derivations.
 
-也不要求你会：
+You are also not required to know:
 
 $$
 BPSK
 $$
 
-误码率。
+error rates.
 
-甚至暂时不要求你会：
+You are not even required, for now, to know:
 
-> 3GPP NR protocol stack。
+> the 3GPP NR protocol stack.
 
-你第一阶段只需要能不看论文回答下面这句话：
+Stage 1 only needs you to answer this, without looking at the paper:
 
-> “这篇论文是研究几百个依靠 RF energy harvesting 的 batteryless A-IoT tags 如何被 reader 快速 inventory。传统 EM 会导致 device 把能量消耗过低，从而长时间 unavailable；DCM 通过 duty cycling 保持较高 energy level，同时结合 access probability 和 device grouping 控制 congestion，从而降低 inventory completion time。”
+> "This paper studies how a reader can quickly inventory hundreds of batteryless A-IoT tags that rely on RF energy harvesting. Traditional EM (Energy-Based Monitoring) lets a device drain its energy too low, so it stays unavailable for a long time; DCM (Duty-Cycled Monitoring) uses duty cycling to keep a higher energy level, and together with access probability and device grouping it controls congestion, which reduces inventory completion time."
 
-如果这句话你能真正理解，而不是背下来：
+If you truly understand that sentence, rather than reciting it:
 
-> **第一阶段已经过关了。**
-
----
-
-接下来我建议我们就按照“课程”的方式学，而不是继续一次性塞更多东西。
-
-**下一步最合适的是我带你逐图读这篇论文：先从 Figure 1 开始，我把图上的每一个方框、每一条横轴纵轴、Paging、Msg1、AO、collision、Msg2、Msg3 全部拆开；然后 Figure 2、Figure 3、Figure 4，最后才进入教授要求的 Figure 5(b)。**
-
-这样等读到 Figure 5(b) 的时候，你会知道**曲线里的每一个点到底是怎么产生的**，而不是只知道“橙色比紫色快”。
-
+> **you have passed stage 1.**
 
 ---
 
+From here, learn it as a course, instead of stuffing in still more at once.
+
+**The next best step is to close-read this paper figure by figure:**
+
+1. Start with [Figure 1](./figures/figure-01-cbra.md): take paging, Msg1, AO, collision, Msg2, and Msg3 apart;
+2. Then [Figure 2](./figures/figure-02-em-energy.md), [Figure 3](./figures/figure-03-em-vs-dcm.md), [Figure 4](./figures/figure-04-grouping.md);
+3. Only then enter the professor's required [Figure 5(b)](./figures/figure-05b-inventory.md).
+
+That way, when you reach Figure 5(b), you will know **how every point on the curve is produced**, not only that "orange is faster than purple."
+
+→ **[Open the figure close-reading TOC](./figures/README.md)**
+
+---

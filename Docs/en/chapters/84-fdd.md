@@ -1,19 +1,19 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← OFDM](./83-ofdm.md) |
-| 下一章 | [Uplink / Downlink →](./85-uplink-downlink.md) |
+| Previous | [← OFDM](./83-ofdm.md) |
+| Next | [Uplink / downlink →](./85-uplink-downlink.md) |
 
 ---
 
-# 84. FDD 是什么？
+# 84. What is FDD?
 
 ## FDD = Frequency Division Duplex
 
-通信双方两个方向用不同 frequency。
+The two directions of communication use different frequencies.
 
-比如：
+For example:
 
 ```text
 frequency A:
@@ -23,21 +23,21 @@ frequency B:
 UE → BS
 ```
 
-叫：
+Called:
 
-> uplink/downlink 分频。
+> splitting uplink/downlink by frequency.
 
-论文介绍 A-IoT spectrum 时提到 FDD spectrum。
+The paper mentions FDD spectrum when introducing the A-IoT spectrum.
 
-同样：
+Again:
 
-> 不是你第一阶段 simulation 的核心。
+> this is not the core of your stage-1 simulation.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← OFDM](./83-ofdm.md) |
-| 下一章 | [Uplink / Downlink →](./85-uplink-downlink.md) |
+| Previous | [← OFDM](./83-ofdm.md) |
+| Next | [Uplink / downlink →](./85-uplink-downlink.md) |

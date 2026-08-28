@@ -1,17 +1,17 @@
-> **导航** · [逐图目录](./README.md) · [总目录 content.md](../content.md)
+> **Nav** · [Figure notes](./README.md) · [TOC content.md](../content.md)
 
 | | |
 |---|---|
-| 上一图 | [← Figure 1：CBRA Procedure](./figure-01-cbra.md) |
-| 下一图 | [Figure 3：EM vs DCM →](./figure-03-em-vs-dcm.md) |
+| Previous figure | [← Figure 1: CBRA procedure](./figure-01-cbra.md) |
+| Next figure | [Figure 3: EM vs DCM →](./figure-03-em-vs-dcm.md) |
 
 ---
 
-# Figure 2：EM 能量状态
+# Figure 2: Energy-Based Monitoring (EM) energy state
 
-Figure 2 画的是 **Energy-Based Monitoring (EM)** 下，电容能量随时间怎么变。
+Figure 2 plots how capacitor energy changes over time under **Energy-Based Monitoring (EM)**.
 
-## 你要看到的锯齿
+## The sawtooth you should see
 
 ```text
 E_up  ─────────────────
@@ -22,44 +22,44 @@ E_low ─/──────╲/──────
        OFF  ON  OFF  ON
 ```
 
-直觉：
+Intuition:
 
-| 状态 | 能量 | 能不能听 Paging |
+| State | Energy | Can it hear Paging? |
 |---|---|---|
-| OFF | 上升（harvest） | 不能 |
-| ON | 下降（Rx/Tx/monitor） | 能 |
+| OFF | Rising (harvest) | No |
+| ON | Falling (Rx/Tx/monitor) | Yes |
 
-阈值：
+Thresholds:
 
-- 到 \(E_{es}^{up}\) → 转 ON
-- 到 \(E_{es}^{low}\) → 转 OFF
+- Reach \(E_{es}^{up}\) → switch ON
+- Reach \(E_{es}^{low}\) → switch OFF
 
-Device 1 常见设定直觉：
+Typical Device 1 settings, intuitively:
 
 - \(E_{es}^{max}=500\,\mathrm{nJ}\)
 - \(E_{es}^{up}=E_{es}^{max}\)
 - \(E_{es}^{low}=0.5E_{es}^{max}\)
 
-## 和图 1 的关系
+## Relation to Figure 1
 
-Figure 1 假设 Device “在场且能通信”。
+Figure 1 assumes the Device is “present and able to communicate.”
 
-Figure 2 告诉你：现实里很多时候 Device **根本不在场**——正在 OFF 充电。
+Figure 2 tells you: in reality the Device is often **not present at all** — it is OFF, charging.
 
-这就是后面 P1/P2/P3 的起点。
+That is the starting point of P1/P2/P3 later.
 
-## 过关标准
+## Pass criterion
 
-能解释：为什么“一直 ON 监听”反而可能让 inventory 变慢？
+You can explain: why can “always ON, always listening” actually make inventory slower?
 
-> 因为能量被打到很低，远处弱 \(p_{in}\) 设备要充很久才能再次参加 Figure 1 的流程。
+> Because energy is driven very low, far-away devices with weak \(p_{in}\) take a long time to charge before they can join Figure 1’s procedure again.
 
 
 ---
 
-> **导航**
+> **Nav**
 >
-> - [↑ 逐图目录](./README.md)
-> - [↑ 总目录](../content.md)
-> - [← Figure 1：CBRA Procedure](./figure-01-cbra.md)
-> - [Figure 3：EM vs DCM →](./figure-03-em-vs-dcm.md)
+> - [↑ Figure notes](./README.md)
+> - [↑ TOC](../content.md)
+> - [← Figure 1: CBRA procedure](./figure-01-cbra.md)
+> - [Figure 3: EM vs DCM →](./figure-03-em-vs-dcm.md)

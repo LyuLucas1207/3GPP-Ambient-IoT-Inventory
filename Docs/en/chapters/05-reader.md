@@ -1,32 +1,32 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Energy Harvesting / RF / 天线链路](./04-energy-harvesting.md) |
-| 下一章 | [BS + 工厂场景 120m×60m →](./06-bs.md) |
+| Previous | [← Energy harvesting / RF / antenna link](./04-energy-harvesting.md) |
+| Next | [BS + the 120 m × 60 m factory →](./06-bs.md) |
 
 ---
 
-# 5. Reader 是谁？
+# 5. Who is the reader?
 
-论文一直说：
+The paper keeps saying:
 
 ## Reader
 
-你可以暂时理解成：
+You can temporarily think of it as:
 
-> **负责发现、控制 A-IoT device 的“大设备”。**
+> **the "big device" that discovers and controls A-IoT devices.**
 
-论文说 reader 可以是：
+The paper says the reader can be:
 
 * BS
 * UE
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Energy Harvesting / RF / 天线链路](./04-energy-harvesting.md) |
-| 下一章 | [BS + 工厂场景 120m×60m →](./06-bs.md) |
+| Previous | [← Energy harvesting / RF / antenna link](./04-energy-harvesting.md) |
+| Next | [BS + the 120 m × 60 m factory →](./06-bs.md) |

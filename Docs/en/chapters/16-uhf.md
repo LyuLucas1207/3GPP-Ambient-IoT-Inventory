@@ -1,33 +1,33 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← RFID](./15-rfid.md) |
-| 下一章 | [A-IoT vs RFID →](./17-aiot-vs-rfid.md) |
+| Previous | [← RFID](./15-rfid.md) |
+| Next | [A-IoT vs RFID →](./17-aiot-vs-rfid.md) |
 
 ---
 
-# 16. UHF 是什么？
+# 16. What is UHF?
 
 ## UHF = Ultra High Frequency
 
-中文：
+In plain English:
 
-> **特高频**
+> **a slice of the radio spectrum often used by RFID tags.**
 
-这是无线频谱的一段范围。
+This is a range of wireless frequencies.
 
-这里你暂时不用研究具体频率。
+You do not need the exact frequencies for now.
 
-只要知道：
+Just remember:
 
-> UHF RFID 是一种常见 RFID 系统。
+> UHF RFID is a common kind of RFID system.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← RFID](./15-rfid.md) |
-| 下一章 | [A-IoT vs RFID →](./17-aiot-vs-rfid.md) |
+| Previous | [← RFID](./15-rfid.md) |
+| Next | [A-IoT vs RFID →](./17-aiot-vs-rfid.md) |

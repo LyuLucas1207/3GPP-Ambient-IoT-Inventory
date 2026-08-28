@@ -1,40 +1,40 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Slot（0.5 ms）](./33-slot.md) |
-| 下一章 | [何时 Inventory 成功 →](./35-when-inventory-succeeds.md) |
+| Previous | [← Slot (0.5 ms)](./33-slot.md) |
+| Next | [When inventory succeeds →](./35-when-inventory-succeeds.md) |
 
 ---
 
-# 34. Congestion 是什么？
+# 34. What is congestion?
 
-## Congestion = 拥塞
+## Congestion
 
-Collision 是一次撞车。
+A collision is one crash.
 
-Congestion 是：
+Congestion is:
 
-> 整个系统人太多，导致大量撞车。
+> The whole system has too many people, so there are lots of crashes.
 
-例如：
+For example:
 
 ```text
 600 devices
 8 AOs
 ```
 
-这显然很挤。
+That is clearly crowded.
 
-就像：
+Like:
 
-> 600 辆车抢 8 条很短的入口。
+> 600 cars fighting over 8 very short on-ramps.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Slot（0.5 ms）](./33-slot.md) |
-| 下一章 | [何时 Inventory 成功 →](./35-when-inventory-succeeds.md) |
+| Previous | [← Slot (0.5 ms)](./33-slot.md) |
+| Next | [When inventory succeeds →](./35-when-inventory-succeeds.md) |

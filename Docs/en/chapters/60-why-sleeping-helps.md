@@ -1,43 +1,43 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← DCM 核心思想](./59-dcm-core-idea.md) |
-| 下一章 | [On timer →](./61-on-timer.md) |
+| Previous | [← Core idea of DCM](./59-dcm-core-idea.md) |
+| Next | [On timer →](./61-on-timer.md) |
 
 ---
 
-# 60. 为什么主动睡觉反而会变快？
+# 60. Why can sleeping on purpose make things faster?
 
-这点第一次看很反直觉。
+This looks counterintuitive at first.
 
-你可能觉得：
+You might think:
 
-> “我要尽快接收 paging，不是应该一直醒着吗？”
+> “If I want to catch paging as soon as possible, shouldn’t I stay awake the whole time?”
 
-问题是：
+The problem is:
 
-一直醒：
+staying awake:
 
-> 会把电耗光。
+> drains the energy.
 
-一旦耗光：
+Once it is drained:
 
-> 可能需要十几秒才能恢复。
+> recovery may take more than ten seconds.
 
-所以 DCM 的思想像：
+So DCM is like:
 
-> 不要连续熬夜到昏迷，再睡 20 小时。
+> do not pull an all-nighter until you collapse, then sleep 20 hours.
 
-而是：
+Instead:
 
-> 每次工作一小段就休息，始终保持状态。
+> work a short stretch, then rest, and stay in a usable state.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← DCM 核心思想](./59-dcm-core-idea.md) |
-| 下一章 | [On timer →](./61-on-timer.md) |
+| Previous | [← Core idea of DCM](./59-dcm-core-idea.md) |
+| Next | [On timer →](./61-on-timer.md) |

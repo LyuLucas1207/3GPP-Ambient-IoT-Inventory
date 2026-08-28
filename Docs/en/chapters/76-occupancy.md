@@ -1,21 +1,21 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Access Probability](./75-access-probability.md) |
-| 下一章 | [Access Probability 的缺点 →](./77-access-probability-drawback.md) |
+| Previous | [← Access probability](./75-access-probability.md) |
+| Next | [Drawback of access probability →](./77-access-probability-drawback.md) |
 
 ---
 
-# 76. Occupancy 是什么？
+# 76. What is occupancy?
 
 ## Occupancy
 
-就是：
+It means:
 
-> AO 有多满。
+> how full the AOs are.
 
-例如 8 个 AO：
+For example, 8 AOs:
 
 ```text
 AO1 occupied
@@ -28,15 +28,15 @@ AO7 collision
 AO8 occupied
 ```
 
-Reader 可以从这些情况估计：
+From these outcomes the reader can estimate:
 
-> 现在是不是太挤了。
+> whether things are too crowded right now.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Access Probability](./75-access-probability.md) |
-| 下一章 | [Access Probability 的缺点 →](./77-access-probability-drawback.md) |
+| Previous | [← Access probability](./75-access-probability.md) |
+| Next | [Drawback of access probability →](./77-access-probability-drawback.md) |

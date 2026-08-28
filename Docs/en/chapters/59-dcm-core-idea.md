@@ -1,57 +1,57 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← DCM](./58-dcm.md) |
-| 下一章 | [为什么睡觉反而快（熬夜类比） →](./60-why-sleeping-helps.md) |
+| Previous | [← DCM](./58-dcm.md) |
+| Next | [Why sleeping can be faster (all-nighter analogy) →](./60-why-sleeping-helps.md) |
 
 ---
 
-# 59. DCM 的核心思想到底是什么？
+# 59. What is the core idea of DCM?
 
-一句话：
+In one sentence:
 
-> **不要把电一直耗到最低再去充电。**
+> **do not drain the energy all the way to the bottom before you recharge.**
 
-传统 EM：
+Traditional EM:
 
 ```text
 500 nJ
 ↓
-一直监听
+keep monitoring
 ↓
-一直监听
+keep monitoring
 ↓
-一直监听
+keep monitoring
 ↓
 250 nJ
 ↓
 OFF
 ↓
-需要补 250 nJ
+need to top up 250 nJ
 ```
 
-DCM：
+DCM:
 
 ```text
 500 nJ
 ↓
-只监听一小段
+monitor only a short while
 ↓
-比如还有 470 nJ
+still has ~470 nJ, for example
 ↓
-主动睡觉
+sleep on purpose
 ↓
-只需要补 30 nJ
+only need to top up 30 nJ
 ```
 
-所以恢复得快。
+So it recovers faster.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← DCM](./58-dcm.md) |
-| 下一章 | [为什么睡觉反而快（熬夜类比） →](./60-why-sleeping-helps.md) |
+| Previous | [← DCM](./58-dcm.md) |
+| Next | [Why sleeping can be faster (all-nighter analogy) →](./60-why-sleeping-helps.md) |

@@ -1,22 +1,22 @@
-# LutzLampe
+# 3GPP-Ambient-IoT-Inventory
 
-Repository for Lutz Lampe Ambient IoT thesis prep **and** the Figure 5(b) simulation environment.
+A **system-level simulator** for 3GPP Ambient IoT inventory: batteryless tags harvest RF energy, and a reader identifies them with paging and CBRA (Msg1–Msg3). This repo implements that procedure and reproduces the paper’s Device-1 Figure 5(b) comparison (EM, DCM 1-group, DCM 4-group).
 
-Canonical paper (published IEEE version; arXiv `2501.15020v1` is for discrepancy notes only):
+Canonical source: the **published IEEE** paper (arXiv `2501.15020v1` is for discrepancy notes only):
 
 > Fast Inventory for 3GPP Ambient IoT Considering Device Unavailability Due to Energy Harvesting
 
-The scientific core is a Python simulator under `Implements/`. The React page only **plays back** saved snapshots. Deleting the web UI does not change Figure 5(b).
+The scientific core is the Python Monte Carlo engine under `Implements/`. The React dashboard only **plays back** saved snapshots. Deleting the web UI does not change Figure 5(b).
 
 ```text
-LutzLampe/                 ← git repository root
+3GPP-Ambient-IoT-Inventory/   ← git repository root
 ├── README.md
 ├── .gitignore
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
-├── Docs/                  ← lecture notes
+├── Docs/                  ← paper walkthrough notes (en / zh)
 ├── Papers/                ← paper PDFs
-├── Files/                 ← CV / other materials
+├── Files/
 └── Implements/            ← simulator (Python engine + React dashboard)
     ├── backend/
     ├── frontend/
@@ -26,7 +26,7 @@ LutzLampe/                 ← git repository root
 
 ## Quick start — development (hot reload)
 
-Run from **this directory** (`LutzLampe/`). There is no Compose file under `Implements/`.
+Run from **this directory** (the repository root). There is no Compose file under `Implements/`.
 
 ```bash
 docker compose up --build
@@ -145,14 +145,24 @@ Factory \((x,y)\) is **illustrative visualization**. Device \(p_{in}\) is sample
 
 See `Implements/docs/REPRODUCTION_ASSUMPTIONS.md` and `Implements/docs/PAPER_NOTES.md`.
 
-## Lecture notes
+## Paper walkthrough notes
+
+English notes are under `Docs/en/`; Chinese notes are under `Docs/zh/`. Both tracks use the paper’s vocabulary (inventory, energy harvesting, EM, DCM, CBRA, AO, access probability, device grouping, Figure 5(b)).
 
 | Path | Contents |
 | --- | --- |
-| [Docs/content.md](./Docs/content.md) | Index (chapters 0–97) |
-| [Docs/chapters/](./Docs/chapters/) | Chapter markdown |
-| [Docs/figures/](./Docs/figures/README.md) | Figure 1–5 close reading |
+| [Docs/en/content.md](./Docs/en/content.md) | English index (chapters 0–97) |
+| [Docs/zh/content.md](./Docs/zh/content.md) | Chinese index (chapters 0–97) |
+| [Docs/en/story.md](./Docs/en/story.md) | English real-world story (factory inventory) |
+| [Docs/en/chapters/](./Docs/en/chapters/) | English chapter markdown |
+| [Docs/en/figures/](./Docs/en/figures/README.md) | Figure 1–5 close reading |
 | `Papers/` | Paper PDFs |
-| `Files/` | CV and other materials |
+| `Files/` | Supporting files |
 
-Start from zero: [Docs/content.md](./Docs/content.md) → Preface → chapter 0.
+Start from zero: [Docs/en/content.md](./Docs/en/content.md) → Preface → chapter 0.
+
+## Acknowledgments
+
+This work was prepared under the supervision of **Prof. Lutz Lampe**. The inventory model and Figure 5(b) follow the IEEE paper cited above; this repository is an independent implementation, not a substitute for that publication.
+
+本实现在 **Lutz Lampe 教授** 指导下完成。盘点模型与 Figure 5(b) 依据上述 IEEE 论文；本仓库是对该流程的复现实现，不能代替原文。

@@ -1,45 +1,45 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Low-Power Wake-Up Receiver（门铃）](./79-wakeup-receiver.md) |
-| 下一章 | [OOK + Modulation →](./81-ook-modulation.md) |
+| Previous | [← Low-power wake-up receiver (doorbell)](./79-wakeup-receiver.md) |
+| Next | [OOK + modulation →](./81-ook-modulation.md) |
 
 ---
 
-# 80. Preamble 是什么？
+# 80. What is a preamble?
 
-论文说 paging 带：
+The paper says paging carries a:
 
-> preamble。
+> preamble.
 
-## Preamble = 前导序列
+## Preamble = a known lead-in sequence
 
-就是正式消息之前先发一个已知 pattern：
+Before the real message, send a known pattern first:
 
 ```text
 101010101...
 ```
 
-设备知道：
+The device knows:
 
-> “只要我检测到这个 pattern，就说明 paging 要来了。”
+> "If I detect this pattern, paging is about to arrive."
 
-很像你敲门：
+A lot like knocking on a door:
 
 ```text
-咚咚—咚咚咚
+knock-knock—knock-knock-knock
 ```
 
-里面的人听到这个特殊节奏：
+People inside hear that special rhythm:
 
-> “哦，是自己人。”
+> "Ah, it's one of us."
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← Low-Power Wake-Up Receiver（门铃）](./79-wakeup-receiver.md) |
-| 下一章 | [OOK + Modulation →](./81-ook-modulation.md) |
+| Previous | [← Low-power wake-up receiver (doorbell)](./79-wakeup-receiver.md) |
+| Next | [OOK + modulation →](./81-ook-modulation.md) |

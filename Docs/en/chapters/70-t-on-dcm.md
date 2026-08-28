@@ -1,39 +1,39 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← T_sl^DCM](./69-t-sl-dcm.md) |
-| 下一章 | [P_sl →](./71-p-sl.md) |
+| Previous | [← \(T_{\mathrm{sl}}^{\mathrm{DCM}}\)](./69-t-sl-dcm.md) |
+| Next | [\(P_{sl}\) →](./71-p-sl.md) |
 
 ---
 
-# 70. \(T_{on}^{DCM}\) 是什么？
+# 70. What is \(T_{\mathrm{on}}^{\mathrm{DCM}}\)?
 
-就是：
+It is:
 
-> 每个 paging 周期里面 ON 多久。
+> how long the device stays ON inside each paging period.
 
-论文要求：
+The paper requires:
 
 $$
-T_{sl}^{DCM}+T_{on}^{DCM}=T_{pg}
+T_{\mathrm{sl}}^{\mathrm{DCM}}+T_{\mathrm{on}}^{\mathrm{DCM}}=T_{pg}
 $$
 
-也就是：
+that is:
 
 ```text
-一个 paging 周期
+one paging period
 =
-sleep 时间
+sleep duration
 +
-醒着时间
+on duration
 ```
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← T_sl^DCM](./69-t-sl-dcm.md) |
-| 下一章 | [P_sl →](./71-p-sl.md) |
+| Previous | [← \(T_{\mathrm{sl}}^{\mathrm{DCM}}\)](./69-t-sl-dcm.md) |
+| Next | [\(P_{sl}\) →](./71-p-sl.md) |

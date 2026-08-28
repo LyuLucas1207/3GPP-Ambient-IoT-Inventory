@@ -1,39 +1,39 @@
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 第一次 Paging 为什么重要](./67-first-paging.md) |
-| 下一章 | [T_sl^DCM →](./69-t-sl-dcm.md) |
+| Previous | [← Why the first paging matters](./67-first-paging.md) |
+| Next | [\(T_{\mathrm{sl}}^{\mathrm{DCM}}\) →](./69-t-sl-dcm.md) |
 
 ---
 
-# 68. Synchronization 是什么？
+# 68. What is synchronization?
 
-## Synchronization = 同步
+## Synchronization
 
-就是：
+Synchronization means:
 
-> 两边时间对齐。
+> lining up the clocks on both sides.
 
-Reader 知道：
+The reader knows:
 
 ```text
 Paging at t=12,24,36...
 ```
 
-Tag 也知道。
+The tag knows too.
 
-所以 Tag 可以：
+So the tag can:
 
-> 只在 paging 快来时醒。
+> wake only when paging is about to arrive.
 
-这是非常经典的通信思想。
+This is a classic idea in communications.
 
 ---
 
-> **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)
+> **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)
 
 | | |
 |---|---|
-| 上一章 | [← 第一次 Paging 为什么重要](./67-first-paging.md) |
-| 下一章 | [T_sl^DCM →](./69-t-sl-dcm.md) |
+| Previous | [← Why the first paging matters](./67-first-paging.md) |
+| Next | [\(T_{\mathrm{sl}}^{\mathrm{DCM}}\) →](./69-t-sl-dcm.md) |
