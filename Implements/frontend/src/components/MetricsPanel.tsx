@@ -36,21 +36,12 @@ export function MetricsPanel({ result }: Props) {
     )
   }
   const keys = Object.values(StrategyKey).filter((k) => result.metrics[k] != null)
-  const val = result.fig5b_validation
   return (
     <>
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-sm font-medium">{t('metrics.inventoryTimes')}</p>
         <ExplainButton view={ViewId.Metrics} />
       </div>
-      {val ? (
-        <p className={`mb-2 text-xs font-medium ${val.pass ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
-          {t('metrics.validation', { status: val.status })}
-          {val.reduction_4_vs_em != null
-            ? ` · ${t('metrics.reduction', { value: (100 * val.reduction_4_vs_em).toFixed(0) })}`
-            : ''}
-        </p>
-      ) : null}
       <Table>
         <TableHeader>
           <TableRow>

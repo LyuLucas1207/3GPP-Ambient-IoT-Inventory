@@ -245,7 +245,7 @@
   },
   "curve": {
     "title": "Figure 5(b)",
-    "subtitle": "d’après les instants d’achèvement, pas une courbe ajustée. Reproduction préliminaire — PASS/FAIL est le contrôle automatique, pas une affirmation de correspondance au papier.",
+    "subtitle": "d’après les instants d’achèvement, pas une courbe ajustée.",
     "x": "Temps (ms)",
     "y": "Inventorié (%)",
     "panHint": "Glisser la barre sous le graphe pour parcourir le temps. Double-clic pour toute la simulation.",

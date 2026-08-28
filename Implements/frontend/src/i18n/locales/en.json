@@ -69,7 +69,7 @@
     "strategies": "All selected strategies share the same random numbers (same $p_{\\mathrm{in}}$, positions, energy phases).",
     "em": "Energy-aware monitoring. Next paging starts when the previous CBRA ends (paper strategy 1).",
     "dcm1": "Discontinuous coverage mode, one group. All devices share the same ON window.",
-    "dcm4": "DCM with 4 groups. Group assigned at first paging (spread). Each paging serves one group. Paper: ~50% $T_{99}$ cut vs EM — the UI shows PASS/FAIL from the automatic check.",
+    "dcm4": "DCM with 4 groups. Group assigned at first paging (spread). Each paging serves one group. Paper: ~50% $T_{99}$ cut vs EM.",
     "seed": "PRNG seed. Same seed + same N replays the identical Monte Carlo draw: floor (x, y), $p_{\\mathrm{in}}$, energy phase, and every access coin-flip. Devices do not walk; the factory “route” is only state playback. Change the seed, then Run, for a new layout and inventory order. 42 is the paper-reproduction default.",
     "maxTime": "Simulation horizon in seconds. Paper qualitative: EM $T_{99}$ around 20 s. Web snapshots are stored every 100 ms.",
     "earlySleep": "Not the paper default (unchecked). If checked, devices that fail the access-probability draw SLEEP after the 1 ms paging instead of remaining ON for Table 1 $T_{\\mathrm{on}}^{\\mathrm{DCM}}=3\\,\\mathrm{ms}$. That is an unpublished duty-cycle optimization. Paper configuration keeps the box unchecked.",
@@ -245,7 +245,7 @@
   },
   "curve": {
     "title": "Figure 5(b)",
-    "subtitle": "from completion times, not a fitted curve. Preliminary reproduction — PASS/FAIL is the automatic scientific check, not a claim that the curves match the paper.",
+    "subtitle": "from completion times, not a fitted curve.",
     "x": "Time (ms)",
     "y": "Inventoried (%)",
     "panHint": "Drag the bar under the plot to pan time. Double-click the plot to show the full run.",

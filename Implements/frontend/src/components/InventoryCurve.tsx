@@ -63,9 +63,6 @@ export function InventoryCurve({ result }: Props) {
         </CardAction>
         <CardDescription>
           {t('curve.subtitle')}
-          {result?.fig5b_validation
-            ? ` · ${t('metrics.validation', { status: result.fig5b_validation.status })}`
-            : ''}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col gap-1">
