@@ -1,0 +1,290 @@
+{
+  "common": {
+    "running": "运行中…",
+    "yes": "是",
+    "no": "否",
+    "play": "播放",
+    "pause": "暂停",
+    "checking": "检查中",
+    "apiUp": "API 正常",
+    "apiDown": "API 断开"
+  },
+  "app": {
+    "title": "3GPP 环境物联网盘点",
+    "documentTitle": "3GPP 环境物联网盘点仿真器",
+    "kicker": "室内工厂车间",
+    "subtitle": "图 5(b) · 能量采集导致的设备不可用",
+    "time": "t = {{value}} s",
+    "done": "完成 {{value}}%",
+    "runPaper": "运行论文配置"
+  },
+  "hud": {
+    "setup": "设置",
+    "inspect": "检查",
+    "plots": "曲线",
+    "resizeSetup": "调整设置面板",
+    "resizeInspect": "调整检查面板",
+    "resizePlots": "调整曲线面板"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色"
+  },
+  "lang": {
+    "label": "语言"
+  },
+  "state": {
+    "OFF": "关闭",
+    "ON": "开启",
+    "SLEEP": "休眠",
+    "ACCESS": "接入",
+    "COLLISION": "碰撞",
+    "DONE": "完成"
+  },
+  "strategy": {
+    "em": "EM，非周期寻呼",
+    "dcm_1_group": "DCM — 1 组",
+    "dcm_4_group": "DCM — 4 组"
+  },
+  "sim": {
+    "title": "仿真",
+    "description": "论文默认锁定设备 1、N=600。车间 (x, y) 仅用于可视化。",
+    "numDevices": "设备数量",
+    "deviceType": "设备类型",
+    "device1": "设备 1（图 5(b)）",
+    "device2": "设备 2",
+    "strategies": "策略",
+    "seed": "随机种子",
+    "reshuffleSeed": "换一次实现（新种子）",
+    "maxTime": "最大时间 (s)",
+    "run": "运行仿真",
+    "paper": "论文配置"
+  },
+  "hints": {
+    "numDevices": "标签数 N。论文图 5(b) 使用 N = 600。地面上的 (x, y) 仅用于显示；$p_{\\mathrm{in}}$ 来自数字化的 CDF。",
+    "deviceType": "设备 1 是图 5(b) 能量模型（$E_{\\max}$ = $E_{\\mathrm{up}}$ = 500 nJ，$E_{\\mathrm{low}}$ = 250 nJ）。设备 2 是表 1 的另一行。",
+    "strategies": "所选策略共用同一组随机数（相同的 $p_{\\mathrm{in}}$、位置、能量相位）。",
+    "em": "能量感知监测。上一轮 CBRA 结束后立即开始下一次寻呼（论文策略 1）。",
+    "dcm1": "非连续覆盖模式，一组。所有设备共用同一 ON 窗口。",
+    "dcm4": "DCM 共 4 组。设备按 id 对 4 取模均分；每一轮寻呼只服务一组。论文：相对 EM 约降低 50% $T_{99}$。",
+    "seed": "伪随机种子。相同种子 + 相同 N 会原样重放同一次蒙特卡洛抽样：车间 (x, y)、$p_{\\mathrm{in}}$、能量相位、以及每一次接入掷币。设备不会走动；车间里看到的“路线”只是状态回放。要换布局和入库顺序：改种子后再点运行。42 是复现论文的默认值。",
+    "maxTime": "仿真时长（秒）。论文定性结果：EM 的 $T_{99}$ 约 20 s。网页快照每 100 ms 存一次。"
+  },
+  "assumptions": {
+    "title": "参数与假设",
+    "summary": "表 1 与复现假设",
+    "paperSpecified": "论文给定",
+    "repro": "复现假设",
+    "loadPaper": "从 API 加载论文配置。",
+    "notLoaded": "尚未加载。"
+  },
+  "paperHints": {
+    "E_max_nJ": "储能上限。设备 1：500 nJ。与 $E_{\\mathrm{up}}$ 相同。",
+    "E_up_nJ": "完成 ON / 接入过程所需能量。设备 1：500 nJ。",
+    "E_low_nJ": "唤醒阈值。低于此值设备为 OFF。设备 1：250 nJ。",
+    "P_rx_uW": "接收电路功耗，1 μW。",
+    "P_tx_uW": "发射电路功耗，1 μW。",
+    "P_sl_uW": "休眠功耗，0.1 μW。",
+    "paging_ms": "寻呼时长，1 ms。",
+    "T_pg_ms": "周期寻呼间隔，12 ms（DCM）。",
+    "Msg1_ms": "PRACH / $\\mathrm{Msg}_{1}$，0.5 ms。",
+    "Msg2_ms": "$\\mathrm{Msg}_{2}$，0.5 ms。",
+    "Msg3_ms": "$\\mathrm{Msg}_{3}$，3 ms。",
+    "T_on_DCM_ms": "发表版本的 DCM ON 窗口：3 ms（arXiv 为 2 ms）。",
+    "T_on_timer_ms": "EM 的 ON 定时器，18 ms。",
+    "n_time_ao": "时域接入时机：4。",
+    "n_freq_ao": "频域接入时机：2。",
+    "n_ao": "接入时机总数 = 4 × 2 = 8。",
+    "N": "本轮设备数量。"
+  },
+  "assumptionHints": {
+    "pin_source": "$p_{\\mathrm{in}}$ 从图 5(a) 数字化 CDF 抽样，不是由车间 (x, y) 路径损耗计算。",
+    "warmup": "初始能量：`stationary` 为闭式周期相位；`explicit` 从 $E_{\\mathrm{low}}$ 跑 warmup_s 的 ON/OFF 状态机。两者不等价。",
+    "access_probability": "论文未给出 $p_{\\mathrm{access}}$ 公式。默认 `poisson_idle` 是未发表的空闲 AO 负荷估计。",
+    "aperiodic_paging": "EM：上一轮 CBRA 结束后尽快开始下一次寻呼。",
+    "periodic_paging": "DCM：固定全局 epoch $0, T_{\\mathrm{pg}}, 2T_{\\mathrm{pg}},\\ldots$。CBRA 跨过则跳过该次寻呼。",
+    "group_assignment": "默认 $g = i \\bmod N_g$ 是预配置均匀分组假设，不是论文公布的流程。`first_paging_mod` 不能当作 paper mode。",
+    "off_clears_sync": "默认 true：OFF 会丢掉 DCM 同步，必须再听到寻呼。False 保留同步，充到 $E_{\\mathrm{up}}$ 后等下一次组 epoch。"
+  },
+  "anatomy": {
+    "title": "设备内部",
+    "subtitle": "无电池标签上的两块电路",
+    "device": "A-IoT 设备",
+    "wur": "低功耗唤醒接收机",
+    "wurRole": "门铃 — 只听有没有寻呼",
+    "wurHint": "1 μW 的小接收机，只问“有没有人在叫我”。论文：对 Device 2 有用（主芯片 $P_{\\mathrm{rx}}$ = 50 μW）。Device 1 的图 5(b) 不用它。",
+    "ic": "A-IoT 通信主芯片",
+    "icRole": "寻呼 · CBRA $\\mathrm{Msg}_{1}$–$\\mathrm{Msg}_{3}$ · EM/DCM",
+    "icHint": "真正做盘点的射频芯片。Device 1：$P_{\\mathrm{rx}}$ = $P_{\\mathrm{tx}}$ = 1 μW。图 5(b) 模拟的就是它。",
+    "wake": "唤醒",
+    "inUse": "本轮使用",
+    "notThisFig": "不在图 5(b)",
+    "d1Note": "本轮是 Device 1：由主芯片听寻呼。唤醒接收机画出来是为了结构对照，图 5(b) 不用它。",
+    "d2Note": "本轮是 Device 2：可以用 1 μW 唤醒接收机听寻呼，而不必让 50 μW 的主芯片一直开着。"
+  },
+  "inspect": {
+    "title": "设备检查",
+    "empty": "在车间地面上点击一个标签。",
+    "device": "设备 #{{id}}",
+    "energy": "能量",
+    "energyHint": "存储能量 $e_{\\mathrm{ES}}$。$E_{\\mathrm{low}}$ = 250 nJ 才能唤醒，$E_{\\mathrm{up}}$ = $E_{\\max}$ = 500 nJ。低于 $E_{\\mathrm{low}}$ 为 OFF。",
+    "pinHint": "接收射频功率来自数字化图 5(a) CDF，截断于 −36 dBm。不是由 (x, y) 计算。",
+    "pehHint": "采集功率 $P_{\\mathrm{eh}} = \\eta(p_{\\mathrm{in}})\\, p_{\\mathrm{in}}$。效率 $\\eta$ 使用发表论文的分段公式（不是 arXiv 写反的那版）。",
+    "group": "组别",
+    "groupHint": "DCM：$g = i \\bmod N_g$。EM 没有组。",
+    "attempts": "尝试次数",
+    "attemptsHint": "该设备的 $\\mathrm{Msg}_{1}$ 接入尝试次数。",
+    "collisions": "碰撞次数",
+    "collisionsHint": "接入时机上的 $\\mathrm{Msg}_{1}$ 碰撞。",
+    "inventoried": "已盘点",
+    "inventoriedHint": "成功完成 $\\mathrm{Msg}_{1}$–$\\mathrm{Msg}_{3}$ CBRA 后为真。",
+    "completion": "完成时刻",
+    "completionHint": "该设备完成盘点的时刻。图 5(b) 由这些时刻构成，不是拟合曲线。",
+    "firstPaging": "首次寻呼",
+    "firstPagingHint": "第一次听到寻呼的时刻，只写一次；之后的再同步记在 last-sync。",
+    "lastSync": "最近同步",
+    "lastSyncHint": "最近一次 inventory 同步时刻（可能是掉到 E_low 之后的再同步）。",
+    "syncCount": "同步 / 失步",
+    "syncCountHint": "获得 DCM 同步次数 vs 在同步状态下掉到 E_low 的次数。"
+  },
+  "energy": {
+    "title": "能量历史",
+    "empty": "选择一个设备以绘制存储能量随时间的变化。",
+    "timeAxis": "时间 (s)",
+    "energyAxis": "能量 (nJ)",
+    "stopAtDone": "在完成时刻停止（+80 ms）",
+    "loading": "正在加载 1 ms 科学轨迹…",
+    "frozen": "DONE 后冻结 — 不是物理演化",
+    "completedAt": "盘点完成 · {{t}} s",
+    "bgLegend": "背景：OFF 采集、ON 监听、SLEEP、TX。标记：寻呼、Msg1、碰撞、Msg2、Msg3、DONE。"
+  },
+  "cbra": {
+    "title": "CBRA / AO",
+    "subtitle": "4 时域 × 2 频域 = 8 个 AO",
+    "empty": "尚无寻呼事件。",
+    "paging": "寻呼 #{{id}}",
+    "pAccessHint": "本次寻呼的 $p_{\\mathrm{access}}$。论文没有公式；此处为空闲 AO 的泊松负荷估计。",
+    "eligible": "合格 {{n}}",
+    "eligibleHint": "已听到寻呼且能量足够尝试 CBRA 的设备。",
+    "attempting": "尝试 {{n}}",
+    "grid": "接入时机",
+    "ok": "Singleton",
+    "idle": "空闲",
+    "collision": "X",
+    "singleton": "Singleton",
+    "emptyCell": "空",
+    "metaStrategy": "策略",
+    "runId": "运行 ID",
+    "grouping": "分组",
+    "cdf": "CDF 哈希",
+    "prev": "上一寻呼",
+    "next": "下一寻呼",
+    "pagingJump": "寻呼 #",
+    "jumpPlayback": "跳到回放最近寻呼",
+    "onCount": "ON {{n}}",
+    "heardNoAttempt": "听到但未尝试 {{n}}",
+    "planned": "计划 {{n}}",
+    "actualTx": "实际 Msg1 {{n}}",
+    "aoCounts": "AO singleton {{s}} · 碰撞 {{c}} · 空闲 {{i}}",
+    "plannedIds": "计划设备",
+    "txIds": "实际发射",
+    "droppedIds": "Msg1 前掉电",
+    "msg1Result": "Msg1 结果",
+    "finalResult": "最终结果"
+  },
+  "playback": {
+    "title": "回放",
+    "subtitle": "快照，不是实时时隙"
+  },
+  "metrics": {
+    "empty": "运行仿真以得到 $T_{50}$ / $T_{90}$ / $T_{99}$。",
+    "strategy": "策略",
+    "final": "最终",
+    "collisions": "碰撞",
+    "inventoryTimes": "盘点时间",
+    "fromTimes": "来自完成时刻，不是拟合曲线"
+  },
+  "maps": {
+    "view": "查看策略图",
+    "close": "关闭",
+    "fit": "适应视图",
+    "reset": "重置布局",
+    "how": "工作方式",
+    "paperExpect": "论文期望（定性参考，不是拟合目标）",
+    "runMetrics": "本次运行指标",
+    "legend": "可拖动节点整理布局；「重置布局」恢复默认。圆角=能量状态 · 方角=协议 · 胶囊=决策 · 直角=失败 · 勾=成功。虚线/动画边为重试或睡眠循环。",
+    "expect": {
+      "em": "发表图上 Device 1 的 EM T99 约 20 s。本次是蒙特卡洛一次实现，不是曲线拟合。",
+      "dcm1": "Device 1 下 DCM 1-group 不应明显优于 EM：全部 N 仍在同一竞争组。",
+      "dcm4": "发表图上 DCM 4-groups 约 10 s / 相对 EM 约降低 50% T99。主体（T90）应明显最快；T99 尾巴仍由最弱采集器决定。"
+    },
+    "em": {
+      "summary": "ON 由能量阈值控制。寻呼是非周期的。弱设备从 E_low 充到 E_up 约 20 s 量级。",
+      "steps": "OFF 采集直到 E_up。\nON 监听寻呼且不采集。\n接入抽签：拒绝则继续监听。\nMsg1 碰撞则等待下次寻呼。\nSingleton：Msg2 接收、Msg3 发送，能量足够则 DONE。"
+    },
+    "dcm1": {
+      "summary": "600 台 Device 1 同属一组。p_access 很低；大量设备听到寻呼并支付监听能量却不发送。",
+      "steps": "盘点前 ON 定时器 18 ms，无寻呼则 OFF。\n第一次寻呼同步到 12 ms。\nDCM ON 3 ms，SLEEP 9 ms。\n未尝试仍支付 P_rx。\nE_low 清除同步。"
+    },
+    "dcm4": {
+      "summary": "均匀分组 g = id mod 4。每台设备每 48 ms 醒一次（ON 3 ms + SLEEP 45 ms）。每次约 150 台竞争。",
+      "steps": "第一次寻呼只负责同步。\n分组是 device_id 对 4 取模（不是首次寻呼序号）。\n仅当 paging_index mod 4 = g 时醒来。\nN_g × T_pg = 48 ms。\n竞争集合约 N/4，因此 p_access 更高。"
+    }
+  },
+  "curve": {
+    "title": "图 5(b)",
+    "subtitle": "来自完成时刻，不是拟合曲线。趋势接近论文，不是精确复现。",
+    "x": "时间 (ms)",
+    "y": "已盘点 (%)",
+    "panHint": "拖动图下方的滑条左右查看时间。双击图恢复整段仿真。",
+    "paperRef": "论文",
+    "paperDigitized": "灰点划线：IEEE 图 5(b) 数字化 CSV。竖虚线：论文文字中的 T99（EM≈20 s，4 组≈10 s）。",
+    "paperMarkersOnly": "仓库里还没有 Device 1 的数字化 CSV。竖虚线只标论文文字中的 T99（EM≈20 s，DCM+分组≈10 s），不是编造的曲线。",
+    "overlay": {
+      "sim": "仿真",
+      "paper": "论文参考",
+      "both": "两者"
+    }
+  },
+  "factory": {
+    "devices": "环境物联网设备",
+    "reader": "阅读器",
+    "readerHover": "阅读器 / 基站<br>33 dBm 连续波",
+    "deviceHover": "<b>设备 #%{customdata[0]}</b><br>状态：%{customdata[1]}<br>能量：%{customdata[2]:.1f} nJ<br><i>p</i><sub>in</sub>：%{customdata[3]:.2f} dBm<extra></extra>",
+    "xAxis": "x (m)",
+    "yAxis": "y (m)"
+  },
+  "overview": {
+    "button": "总览",
+    "buttonAria": "打开阅读器与设备总流程",
+    "title": "阅读器 ↔ 设备",
+    "lead": "一次 paging 周期。不是 ON 的设备听不到 paging。",
+    "asciiTitle": "同一流程",
+    "edge": {
+      "paging": "Paging",
+      "yes": "YES",
+      "no": "NO",
+      "join": "参加",
+      "skip": "不参加",
+      "success": "SUCCESS",
+      "collision": "COLLISION",
+      "next": "等下一次 Paging"
+    },
+    "steps": "阅读器发 paging。\n只有 ON 的设备能听到。\n接入概率：不参加或随机选 AO。\n碰撞则等下一次 paging。\n单用户：Msg2、Msg3、DONE。",
+    "node": {
+      "reader": "READER",
+      "onq": "当前是 ON？",
+      "heard": "收到 Paging",
+      "draw": "access probability",
+      "skip": "不参加",
+      "ao": "随机选 AO",
+      "col": "COLLISION",
+      "ok": "SUCCESS",
+      "m2": "Msg2",
+      "m3": "Msg3",
+      "done": "DONE",
+      "wait": "等下一次 Paging"
+    },
+    "ascii": "READER\n  |\n  | Paging\n  v\nDevice 当前是不是 ON？\n NO              YES\n  |               |\n  |            收到 Paging\n  |               |\n  |         access probability\n  |            /        \\\n  |         不参加        参加\n  |           |            |\n  |           |         随机选 AO\n  |           |         /      \\\n  |           |  COLLISION    SUCCESS\n  |           |      |           |\n  |           |      |         Msg2\n  |           |      |           |\n  |           |      |         Msg3\n  |           |      |           |\n  |           |      |          DONE\n  |           +------+-----------+\n  |                  |\n  +----------- 等下一次 Paging"
+  }
+}

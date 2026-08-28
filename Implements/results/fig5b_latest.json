@@ -1,0 +1,44 @@
+{
+  "seed": 42,
+  "num_devices": 600,
+  "device_type": 1,
+  "strategies": {
+    "em": {
+      "label": "EM, aperiodic paging",
+      "t50_s": 1.1,
+      "t90_s": 7.75,
+      "t95_s": 9.75,
+      "t99_s": 13.25,
+      "final_ratio_pct": 100.0,
+      "n_paging": 4833,
+      "n_msg1_attempts": 936,
+      "n_collisions": 334,
+      "collision_rate": 0.35683760683760685
+    },
+    "dcm_1_group": {
+      "label": "DCM, periodic paging, 1 group",
+      "t50_s": 1.35,
+      "t90_s": 9.200000000000001,
+      "t95_s": 12.950000000000001,
+      "t99_s": 16.95,
+      "final_ratio_pct": 100.0,
+      "n_paging": 1683,
+      "n_msg1_attempts": 1432,
+      "n_collisions": 827,
+      "collision_rate": 0.577513966480447
+    },
+    "dcm_4_group": {
+      "label": "DCM, periodic paging, 4 groups",
+      "t50_s": 1.25,
+      "t90_s": 2.7,
+      "t95_s": 9.600000000000001,
+      "t99_s": 17.3,
+      "final_ratio_pct": 100.0,
+      "n_paging": 1720,
+      "n_msg1_attempts": 1948,
+      "n_collisions": 1342,
+      "collision_rate": 0.688911704312115
+    }
+  },
+  "warnings": []
+}

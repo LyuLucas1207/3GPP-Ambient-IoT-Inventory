@@ -1,0 +1,156 @@
+{
+  "explain": {
+    "button": "Expliquer cette vue",
+    "buttonAria": "Expliquer {{view}}",
+    "termAria": "Expliquer {{term}}",
+    "close": "Fermer",
+    "example": "Cet appareil",
+    "source": {
+      "paper": "Article",
+      "digitized": "Entrée numérisée",
+      "assumption": "Hypothèse de reproduction",
+      "viz": "Surlignage usine"
+    }
+  },
+  "energy": {
+    "title": "Historique d’énergie",
+    "lead": "Énergie stockée $e_{\\mathrm{ES}}$ de l’appareil sélectionné.",
+    "empty": "Sélectionnez un appareil pour tracer l’énergie.",
+    "timeAxis": "Temps (s)",
+    "energyAxis": "Énergie (nJ)",
+    "loading": "Chargement de la trace scientifique…",
+    "chartKey": "Légende",
+    "trim": {
+      "label": "Rogner après achèvement",
+      "hint": "Change seulement la plage visible, pas la simulation.",
+      "ms": "+{{ms}} ms",
+      "full": "Série complète"
+    },
+    "y": {
+      "label": "Échelle verticale",
+      "auto": "Auto",
+      "full": "Pleine plage",
+      "zoom": "Zoom variation",
+      "hint": "Pleine plage : 0 à $E_{\\max}$. Le zoom s’adapte au min/max de la trace. Auto zoome si l’amplitude < 10 % de $E_{\\mathrm{up}}$."
+    },
+    "legend": {
+      "ees": "e_ES — énergie stockée",
+      "frozen": "Figé après DONE — pas une évolution physique",
+      "eup": "E_up — seuil d’allumage",
+      "elow": "E_low — seuil d’extinction",
+      "eupShort": "E_up",
+      "elowShort": "E_low",
+      "doneLine": "Inventaire terminé"
+    },
+    "state": {
+      "OFF": "OFF / collecte",
+      "ON": "ON / écoute",
+      "SLEEP": "SLEEP / collecte P_sl",
+      "TX": "TX",
+      "DONE": "DONE / affichage figé"
+    },
+    "event": {
+      "pagingHeard": "Paging entendu",
+      "pagingRejected": "Rejeté par p_access",
+      "pagingMissed": "Paging manqué",
+      "msg1Planned": "Msg1 prévu",
+      "msg1Tx": "Msg1 émis",
+      "msg1Singleton": "Msg1 singleton",
+      "collision": "Collision Msg1",
+      "dropped": "Abandon avant Msg1",
+      "msg2": "Msg2 RX",
+      "msg3Start": "Début Msg3",
+      "msg3Done": "Msg3 terminé",
+      "done": "Inventaire terminé",
+      "energyFail": "Échec énergétique"
+    },
+    "tip": {
+      "state": "état",
+      "phase": "phase",
+      "draw": "conso.",
+      "net": "net",
+      "reason": "pourquoi",
+      "page": "paging n°"
+    },
+    "reason": {
+      "hold": "Variation trop petite, ou puissance nette ≈ 0.",
+      "harvest": "L’énergie monte : la collecte dépasse la conso.",
+      "draw": "L’énergie baisse : RX, TX ou sommeil dépasse la collecte.",
+      "frozen": "DONE : la simulation a figé cet appareil ; ce n’est pas la physique."
+    },
+    "footer": "Trace scientifique à la demande · dt simu={{sim}} ms · dt graphe={{chart}} ms · achevé {{done}} s",
+    "stateKey": "État scientifique (fond)",
+    "eventKey": "Événements de protocole"
+  },
+  "views": {
+    "factory": {
+      "title": "Vue usine",
+      "lead": "Plan d’atelier. Les positions sont visuelles seulement.",
+      "body": "Chaque point est un appareil Ambient IoT. La couleur est l’état du snapshot de lecture (pas le pas 0.5 ms).\nLe lecteur est le grand marqueur. (x, y) au sol ne calcule pas $p_{\\mathrm{in}}$ ; la puissance incidente vient de la CDF numérisée.\nCliquez un appareil pour l’inspecter.\nLa lecture bas de page utilise des snapshots 100 ms, plus grossiers que la trace scientifique."
+    },
+    "inspector": {
+      "title": "Inspecteur d’appareil",
+      "lead": "Grandeurs de l’étiquette au temps de lecture courant.",
+      "body": "$e_{\\mathrm{ES}}$ ici est le snapshot 100 ms, pas la trace 0.5 ms.\n$p_{\\mathrm{in}}$ et $P_{\\mathrm{eh}}$ sont fixes pour la série. Le groupe ne sert qu’en DCM.\nUtilisez l’historique d’énergie pour $e_{\\mathrm{ES}}(t)$ au pas de simulation."
+    },
+    "energy": {
+      "title": "Historique d’énergie",
+      "lead": "Trace $e_{\\mathrm{ES}}(t)$ au dt de simulation, pas le snapshot usine.",
+      "body": "Axe X : temps (s). Axe Y : énergie (nJ).\nLigne bleue : $e_{\\mathrm{ES}}$ réel. Après DONE, pointillés gris figés : plus de physique.\n$E_{\\mathrm{up}}$ tirets : seuil OFF→ON. $E_{\\mathrm{low}}$ pointillés : seuil d’extinction.\nBandes = scientific_state (OFF bleu, ON orange, SLEEP violet, TX rouge, DONE vert).\nMarqueurs = événements au slot exact. Entendre un paging ≠ envoyer Msg1. Succès : Paging → Msg1 → singleton → Msg2 → début Msg3 → Msg3 fini → DONE.\nRogner ne change que l’affichage. Le zoom rend visibles quelques nJ invisibles sur 0–500 nJ.",
+      "example": "L’appareil n°{{id}} a fini à {{t}} s, énergie initiale ≈ {{e}} nJ."
+    },
+    "cbra": {
+      "title": "Grille CBRA / AO",
+      "lead": "Un paging : 4 temps × 2 fréquences = 8 occasions d’accès.",
+      "body": "Idle = vide. Singleton = un seul Msg1. Collision = deux Msg1 ou plus.\nTentatives prévues : $p_{\\mathrm{access}}$. TX réel : encore assez d’énergie au slot Msg1.\nUn singleton n’est pas l’inventaire fini. Msg2 puis Msg3 doivent réussir.\nLe contrôleur $p_{\\mathrm{access}}$ est une hypothèse de reproduction."
+    },
+    "fig5b": {
+      "title": "Figure 5(b)",
+      "lead": "Fraction inventoriée vs temps, d’après les instants de fin, pas un lissage.",
+      "body": "X : temps (ms). Y : % inventorié. Trois stratégies, même tirage $p_{\\mathrm{in}}$.\nT50/T90/T99 : premiers franchissements 50/90/99 %.\nLes plateaux sont des lots OFF qui rechargent $E_{\\mathrm{low}}\\to E_{\\mathrm{up}}$. La queue longue est T99.\nParamètres article / CDF numérisée / hypothèses de reproduction ne sont pas la même chose.\nCette série n’est pas calée sur la figure IEEE."
+    },
+    "metrics": {
+      "title": "Tableau de métriques",
+      "lead": "T50, T90, T99 et collisions par stratégie.",
+      "body": "Les temps viennent des instants de fin après Msg3 réussi.\nCliquez une ligne pour la carte d’états.\nTaux de collision = collisions Msg1 / tentatives Msg1."
+    },
+    "strategyMap": {
+      "title": "Carte de stratégie",
+      "lead": "Automate de la stratégie d’inventaire choisie.",
+      "body": "Le chemin nominal va du haut vers le bas. Les boîtes latérales sont sommeil, collision ou échec énergétique.\nCliquez un nœud pour l’explication.\nBleu énergie, ambre protocole, violet décision, rouge échec, vert succès.\nGlissez pour ranger ; Réinitialiser restaure la disposition."
+    }
+  },
+  "maps": {
+    "clickNode": "Cliquez un bloc pour l’explication."
+  },
+  "factory": {
+    "paperWording": "Article",
+    "thisColour": "Cette couleur",
+    "stateHelp": {
+      "OFF": {
+        "paper": "L’article pose d’abord on et off. Off : l’IC est éteint par manque d’énergie, pas de Rx/Tx ; la conso est négligeable, mais la collecte continue. Seuils $E_{\\mathrm{up}}$ / $E_{\\mathrm{low}}$ (Device 1 : 500 nJ / 250 nJ).",
+        "ui": "Marqueur gris. Snapshot usine 100 ms, pas un slot 0.5 ms."
+      },
+      "ON": {
+        "paper": "On : disponible pour la réception et l’émission A-IoT. L’énergie baisse à $P_{\\mathrm{rx}}$ (écoute/Msg2) ou $P_{\\mathrm{tx}}$ (Msg1/Msg3). Device 1 : $1\\,\\mu$W pour les deux.",
+        "ui": "Marqueur bleu : écoute du paging sur ce snapshot."
+      },
+      "SLEEP": {
+        "paper": "Le DCM ajoute un sleep (≠ off). L’IC garde un sleep timer jusqu’à la prochaine période on pour le CBRA. Comme en off : collecte possible, pas de Tx/Rx. $P_{\\mathrm{sl}}=0.1\\,\\mu$W (Device 1), $P_{\\mathrm{sl}}<P_{\\mathrm{rx}}$.",
+        "ui": "Marqueur violet. L’EM n’a pas de sleep ; seulement le DCM après le premier paging."
+      },
+      "ACCESS": {
+        "paper": "L’article ne définit pas ACCESS. L’émission reste l’état on, à $P_{\\mathrm{tx}}$ pendant Msg1/Msg3.",
+        "ui": "Surlignage ambre : ce snapshot 100 ms a vu Msg1–3. La trace 0.5 ms appelle cela TX."
+      },
+      "COLLISION": {
+        "paper": "Figure 1 : deux Msg1 sur la même occasion d’accès = collision ; le CBRA échoue, nouvel accès. Ce n’est pas un état d’énergie (on/off/sleep).",
+        "ui": "Surlignage rouge : ce snapshot 100 ms a vu un Msg1 en collision. Pas encore inventorié."
+      },
+      "DONE": {
+        "paper": "Un appareil est inventorié après paging → Msg1 → Msg2 → Msg3 (ID). Il quitte les CBRA suivants. L’axe Y de la fig. 5(b) est le ratio inventorié.",
+        "ui": "Marqueur vert. Ici DONE ; l’article dit inventoried. L’énergie usine peut ensuite être figée."
+      }
+    }
+  }
+}

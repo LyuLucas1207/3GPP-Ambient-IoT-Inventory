@@ -1,0 +1,14 @@
+{
+  "title": "Lexique",
+  "documentTitle": "Lexique · Ambient IoT",
+  "lead": "Abréviations (3GPP, AO, CBRA) et symboles ($p_{\\mathrm{in}}$, $E_{\\mathrm{up}}$). Pas les numéros de figure.",
+  "search": "Rechercher…",
+  "back": "Retour au simulateur",
+  "all": "Tout",
+  "empty": "Aucun terme.",
+  "count": "{{n}} termes",
+  "kind": {
+    "abbr": "Abréviations",
+    "symbol": "Symboles"
+  }
+}

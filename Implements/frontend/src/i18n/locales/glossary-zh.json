@@ -1,0 +1,43 @@
+{
+  "title": "词汇",
+  "documentTitle": "词汇 · Ambient IoT",
+  "lead": "缩写（3GPP、AO、CBRA）和公式符号（$p_{\\mathrm{in}}$、$E_{\\mathrm{up}}$）。不含图号。",
+  "search": "搜索…",
+  "back": "返回仿真",
+  "all": "全部",
+  "empty": "没有匹配的词条。",
+  "count": "{{n}} 个词条",
+  "kind": {
+    "abbr": "缩写",
+    "symbol": "公式符号"
+  },
+  "entries": {
+    "g3gpp": { "short": "3GPP", "full": "第三代合作伙伴计划", "unit": "组织", "body": "5G/NR 与 Ambient IoT 盘点流程的标准化组织。本仿真按该体系的 paging / CBRA / EM / DCM 来做。", "effect": "不是私有 MAC，而是 3GPP Ambient IoT 概念。" },
+    "aiot": { "short": "A-IoT", "full": "Ambient IoT（环境物联网）", "unit": "系统", "body": "无电池标签，采集射频能量，由阅读器完成盘点。", "effect": "决定 T99 的往往是能量，而不只是碰撞。" },
+    "bs": { "short": "BS", "full": "基站 / 阅读器", "unit": "节点", "body": "33 dBm 连续波发射与 paging/CBRA 对端。", "effect": "地面坐标仅用于显示，不计算 $p_{\\mathrm{in}}$。" },
+    "cw": { "short": "CW", "full": "连续波射频", "unit": "33 dBm", "body": "阅读器常开射频场，设备从中充电。", "effect": "$P_{\\mathrm{eh}}$ 来自 $p_{\\mathrm{in}}$ 与 $\\xi$，不是分组无线电模型。" },
+    "wur": { "short": "WUR", "full": "唤醒接收机", "unit": "模块", "body": "低功耗“门铃”接收机。对 Device 2 有用。Device 1 论文曲线不用。", "effect": "结构图里画出以便对照。" },
+    "ic": { "short": "IC", "full": "主通信芯片", "unit": "模块", "body": "负责监听 paging 和 Msg1–3。", "effect": "Table 1 的 $P_{\\mathrm{rx}}$/$P_{\\mathrm{tx}}$ 指它。" },
+    "rf": { "short": "RF", "full": "射频", "unit": "—", "body": "入射场 $p_{\\mathrm{in}}$ 以及采集/发射无线电。", "effect": "所有能量数字从射频入射功率开始。" },
+    "prach": { "short": "PRACH", "full": "物理随机接入（Msg1）", "unit": "0.5 ms", "body": "Msg1 是 Ambient IoT 上行随机接入，Device 1 为 0.5 ms。", "effect": "1 ms 轨迹会漏掉整个 Msg1；本仿真 dt=0.5 ms。" },
+    "cdf": { "short": "CDF", "full": "$p_{\\mathrm{in}}$ 累积分布", "unit": "输入", "body": "数字化室内入射功率分布。哈希显示在 CBRA 元数据。", "effect": "设备充电能力的差异来源。" },
+    "rx": { "short": "RX", "full": "接收 / 监听", "unit": "模式", "body": "ON 以 $P_{\\mathrm{rx}}$ 监听，或接收 Msg2。", "effect": "即使不发 Msg1，ON 窗口也在耗能。" },
+    "tx": { "short": "TX", "full": "发射", "unit": "模式", "body": "以 $P_{\\mathrm{tx}}$ 发 Msg1 或 Msg3。", "effect": "时间短，仍可能跨过 $E_{\\mathrm{low}}$。" },
+    "off": { "short": "OFF", "full": "射频关闭 / 充电", "unit": "状态", "body": "按 $P_{\\mathrm{eh}}$ 充到 $E_{\\mathrm{up}}$。", "effect": "不能听 paging，也不能发 Msg1。" },
+    "on": { "short": "ON", "full": "监听 paging", "unit": "状态", "body": "以 $P_{\\mathrm{rx}}$ 监听。", "effect": "未 DONE 且高于 $E_{\\mathrm{low}}$ 则可参与 paging。" },
+    "sleep": { "short": "SLEEP", "full": "DCM 睡眠", "unit": "状态", "body": "低功耗定时器，仍在充电，支付 $P_{\\mathrm{sl}}$。", "effect": "净功率 $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$。" },
+    "done": { "short": "DONE", "full": "盘点完成", "unit": "状态", "body": "Msg3 成功。能量轨迹冻结。", "effect": "完成时刻构成已盘点比例曲线。" },
+    "nj": { "short": "nJ", "full": "纳焦耳", "unit": "能量", "body": "$e_{\\mathrm{ES}}$、$E_{\\max}$、$E_{\\mathrm{up}}$、$E_{\\mathrm{low}}$。", "effect": "Device 1 储能是数百 nJ；一次 CBRA 只消耗几 nJ。" },
+    "uw": { "short": "μW", "full": "微瓦", "unit": "功率", "body": "Table 1 的 $P_{\\mathrm{rx}}$、$P_{\\mathrm{tx}}$、$P_{\\mathrm{sl}}$。", "effect": "1 μW × 3 ms = 3 nJ。" },
+    "nw": { "short": "nW", "full": "纳瓦", "unit": "功率", "body": "采集功率 $P_{\\mathrm{eh}}$ 用 nW 显示（弱设备常 ≪ 1 μW）。", "effect": "弱 $p_{\\mathrm{in}}$ → $E_{\\mathrm{low}}\\to E_{\\mathrm{up}}$ 很慢。" },
+    "dbm": { "short": "dBm", "full": "相对 1 mW 的分贝", "unit": "功率", "body": "$p_{\\mathrm{in}}$ 与阅读器 CW（33 dBm）。", "effect": "检查器提示中 CDF 截断约为 −36 dBm。" },
+    "ms": { "short": "ms", "full": "毫秒", "unit": "时间", "body": "Paging、消息、ON 窗口。", "effect": "dt=0.5 ms；paging=1 ms；Msg1/2=0.5 ms；Msg3=3 ms。" },
+    "tpag": { "short": "$T_{\\mathrm{pag}}$", "full": "Paging 时长", "unit": "ms", "body": "一次 paging 发射长度。论文为 1 ms。", "effect": "听到 paging 会在 ON 窗口内耗能。" },
+    "nt": { "short": "$N_t$", "full": "时间维接入时机数", "unit": "4", "body": "Device 1：每次 paging 4 个时间 AO（T0–T3）。", "effect": "$N_{\\mathrm{AO}}=N_t\\times N_f$。" },
+    "nf": { "short": "$N_f$", "full": "频率维接入时机数", "unit": "2", "body": "Device 1：2 个频率 AO（F0、F1）。", "effect": "与 $N_t$ 一起构成 8 个 AO。" },
+    "nao": { "short": "$N_{\\mathrm{AO}}$", "full": "每次 paging 的接入时机", "unit": "8", "body": "$4\\times 2=8$。设备随机选一个发 Msg1。", "effect": "同一 AO 两个 Msg1 即碰撞。" },
+    "ng": { "short": "$N_g$", "full": "DCM 组数", "unit": "1 或 4", "body": "1 组 $N_g=1$，4 组 $N_g=4$。默认 $g=\\mathrm{id}\\bmod N_g$ 是复现假设。", "effect": "决定每次 paging 谁合格。" },
+    "nDevices": { "short": "$N$", "full": "设备数量", "unit": "计数", "body": "论文 Device 1 图使用 $N=600$。", "effect": "竞争与 $p_{\\mathrm{access}}$ 随 $N$、$N_g$ 变化。" },
+    "dt": { "short": "$\\mathrm{d}t$", "full": "仿真时间步", "unit": "0.5 ms", "body": "内部时隙长度。按需储能轨迹用此时长（不是 1 ms）。", "effect": "Msg1/Msg2 都是 0.5 ms，更粗的采样会漏掉。" }
+  }
+}

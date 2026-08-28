@@ -1,0 +1,290 @@
+{
+  "common": {
+    "running": "Running…",
+    "yes": "Yes",
+    "no": "No",
+    "play": "Play",
+    "pause": "Pause",
+    "checking": "checking",
+    "apiUp": "API up",
+    "apiDown": "API down"
+  },
+  "app": {
+    "title": "3GPP Ambient IoT Inventory",
+    "documentTitle": "3GPP Ambient IoT Inventory Simulator",
+    "kicker": "Indoor factory bay",
+    "subtitle": "Figure 5(b) · Device unavailability due to energy harvesting",
+    "time": "t = {{value}} s",
+    "done": "{{value}}% done",
+    "runPaper": "Run paper configuration"
+  },
+  "hud": {
+    "setup": "Setup",
+    "inspect": "Inspect",
+    "plots": "Plots",
+    "resizeSetup": "Resize Setup",
+    "resizeInspect": "Resize Inspect",
+    "resizePlots": "Resize Plots"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "lang": {
+    "label": "Language"
+  },
+  "state": {
+    "OFF": "OFF",
+    "ON": "ON",
+    "SLEEP": "SLEEP",
+    "ACCESS": "ACCESS",
+    "COLLISION": "COLLISION",
+    "DONE": "DONE"
+  },
+  "strategy": {
+    "em": "EM, aperiodic paging",
+    "dcm_1_group": "DCM — 1 group",
+    "dcm_4_group": "DCM — 4 groups"
+  },
+  "sim": {
+    "title": "Simulation",
+    "description": "Paper defaults lock Device 1, N=600. Factory (x, y) is visualization only.",
+    "numDevices": "Number of devices",
+    "deviceType": "Device type",
+    "device1": "Device 1 (Fig. 5(b))",
+    "device2": "Device 2",
+    "strategies": "Strategies",
+    "seed": "Random seed",
+    "reshuffleSeed": "New realization (new seed)",
+    "maxTime": "Max time (s)",
+    "run": "Run simulation",
+    "paper": "Paper configuration"
+  },
+  "hints": {
+    "numDevices": "Tag count N. Paper Figure 5(b) uses N = 600. (x, y) on the floor is display only; $p_{\\mathrm{in}}$ comes from the digitized CDF.",
+    "deviceType": "Device 1 is the Figure 5(b) energy model ($E_{\\max}$ = $E_{\\mathrm{up}}$ = 500 nJ, $E_{\\mathrm{low}}$ = 250 nJ). Device 2 is the other Table 1 row.",
+    "strategies": "All selected strategies share the same random numbers (same $p_{\\mathrm{in}}$, positions, energy phases).",
+    "em": "Energy-aware monitoring. Next paging starts when the previous CBRA ends (paper strategy 1).",
+    "dcm1": "Discontinuous coverage mode, one group. All devices share the same ON window.",
+    "dcm4": "DCM with 4 groups. Devices are split evenly (id modulo 4); each paging serves one group. Paper: ~50% $T_{99}$ cut vs EM.",
+    "seed": "PRNG seed. Same seed + same N replays the identical Monte Carlo draw: floor (x, y), $p_{\\mathrm{in}}$, energy phase, and every access coin-flip. Devices do not walk; the factory “route” is only state playback. Change the seed, then Run, for a new layout and inventory order. 42 is the paper-reproduction default.",
+    "maxTime": "Simulation horizon in seconds. Paper qualitative: EM $T_{99}$ around 20 s. Web snapshots are stored every 100 ms."
+  },
+  "assumptions": {
+    "title": "Parameters vs assumptions",
+    "summary": "Table 1 and reproduction assumptions",
+    "paperSpecified": "Paper-specified",
+    "repro": "Reproduction assumptions",
+    "loadPaper": "Load paper config from the API.",
+    "notLoaded": "Not loaded."
+  },
+  "paperHints": {
+    "E_max_nJ": "Storage cap. Device 1: 500 nJ. Same as $E_{\\mathrm{up}}$.",
+    "E_up_nJ": "Energy to finish the ON / access procedure. Device 1: 500 nJ.",
+    "E_low_nJ": "Wake threshold. Below this the device is OFF. Device 1: 250 nJ.",
+    "P_rx_uW": "Receive circuit power, 1 μW.",
+    "P_tx_uW": "Transmit circuit power, 1 μW.",
+    "P_sl_uW": "Sleep power, 0.1 μW.",
+    "paging_ms": "Paging duration, 1 ms.",
+    "T_pg_ms": "Periodic paging interval, 12 ms (DCM).",
+    "Msg1_ms": "PRACH / $\\mathrm{Msg}_{1}$, 0.5 ms.",
+    "Msg2_ms": "$\\mathrm{Msg}_{2}$, 0.5 ms.",
+    "Msg3_ms": "$\\mathrm{Msg}_{3}$, 3 ms.",
+    "T_on_DCM_ms": "Published DCM ON window: 3 ms (arXiv had 2 ms).",
+    "T_on_timer_ms": "EM ON timer, 18 ms.",
+    "n_time_ao": "Time-domain access occasions: 4.",
+    "n_freq_ao": "Frequency-domain access occasions: 2.",
+    "n_ao": "Total AOs = 4 × 2 = 8.",
+    "N": "Number of devices in this run."
+  },
+  "assumptionHints": {
+    "pin_source": "$p_{\\mathrm{in}}$ is sampled from the digitized Fig. 5(a) CDF, not from factory (x, y) path loss.",
+    "warmup": "How initial energy is set. `stationary` = closed-form cycle phase; `explicit` = ON/OFF machine for $warmup_s$ from $E_{\\mathrm{low}}$. They are not equivalent.",
+    "access_probability": "Paper gives no $p_{\\mathrm{access}}$ equation. Default `poisson_idle` is an unpublished idle-AO load estimate.",
+    "aperiodic_paging": "EM: next paging as soon as the previous CBRA ends.",
+    "periodic_paging": "DCM: fixed global epochs $0, T_{\\mathrm{pg}}, 2T_{\\mathrm{pg}},\\ldots$. Overrun skips that occasion.",
+    "group_assignment": "Default $g = i \\bmod N_g$ is a preconfigured even-split assumption, not a published procedure. `first_paging_mod` is not paper-equivalent.",
+    "off_clears_sync": "Default true: OFF drops DCM sync and the device must hear paging again. False keeps sync and recharges until the next group epoch."
+  },
+  "anatomy": {
+    "title": "Device internals",
+    "subtitle": "Two blocks on one batteryless tag",
+    "device": "A-IoT device",
+    "wur": "Low-power wake-up receiver",
+    "wurRole": "doorbell — listen for paging",
+    "wurHint": "A 1 μW receiver that only asks “is someone calling me?”. Paper: useful for Device 2 (main IC $P_{\\mathrm{rx}}$ = 50 μW). Not used in Device 1 Figure 5(b).",
+    "ic": "Main IC for A-IoT communication",
+    "icRole": "paging · CBRA $\\mathrm{Msg}_{1}$–$\\mathrm{Msg}_{3}$ · EM/DCM",
+    "icHint": "The radio that does inventory. Device 1: $P_{\\mathrm{rx}}$ = $P_{\\mathrm{tx}}$ = 1 μW. This is what Figure 5(b) models.",
+    "wake": "wake",
+    "inUse": "this run",
+    "notThisFig": "not in Fig. 5(b)",
+    "d1Note": "This run is Device 1: the main IC listens. The wake-up receiver is drawn for structure; it is not in Figure 5(b).",
+    "d2Note": "This run is Device 2: the 1 μW wake-up receiver can listen instead of keeping the 50 μW main IC on."
+  },
+  "inspect": {
+    "title": "Device inspector",
+    "empty": "Click a tag on the factory floor.",
+    "device": "Device #{{id}}",
+    "energy": "Energy",
+    "energyHint": "Stored energy $e_{\\mathrm{ES}}$. $E_{\\mathrm{low}}$ = 250 nJ to wake, $E_{\\mathrm{up}}$ = $E_{\\max}$ = 500 nJ. OFF below $E_{\\mathrm{low}}$.",
+    "pinHint": "Received RF power from the digitized Figure 5(a) CDF, clipped at −36 dBm. Not computed from (x, y).",
+    "pehHint": "Harvested power $P_{\\mathrm{eh}} = \\eta(p_{\\mathrm{in}})\\, p_{\\mathrm{in}}$. Efficiency $\\eta$ uses the published piecewise formula (not the arXiv swap).",
+    "group": "Group",
+    "groupHint": "DCM $g = i \\bmod N_g$. EM has no group.",
+    "attempts": "Attempts",
+    "attemptsHint": "Number of $\\mathrm{Msg}_{1}$ access attempts by this device.",
+    "collisions": "Collisions",
+    "collisionsHint": "$\\mathrm{Msg}_{1}$ collisions on an access occasion.",
+    "inventoried": "Inventoried",
+    "inventoriedHint": "True after a successful $\\mathrm{Msg}_{1}$–$\\mathrm{Msg}_{3}$ CBRA.",
+    "completion": "Completion",
+    "completionHint": "Time when this device finished inventory. Figure 5(b) is built from these times, not a fitted curve.",
+    "firstPaging": "First paging",
+    "firstPagingHint": "First time this device heard paging. Written once; later resyncs go to last-sync.",
+    "lastSync": "Last sync",
+    "lastSyncHint": "Most recent inventory-sync time (may be a resync after E_low).",
+    "syncCount": "Sync / lost",
+    "syncCountHint": "How many times the device gained DCM sync vs how many times it hit E_low while synced."
+  },
+  "energy": {
+    "title": "Energy history",
+    "empty": "Select a device to plot stored energy vs time.",
+    "timeAxis": "Time (s)",
+    "energyAxis": "Energy (nJ)",
+    "stopAtDone": "Stop at completion (+80 ms)",
+    "loading": "Loading 1 ms scientific trace…",
+    "frozen": "Frozen after DONE — not physical evolution",
+    "completedAt": "Inventory completed · {{t}} s",
+    "bgLegend": "Background: OFF harvest, ON monitor, SLEEP, TX. Markers: paging, Msg1, collision, Msg2, Msg3, DONE."
+  },
+  "cbra": {
+    "title": "CBRA / AO",
+    "subtitle": "4 time × 2 frequency = 8 AOs",
+    "empty": "No paging events yet.",
+    "paging": "Paging #{{id}}",
+    "pAccessHint": "$p_{\\mathrm{access}}$ for this paging. Paper has no equation; this is an idle-AO Poisson load estimate.",
+    "eligible": "eligible {{n}}",
+    "eligibleHint": "Devices that heard paging and have enough energy to attempt CBRA.",
+    "attempting": "attempting {{n}}",
+    "grid": "Access occasions",
+    "ok": "Singleton",
+    "idle": "idle",
+    "collision": "X",
+    "singleton": "Singleton",
+    "emptyCell": "empty",
+    "metaStrategy": "Strategy",
+    "runId": "Run ID",
+    "grouping": "Grouping",
+    "cdf": "CDF hash",
+    "prev": "Previous paging",
+    "next": "Next paging",
+    "pagingJump": "Paging #",
+    "jumpPlayback": "Nearest to playback",
+    "onCount": "ON {{n}}",
+    "heardNoAttempt": "heard no attempt {{n}}",
+    "planned": "planned {{n}}",
+    "actualTx": "actual Msg1 {{n}}",
+    "aoCounts": "AO singleton {{s}} · collision {{c}} · idle {{i}}",
+    "plannedIds": "Planned IDs",
+    "txIds": "Actual TX",
+    "droppedIds": "Dropped before Msg1",
+    "msg1Result": "Msg1 result",
+    "finalResult": "Final result"
+  },
+  "playback": {
+    "title": "Playback",
+    "subtitle": "snapshots, not realtime slots"
+  },
+  "metrics": {
+    "empty": "Run a simulation to get $T_{50}$ / $T_{90}$ / $T_{99}$.",
+    "strategy": "Strategy",
+    "final": "Final",
+    "collisions": "Collisions",
+    "inventoryTimes": "Inventory times",
+    "fromTimes": "From completion times, not a fitted curve"
+  },
+  "maps": {
+    "view": "View strategy map",
+    "close": "Close",
+    "fit": "Fit view",
+    "reset": "Reset layout",
+    "how": "How it works",
+    "paperExpect": "Paper expectation (qualitative, not a fitted target)",
+    "runMetrics": "Current run metrics",
+    "legend": "Drag nodes to tidy the layout; Reset layout restores the default. Rounded = energy · square = protocol · pill = decision · sharp = failure · check = success. Dashed/animated edges are retries or sleep loops.",
+    "expect": {
+      "em": "Device 1 EM T99 is qualitatively around 20 s on the published figure. This run is a Monte Carlo realization, not a curve fit.",
+      "dcm1": "DCM 1-group should not improve Device 1 much versus EM: all N still share one contention group.",
+      "dcm4": "DCM 4-groups is qualitatively about 10 s / ~50% T99 cut versus EM on the published figure. Bulk (T90) should be clearly fastest; T99 tail is still set by the weakest harvesters."
+    },
+    "em": {
+      "summary": "ON is energy-thresholded. Paging is aperiodic. Weak devices recharge E_low→E_up on the order of 20 s.",
+      "steps": "OFF harvests until E_up.\nON monitors paging and does not harvest.\nAccess draw: reject keeps monitoring.\nMsg1 collision waits for the next paging.\nSingleton: Msg2 RX, Msg3 TX, DONE if energy remains."
+    },
+    "dcm1": {
+      "summary": "All 600 Device-1 tags share one group. Low p_access; many hear paging and pay monitoring energy without transmitting.",
+      "steps": "Pre-inventory ON timer 18 ms, then OFF if no paging.\nFirst paging synchronizes to 12 ms.\nDCM ON 3 ms, SLEEP 9 ms.\nNo-attempt still pays P_rx.\nE_low clears sync."
+    },
+    "dcm4": {
+      "summary": "Even split g = id mod 4. Each device wakes every 48 ms (3 ms ON + 45 ms SLEEP). About 150 contend per paging.",
+      "steps": "First paging only synchronizes.\nGroup is device_id modulo 4 (not first-paging index).\nWake when paging_index mod 4 = g.\nN_g × T_pg = 48 ms.\nHigher p_access because the contention set is ~N/4."
+    }
+  },
+  "curve": {
+    "title": "Figure 5(b)",
+    "subtitle": "from completion times, not a fitted curve. Qualitatively close; not an exact paper reproduction.",
+    "x": "Time (ms)",
+    "y": "Inventoried (%)",
+    "panHint": "Drag the bar under the plot to pan time. Double-click the plot to show the full run.",
+    "paperRef": "paper",
+    "paperDigitized": "Grey dash-dot: digitized IEEE Fig. 5(b) CSV. Dotted verticals: paper-stated T99 (EM ≈ 20 s, 4-group ≈ 10 s).",
+    "paperMarkersOnly": "No digitized Device-1 CSV in the repo. Dotted verticals mark paper-stated T99 only (EM ≈ 20 s, DCM+grouping ≈ 10 s) — not invented curves.",
+    "overlay": {
+      "sim": "Simulation",
+      "paper": "Paper reference",
+      "both": "Both"
+    }
+  },
+  "factory": {
+    "devices": "A-IoT devices",
+    "reader": "Reader",
+    "readerHover": "Reader / BS<br>33 dBm CW",
+    "deviceHover": "<b>Device #%{customdata[0]}</b><br>State: %{customdata[1]}<br>Energy: %{customdata[2]:.1f} nJ<br><i>p</i><sub>in</sub>: %{customdata[3]:.2f} dBm<extra></extra>",
+    "xAxis": "x (m)",
+    "yAxis": "y (m)"
+  },
+  "overview": {
+    "button": "Overview",
+    "buttonAria": "Open reader–device overview",
+    "title": "Reader ↔ device",
+    "lead": "One paging cycle. A device that is not ON never hears paging.",
+    "asciiTitle": "Same flow",
+    "edge": {
+      "paging": "Paging",
+      "yes": "YES",
+      "no": "NO",
+      "join": "join",
+      "skip": "skip",
+      "success": "SUCCESS",
+      "collision": "COLLISION",
+      "next": "next paging"
+    },
+    "steps": "Reader sends paging.\nOnly ON devices hear it.\nAccess probability: skip or pick an AO.\nCollision waits for the next paging.\nSingleton: Msg2, Msg3, DONE.",
+    "node": {
+      "reader": "READER",
+      "onq": "Device ON?",
+      "heard": "Hear paging",
+      "draw": "access probability",
+      "skip": "Skip",
+      "ao": "Pick AO",
+      "col": "COLLISION",
+      "ok": "SUCCESS",
+      "m2": "Msg2",
+      "m3": "Msg3",
+      "done": "DONE",
+      "wait": "Wait next paging"
+    },
+    "ascii": "READER\n  |\n  | Paging\n  v\nDevice currently ON?\n NO              YES\n  |               |\n  |            hears paging\n  |               |\n  |         access probability\n  |            /        \\\n  |         skip         join\n  |           |            |\n  |           |         pick AO\n  |           |         /      \\\n  |           |  COLLISION    SUCCESS\n  |           |      |           |\n  |           |      |         Msg2\n  |           |      |           |\n  |           |      |         Msg3\n  |           |      |           |\n  |           |      |          DONE\n  |           +------+-----------+\n  |                  |\n  +----------- wait next paging"
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "explain": {
+    "button": "解释此视图",
+    "buttonAria": "解释{{view}}",
+    "termAria": "解释{{term}}",
+    "close": "关闭",
+    "example": "当前设备",
+    "source": {
+      "paper": "论文",
+      "digitized": "数字化输入",
+      "assumption": "复现假设",
+      "viz": "厂房着色"
+    }
+  },
+  "energy": {
+    "title": "储能历史",
+    "lead": "所选设备储能 $e_{\\mathrm{ES}}$ 随仿真时间的变化。",
+    "empty": "选中一台设备后绘制储能–时间曲线。",
+    "timeAxis": "时间 (s)",
+    "energyAxis": "能量 (nJ)",
+    "loading": "正在加载科学轨迹…",
+    "chartKey": "图例",
+    "trim": {
+      "label": "完成后裁剪时间轴",
+      "hint": "只改变可见时间范围，不改变仿真本身。",
+      "ms": "+{{ms}} ms",
+      "full": "完整仿真"
+    },
+    "y": {
+      "label": "纵轴",
+      "auto": "自动",
+      "full": "全量程",
+      "zoom": "放大变化",
+      "hint": "全量程为 0 到 $E_{\\max}$。放大变化按本轨迹最小/最大值缩放，才能看见几 nJ 的下降。当变化幅度小于 $E_{\\mathrm{up}}$ 的 10% 时，自动模式使用放大。"
+    },
+    "legend": {
+      "ees": "e_ES — 储能",
+      "frozen": "DONE 后冻结 — 不是真实物理演化",
+      "eup": "E_up — 开启阈值",
+      "elow": "E_low — 关闭阈值",
+      "eupShort": "E_up",
+      "elowShort": "E_low",
+      "doneLine": "盘点完成"
+    },
+    "state": {
+      "OFF": "OFF / 充电",
+      "ON": "ON / 监听",
+      "SLEEP": "SLEEP / P_sl 充电",
+      "TX": "TX",
+      "DONE": "DONE / 冻结显示"
+    },
+    "event": {
+      "pagingHeard": "听到 paging",
+      "pagingRejected": "接入概率拒绝",
+      "pagingMissed": "未听到 paging",
+      "msg1Planned": "计划发 Msg1",
+      "msg1Tx": "已发 Msg1",
+      "msg1Singleton": "Msg1 单用户",
+      "collision": "Msg1 碰撞",
+      "dropped": "Msg1 前掉线",
+      "msg2": "接收 Msg2",
+      "msg3Start": "Msg3 开始发送",
+      "msg3Done": "Msg3 发送完成",
+      "done": "盘点完成",
+      "energyFail": "能量失败"
+    },
+    "tip": {
+      "state": "状态",
+      "phase": "协议阶段",
+      "draw": "耗电",
+      "net": "净功率",
+      "reason": "原因",
+      "page": "paging 序号"
+    },
+    "reason": {
+      "hold": "变化太小，或净功率接近 0。",
+      "harvest": "能量上升：充电大于消耗。",
+      "draw": "能量下降：接收、发送或睡眠耗电大于充电。",
+      "frozen": "已 DONE：仿真停止追踪该设备，平线不是真实物理过程。"
+    },
+    "footer": "按需科学轨迹 · 仿真 dt={{sim}} ms · 图 dt={{chart}} ms · 完成于 {{done}} s",
+    "stateKey": "科学状态（背景）",
+    "eventKey": "协议事件",
+    "itemHelp": {
+      "ees": "蓝色实线：真实储能 $e_{\\mathrm{ES}}(t)$。向上=充电大于耗电；向下=RX/TX/睡眠净耗能。",
+      "frozen": "DONE 之后的灰色虚线。仿真已停止追踪该设备，平线不是物理储能过程。",
+      "eup": "虚线 $E_{\\mathrm{up}}$：OFF 充电达到此值后进入 ON（Device 1：500 nJ）。",
+      "elow": "点线 $E_{\\mathrm{low}}$：ON/SLEEP/TX 降到此值则 OFF（Device 1：250 nJ）。",
+      "doneLine": "绿色竖线：盘点完成——仅在 Msg3 完整发送且能量高于 $E_{\\mathrm{low}}$ 之后。",
+      "bg-OFF": "淡蓝：射频关闭，正在充电。",
+      "bg-ON": "淡橙：ON，以 $P_{\\mathrm{rx}}$ 监听 paging（ON 不计充电）。",
+      "bg-SLEEP": "淡紫：DCM 睡眠，仍按 $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$ 充电。",
+      "bg-TX": "淡红：正在以 $P_{\\mathrm{tx}}$ 发送 Msg1 或 Msg3。",
+      "bg-DONE": "淡绿：DONE 显示区。能量被冻结，不是真实电容变化。",
+      "pagingHeard": "该设备听到了这次 paging。听到 ≠ 发送 Msg1。",
+      "pagingRejected": "听到了 paging，但 $p_{\\mathrm{access}}$ 拒绝发送。仍消耗 $P_{\\mathrm{rx}}$。",
+      "pagingMissed": "发生了 paging，但本设备不合格（OFF、错组、或已完成）。",
+      "msg1Planned": "通过 $p_{\\mathrm{access}}$，计划发 Msg1。发射前仍可能能量失败。",
+      "msg1Tx": "已在所选 AO 上发出 Msg1（Device 1 为 0.5 ms）。",
+      "msg1Singleton": "该 AO 上恰好一个 Msg1。这是 Msg2 的前提，还不是 DONE。",
+      "collision": "同一 AO 上至少两个 Msg1。稍后重试，未完成盘点。",
+      "dropped": "计划发 Msg1，但时隙前能量掉到 $E_{\\mathrm{low}}$。",
+      "msg2": "阅读器解码单用户后，本设备接收到 Msg2（0.5 ms）。",
+      "msg3Start": "Msg3 第一个时隙。此时尚未完成盘点。",
+      "msg3Done": "Msg3 完整发送。只有能量仍高于 $E_{\\mathrm{low}}$ 才会 DONE。",
+      "done": "本设备在成功 Msg3 后完成盘点。",
+      "energyFail": "paging/Msg1/Msg2/Msg3 期间能量掉到 $E_{\\mathrm{low}}$，本次 CBRA 中止。"
+    }
+  },
+  "terms": {
+    "pin": { "short": "p_in", "full": "入射射频功率 $p_{\\mathrm{in}}$", "unit": "dBm", "body": "到达天线的功率。来自论文室内 CDF 的数字化曲线，不是厂房 (x, y) 算出来的。", "effect": "决定 $P_{\\mathrm{eh}}$，从而决定充电快慢。" },
+    "peh": { "short": "P_eh", "full": "采集电功率 $P_{\\mathrm{eh}}$", "unit": "nW", "body": "由 $P_{\\mathrm{eh}}=\\xi\\,p_{\\mathrm{in}}$ 得到。", "effect": "OFF/SLEEP 时储能大约按此功率上升（SLEEP 还要减去 $P_{\\mathrm{sl}}$）。" },
+    "xi": { "short": "ξ", "full": "采集效率 $\\xi$", "unit": "—", "body": "论文 Table 1 的射频到储能转换效率。", "effect": "线性缩放 $P_{\\mathrm{eh}}$。" },
+    "ees": { "short": "e_ES", "full": "储能 $e_{\\mathrm{ES}}$", "unit": "nJ", "body": "电容中的能量，上限 $E_{\\max}$。", "effect": "与 $E_{\\mathrm{up}}$、$E_{\\mathrm{low}}$ 比较以开关射频。" },
+    "emax": { "short": "E_max", "full": "储能上限 $E_{\\max}$", "unit": "nJ", "body": "Device 1：$E_{\\max}=E_{\\mathrm{up}}=500$ nJ。", "effect": "充电无法超过此值。" },
+    "eup": { "short": "E_up", "full": "开启阈值 $E_{\\mathrm{up}}$", "unit": "nJ", "body": "OFF 设备 $e_{\\mathrm{ES}}\\ge E_{\\mathrm{up}}$ 后进入 ON。", "effect": "决定耗尽后要充多久才能再监听。" },
+    "elow": { "short": "E_low", "full": "关闭阈值 $E_{\\mathrm{low}}$", "unit": "nJ", "body": "ON/SLEEP/TX 降到 $E_{\\mathrm{low}}$（Device 1 为 250 nJ）则 OFF。", "effect": "Msg1–3 能量失败会中止本次 CBRA。" },
+    "prx": { "short": "P_rx", "full": "接收/监听功率 $P_{\\mathrm{rx}}$", "unit": "μW", "body": "ON 监听 paging 时的功耗。Device 1 为 $1\\,\\mu$W。", "effect": "即使不发 Msg1，ON 窗口也在耗能。" },
+    "ptx": { "short": "P_tx", "full": "发射功率 $P_{\\mathrm{tx}}$", "unit": "μW", "body": "发 Msg1/Msg3 时的功耗。Device 1 与 $P_{\\mathrm{rx}}$ 相同。", "effect": "TX 时间短，但仍可能把能量打到 $E_{\\mathrm{low}}$ 以下。" },
+    "psl": { "short": "P_sl", "full": "睡眠功率 $P_{\\mathrm{sl}}$", "unit": "μW", "body": "DCM 睡眠功耗，Device 1 为 $0.1\\,\\mu$W，同时仍在充电。", "effect": "SLEEP 净功率为 $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$。" },
+    "em": { "short": "EM", "full": "能量感知监听", "unit": "策略", "body": "论文策略 1：在 $E_{\\mathrm{low}}$ 与 $E_{\\max}$ 之间保持 ON，非周期 paging。", "effect": "上一场 CBRA 结束后立刻安排下一次 paging。" },
+    "dcm": { "short": "DCM", "full": "非连续覆盖模式", "unit": "策略", "body": "论文策略 2：短 ON 对齐周期 paging，然后 SLEEP。", "effect": "降低监听能耗；4 组时每次约 1/4 设备竞争。" },
+    "paging": { "short": "Paging", "full": "寻呼时机", "unit": "事件", "body": "阅读器 1 ms 邀请。听到 paging 不等于发送 Msg1。", "effect": "合格 ON 设备才可能发起 CBRA。" },
+    "cbra": { "short": "CBRA", "full": "基于竞争的随机接入", "unit": "过程", "body": "AO 上 Msg1，阅读器 Msg2，设备 Msg3。", "effect": "Msg1 单用户只是必要步，不等于盘点完成。" },
+    "ao": { "short": "AO", "full": "接入时机", "unit": "资源", "body": "Device 1：4 时间 × 2 频率 = 8 个 AO。", "effect": "同一 AO 两个 Msg1 即碰撞。" },
+    "msg1": { "short": "Msg1", "full": "消息 1", "unit": "0.5 ms", "body": "设备在某个 AO 上发送随机 ID。", "effect": "碰撞则稍后重试；单用户则可进入 Msg2。" },
+    "msg2": { "short": "Msg2", "full": "消息 2", "unit": "0.5 ms", "body": "阅读器对单用户 Msg1 的下行确认。", "effect": "设备必须保持 ON 并接收，才能发 Msg3。" },
+    "msg3": { "short": "Msg3", "full": "消息 3", "unit": "3 ms", "body": "设备上报 ID/数据。只有完整发送成功才 DONE。", "effect": "Msg3 中途掉到 $E_{\\mathrm{low}}$ 则不算完成。" },
+    "paccess": { "short": "p_access", "full": "接入概率 $p_{\\mathrm{access}}$", "unit": "—", "body": "合格设备对本次 paging 回复 Msg1 的概率。论文未给出更新公式，本仿真用复现假设（默认空闲 AO 泊松负载）。", "effect": "过高易碰撞；过低则大量听了却不发，但仍消耗 $P_{\\mathrm{rx}}$。" },
+    "eligible": { "short": "Eligible", "full": "合格设备", "unit": "计数", "body": "ON、未完成、能量高于 $E_{\\mathrm{low}}$，DCM 下还须属于本 paging 的组。", "effect": "合格 ≠ 一定发射。" },
+    "collision": { "short": "Collision", "full": "Msg1 碰撞", "unit": "事件", "body": "同一 AO 上至少两个 Msg1。", "effect": "这些设备未完成，需下次 paging 再试。" },
+    "singleton": { "short": "Singleton", "full": "Msg1 单用户", "unit": "事件", "body": "该 AO 上恰好一个 Msg1，阅读器可解码。", "effect": "随后才是 Msg2/Msg3，仍不是最终完成。" },
+    "tpg": { "short": "T_pg", "full": "寻呼周期 $T_{\\mathrm{pg}}$", "unit": "ms", "body": "论文为 12 ms。DCM 周期时刻为 $0,T_{\\mathrm{pg}},2T_{\\mathrm{pg}},\\ldots$", "effect": "4 组时本组每 $48$ ms 被叫一次。" },
+    "tonTimer": { "short": "T_on_timer", "full": "盘点前 ON 定时器", "unit": "ms", "body": "DCM 上电后先 ON 18 ms 等第一次 paging。", "effect": "窗口内没听到则回到 OFF。" },
+    "tonDcm": { "short": "T_on_DCM", "full": "DCM ON 窗口", "unit": "ms", "body": "Device 1 每次 paging ON 3 ms。", "effect": "比 EM 一直 ON 更省 $P_{\\mathrm{rx}}$。" },
+    "group": { "short": "Group", "full": "DCM 组号", "unit": "0…N_g−1", "body": "默认 $g=\\mathrm{id}\\bmod N_g$。这是复现假设，不是论文公布的分组流程。", "effect": "4 组使每次竞争集约 $N/4$。" },
+    "t50": { "short": "T50", "full": "完成 50% 的时间", "unit": "s", "body": "至少 50% 设备完成 Msg3 的首次时刻，来自完成时间而非拟合曲线。", "effect": "描述主体，不是最弱充电设备。" },
+    "t90": { "short": "T90", "full": "完成 90% 的时间", "unit": "s", "body": "90% 定义同上。", "effect": "4 组 DCM 通常明显快于 EM。" },
+    "t99": { "short": "T99", "full": "完成 99% 的时间", "unit": "s", "body": "图 5(b) 的关键指标，由最弱 $p_{\\mathrm{in}}$ 设备的 $E_{\\mathrm{low}}\\to E_{\\mathrm{up}}$ 充电决定。", "effect": "曲线平台多半是大量设备在 OFF 充电，不是协议算错。" }
+  },
+  "views": {
+    "factory": { "title": "厂房视图", "lead": "室内厂房布局。坐标仅用于显示。", "body": "每个点是一台 Ambient IoT 设备。颜色是回放快照状态，不是 0.5 ms 科学步进。\n阅读器是较大标记。地面 (x, y) 不参与计算 $p_{\\mathrm{in}}$，入射功率来自数字化 CDF。\n点击设备打开检查面板：该标签的储能历史和 CBRA。\n底部回放是 100 ms 厂房快照，比科学轨迹更粗。" },
+    "inspector": { "title": "设备检查", "lead": "当前回放时刻该标签的数值。", "body": "这里的 $e_{\\mathrm{ES}}$ 是 100 ms 快照，不是 0.5 ms 科学轨迹。\n$p_{\\mathrm{in}}$ 与 $P_{\\mathrm{eh}}$ 在一次仿真中固定。组号仅 DCM 使用。\n尝试/碰撞是整场仿真累计。\n要看逐步 $e_{\\mathrm{ES}}(t)$ 请用下方储能历史。" },
+    "energy": { "title": "储能历史", "lead": "按仿真 dt 按需加载的 $e_{\\mathrm{ES}}(t)$，不是厂房快照。", "body": "横轴时间 (s)，纵轴能量 (nJ)。\n蓝色实线是真实储能。DONE 之后变成灰色虚线冻结：仿真已停止追踪该设备，不是物理上能量不变。\n虚线 $E_{\\mathrm{up}}$ 是 OFF→ON 阈值，点线 $E_{\\mathrm{low}}$ 是关闭阈值。\n背景带按 scientific_state：淡蓝 OFF、淡橙 ON、淡紫 SLEEP、淡红 TX、淡绿 DONE。\n标记是精确时隙上的协议事件：听到 paging ≠ 发送 Msg1。成功顺序：Paging → Msg1 → 单用户 → Msg2 → Msg3 开始 → Msg3 完成 → DONE。碰撞：Paging → Msg1 → Collision → 稍后重试。\n裁剪只影响显示范围。放大变化用于几 nJ 的下降（在 0–500 nJ 轴上几乎看不见）。\n悬停显示时间、能量、Δe、状态、阶段、充电/耗电，以及该点升降原因。", "example": "设备 #{{id}} 在 {{t}} s 完成盘点，初始能量约 {{e}} nJ。" },
+    "cbra": { "title": "CBRA / AO 栅格", "lead": "一次 paging：4 时间 × 2 频率 = 8 个接入时机。", "body": "每格一个 AO。空闲=无人。单用户=恰好一个 Msg1。碰撞=至少两个 Msg1。\n计划尝试通过了 $p_{\\mathrm{access}}$；实际发射是 Msg1 时隙仍有能量的设备。听了却不发的设备仍支付 $P_{\\mathrm{rx}}$。\n单用户不是盘点完成，还须 Msg2/Msg3 成功且能量高于 $E_{\\mathrm{low}}$。\n$p_{\\mathrm{access}}$ 控制器是复现假设，论文未给出公式。" },
+    "fig5b": { "title": "图 5(b)", "lead": "由完成时刻得到的盘点比例，不是拟合曲线。", "body": "横轴时间 (ms)，纵轴已盘点百分比。三种策略共用同一组随机 $p_{\\mathrm{in}}$。\nT50/T90/T99 是首次越过 50/90/99% 的时间。\n平台对应大批设备 OFF 充电 $E_{\\mathrm{low}}\\to E_{\\mathrm{up}}$。长尾是最弱充电设备（T99）。\nTable 1 是论文参数；CDF 是数字化输入；分组与 $p_{\\mathrm{access}}$ 是复现假设。\n本次是一次蒙特卡洛实现，不是把曲线拟合到 IEEE 图。若无 Device 1 数字化 CSV，虚线 T99 只是论文给出的定性数值。" },
+    "metrics": { "title": "指标表", "lead": "各策略的 T50/T90/T99 与碰撞。", "body": "时间来自每台设备成功 Msg3 后的完成时刻。\n点击一行打开该策略状态图。\n碰撞率 = Msg1 碰撞 / Msg1 尝试。听了却不发计入 $p_{\\mathrm{access}}$ 拒绝。" },
+    "strategyMap": { "title": "策略图", "lead": "所选盘点策略的状态机。", "body": "主路径从上到下。侧栏是睡眠、碰撞或能量失败。\n点击模块查看该状态含义、用到的论文参数，以及下一步。\n蓝色能量、琥珀色协议、紫色判决、红色失败、绿色成功。虚线是重试或睡眠环。\n可拖动整理；重置布局恢复默认。示意图仅供理解，以仿真器为准。" }
+  },
+  "maps": {
+    "clickNode": "点击模块查看解释。",
+    "nodeHelp": {
+      "em": {
+        "off": { "title": "OFF / 充电", "body": "射频关闭，按 $P_{\\mathrm{eh}}$ 充电，达到 $E_{\\mathrm{up}}$ 后 ON。" },
+        "on": { "title": "ON / 监听 paging", "body": "以 $P_{\\mathrm{rx}}$ 监听。降到 $E_{\\mathrm{low}}$ 则 OFF。" },
+        "p": { "title": "非周期 paging", "body": "上一场 CBRA 结束后才发起，不是固定 12 ms 网格。" },
+        "draw": { "title": "接入概率", "body": "合格设备掷 $p_{\\mathrm{access}}$。拒绝则保持 ON 继续监听。" },
+        "ao": { "title": "选择 Msg1 AO", "body": "8 个 AO 中随机一个。一人为单用户，≥2 为碰撞。" },
+        "m2": { "title": "接收 Msg2", "body": "阅读器解码单用户随机 ID 后发送 Msg2。" },
+        "m3": { "title": "发送 Msg3", "body": "上报身份/数据。完成后且能量足够才 DONE。" },
+        "done": { "title": "DONE", "body": "已盘点。之后能量轨迹冻结，不是物理过程。" },
+        "elow": { "title": "E ≤ E_low → OFF", "body": "ON/TX 能量失败，回到充电直到再次 $E_{\\mathrm{up}}$。" },
+        "col": { "title": "碰撞", "body": "同一 AO 上 ≥2 个 Msg1。等待下次 paging。" }
+      },
+      "dcm1": {
+        "off": { "title": "OFF / 充电", "body": "阈值与 EM 相同。同步后进入 ON/SLEEP 节拍。" },
+        "pre": { "title": "盘点前 ON · 18 ms", "body": "$T_{\\mathrm{on,timer}}$：等待首次 paging，没有则 OFF。" },
+        "sync": { "title": "首次 paging / 同步", "body": "对齐 12 ms 网格，不等于已经发 Msg1。" },
+        "on": { "title": "DCM ON · 3 ms", "body": "600 个 Device 1 共用一个竞争组。" },
+        "draw": { "title": "接入概率", "body": "因 N=600 同组，$p_{\\mathrm{access}}$ 低。不发也要付 $P_{\\mathrm{rx}}$。" },
+        "cbra": { "title": "Msg2 → Msg3", "body": "单用户路径：收 Msg2、发 Msg3、能量足够则 DONE。" },
+        "done": { "title": "DONE", "body": "盘点完成，轨迹冻结规则同 EM。" },
+        "sleep": { "title": "DCM SLEEP · 9 ms", "body": "3 ms ON 后睡 9 ms（单组周期 12 ms），按 $P_{\\mathrm{sl}}$ 充电。" },
+        "col": { "title": "碰撞 → 下个 12 ms", "body": "在本组下一次 paging 重试。" },
+        "lose": { "title": "E_low / 失步", "body": "默认同步在 $E_{\\mathrm{low}}$ 时清除，回到 OFF。" }
+      },
+      "dcm4": {
+        "sync": { "title": "首次 paging / 同步", "body": "只同步。默认组号不是这次 paging 的序号。" },
+        "grp": { "title": "g = device_id mod 4", "body": "600 台均分成 4 组。这是复现假设。" },
+        "route": { "title": "仅当 paging ≡ g 时醒来", "body": "paging_index mod 4 等于本组才合格。" },
+        "on": { "title": "DCM ON · 3 ms · ~150", "body": "约 N/4 台监听并可能竞争。" },
+        "cbra": { "title": "CBRA", "body": "同样的 Msg1/2/3，竞争集更小。" },
+        "done": { "title": "DONE", "body": "Msg3 成功。论文定性 T99 约为 EM 的一半。" },
+        "sleep": { "title": "SLEEP · 45 ms", "body": "3+45=48 ms = $4T_{\\mathrm{pg}}$ 后本组再次被叫。" },
+        "col": { "title": "碰撞 / 重试", "body": "等本组下一次 paging（约 48 ms），不是下一个 12 ms。" },
+        "fail": { "title": "能量失败", "body": "Msg1–3 掉电。充好并再同步后回到组日程。" }
+      },
+      "overview": {
+        "reader": { "title": "READER", "body": "基站发 paging，再与听到的设备做 CBRA（Msg1/2/3）。" },
+        "onq": { "title": "当前是不是 ON？", "body": "论文 on：可收发。OFF 和 SLEEP 听不到 paging。" },
+        "heard": { "title": "收到 Paging", "body": "只有 ON 的设备能收到本次 paging，才可能参加 CBRA。" },
+        "draw": { "title": "access probability", "body": "合格设备掷 $p_{\\mathrm{access}}$。不参加也已经付了 ON 监听能耗。" },
+        "skip": { "title": "不参加", "body": "本次不发 Msg1，等下一次 paging。" },
+        "ao": { "title": "随机选 AO", "body": "参加则在 8 个接入时机里随机选一个发 Msg1。" },
+        "col": { "title": "COLLISION", "body": "论文 Figure 1：同一 AO 上 ≥2 个 Msg1。本次 CBRA 失败，等下次 paging。" },
+        "ok": { "title": "SUCCESS", "body": "该 AO 上只有一个 Msg1。阅读器能解码，CBRA 继续。" },
+        "m2": { "title": "Msg2", "body": "阅读器解码了单用户 Msg1，下发 Msg2。" },
+        "m3": { "title": "Msg3", "body": "设备上报 ID。能量仍高于 $E_{\\mathrm{low}}$ 才算盘点完成。" },
+        "done": { "title": "DONE", "body": "Msg3 成功后离开后续 CBRA。图 5(b) 统计的就是这次完成。" },
+        "wait": { "title": "等下一次 Paging", "body": "OFF、不参加或碰撞：等阅读器下一次 paging 再试。" }
+      }
+    }
+  },
+  "factory": {
+    "paperWording": "论文",
+    "thisColour": "这个颜色",
+    "stateHelp": {
+      "OFF": {
+        "paper": "论文先给出两个状态：on 与 off。Off：因能量不足关闭 IC，不能收发；off 功耗可忽略，但仍可采集能量。开机门槛 $E_{\\mathrm{up}}$、关机门槛 $E_{\\mathrm{low}}$（Device 1：500 nJ / 250 nJ）。",
+        "ui": "厂房灰色标记。来自 100 ms 回放快照，不是 0.5 ms 时隙。"
+      },
+      "ON": {
+        "paper": "On：设备可用于 A-IoT 接收与发射。储能按 $P_{\\mathrm{rx}}$（监听/Msg2）或 $P_{\\mathrm{tx}}$（Msg1/Msg3）下降。Device 1 两者都是 $1\\,\\mu$W。",
+        "ui": "厂房蓝色标记：该快照里正在监听 paging。"
+      },
+      "SLEEP": {
+        "paper": "DCM 增加 sleep（不是 off）。IC 维持 sleep timer，等到下一次 on 去参加 CBRA。与 off 一样可以充电，但不能收发。睡眠功耗 $P_{\\mathrm{sl}}$（Device 1 为 $0.1\\,\\mu$W），且 $P_{\\mathrm{sl}}<P_{\\mathrm{rx}}$。",
+        "ui": "厂房紫色标记。EM 没有 sleep；只有 DCM 在第一次 paging 之后才有。"
+      },
+      "ACCESS": {
+        "paper": "论文没有 ACCESS 这个状态。发射仍属于 on，Msg1/Msg3 时消耗 $P_{\\mathrm{tx}}$。",
+        "ui": "厂房琥珀色叠加：100 ms 快照捕捉到 Msg1–3。0.5 ms 储能轨迹把这段标成 TX。"
+      },
+      "COLLISION": {
+        "paper": "论文 Figure 1：同一接入时机上两个 Msg1 即 collision；本次 CBRA 失败，设备必须再接入。这是协议结果，不是 on/off/sleep 那种能量状态。",
+        "ui": "厂房红色叠加：该 100 ms 快照捕捉到碰撞 Msg1。设备尚未被盘点。"
+      },
+      "DONE": {
+        "paper": "一台设备在 paging → Msg1 → Msg2 → Msg3 上报 ID 后算 inventory 成功，之后不再参加后续 CBRA。图 5(b) 纵轴是已成功盘点比例。",
+        "ui": "厂房绿色标记。界面写成 DONE；论文说 inventoried。之后厂房能量可能被冻结。"
+      }
+    }
+  }
+}

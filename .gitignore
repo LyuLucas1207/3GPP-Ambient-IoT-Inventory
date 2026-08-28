@@ -1,0 +1,23 @@
+# Python
+.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Local-only frontend assets
+Implements/frontend/src/assets/hero.png
+
+# Debug screenshots (keep fig5b_reproduced.* in git)
+Implements/results/ui_initial.png

@@ -1,0 +1,46 @@
+{
+  "seed": 42,
+  "num_devices": 600,
+  "device_type": 1,
+  "strategies": {
+    "em": {
+      "label": "EM, aperiodic paging",
+      "t50_s": 0.7000000000000001,
+      "t90_s": 4.25,
+      "t95_s": 6.15,
+      "t99_s": 9.850000000000001,
+      "final_ratio_pct": 100.0,
+      "n_paging": 4505,
+      "n_msg1_attempts": 1297,
+      "n_collisions": 697,
+      "collision_rate": 0.5373939861218195
+    },
+    "dcm_1_group": {
+      "label": "DCM, periodic paging, 1 group",
+      "t50_s": 1.25,
+      "t90_s": 2.25,
+      "t95_s": 2.4000000000000004,
+      "t99_s": 2.5,
+      "final_ratio_pct": 100.0,
+      "n_paging": 1623,
+      "n_msg1_attempts": 1834,
+      "n_collisions": 1234,
+      "collision_rate": 0.6728462377317339
+    },
+    "dcm_4_group": {
+      "label": "DCM, periodic paging, 4 groups",
+      "t50_s": 3.0,
+      "t90_s": null,
+      "t95_s": null,
+      "t99_s": null,
+      "final_ratio_pct": 61.666666666666664,
+      "n_paging": 2084,
+      "n_msg1_attempts": 108788,
+      "n_collisions": 108418,
+      "collision_rate": 0.9965988895834099
+    }
+  },
+  "warnings": [
+    "DCM, periodic paging, 4 groups: T99 not reached before max_time_s=25.0."
+  ]
+}

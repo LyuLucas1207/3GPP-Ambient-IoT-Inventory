@@ -1,0 +1,27 @@
+# Production demo: baked images, no bind-mounts, no hot reload.
+# Run from the repository root (LutzLampe/).
+# Development: docker compose up --build
+name: ambient-iot-prod
+
+services:
+  backend:
+    build:
+      context: ./Implements/backend
+      dockerfile: Dockerfile
+    pull_policy: missing
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Implements/results:/results
+    environment:
+      PYTHONUNBUFFERED: "1"
+
+  frontend:
+    build:
+      context: ./Implements/frontend
+      dockerfile: Dockerfile
+    pull_policy: missing
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

@@ -1,0 +1,15 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY docker-entrypoint.dev.sh /docker-entrypoint.dev.sh
+RUN chmod +x /docker-entrypoint.dev.sh
+
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+EXPOSE 8000
+
+ENTRYPOINT ["/docker-entrypoint.dev.sh"]
+# Source is bind-mounted in docker-compose.yml. --reload watches Python files.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/app", "--reload-dir", "/app/simulator"]

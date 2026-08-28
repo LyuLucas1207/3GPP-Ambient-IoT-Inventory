@@ -1,0 +1,43 @@
+{
+  "title": "Glossary",
+  "documentTitle": "Glossary · Ambient IoT",
+  "lead": "Abbreviations (3GPP, AO, CBRA) and formula symbols ($p_{\\mathrm{in}}$, $E_{\\mathrm{up}}$). Not figure numbers.",
+  "search": "Search…",
+  "back": "Back to simulator",
+  "all": "All",
+  "empty": "No matching terms.",
+  "count": "{{n}} terms",
+  "kind": {
+    "abbr": "Abbreviations",
+    "symbol": "Symbols"
+  },
+  "entries": {
+    "g3gpp": { "short": "3GPP", "full": "3rd Generation Partnership Project", "unit": "org", "body": "The standards body behind 5G/NR and the Ambient IoT inventory study this simulator follows.", "effect": "Paper procedures (paging, CBRA, EM/DCM) are 3GPP Ambient IoT concepts, not a proprietary MAC." },
+    "aiot": { "short": "A-IoT", "full": "Ambient Internet of Things", "unit": "system", "body": "Batteryless tags that harvest RF energy and do inventory with a reader/BS.", "effect": "Energy, not only collisions, sets T99." },
+    "bs": { "short": "BS", "full": "Base station / reader", "unit": "node", "body": "The 33 dBm CW transmitter and paging/CBRA counterpart.", "effect": "Floor $(x,y)$ is visualization only; it does not compute $p_{\\mathrm{in}}$." },
+    "cw": { "short": "CW", "full": "Continuous-wave RF", "unit": "33 dBm", "body": "The reader’s always-on RF field that devices harvest.", "effect": "Harvest power $P_{\\mathrm{eh}}$ comes from $p_{\\mathrm{in}}$ and $\\xi$, not from a packet radio model." },
+    "wur": { "short": "WUR", "full": "Wake-up receiver", "unit": "block", "body": "Low-power “doorbell” receiver. Useful for Device 2. Not used for Device 1 paper curves.", "effect": "Shown in Device internals for structure." },
+    "ic": { "short": "IC", "full": "Main A-IoT communication IC", "unit": "block", "body": "The radio that does paging listen and Msg1–3.", "effect": "$P_{\\mathrm{rx}}$ / $P_{\\mathrm{tx}}$ in Table 1 are this block." },
+    "rf": { "short": "RF", "full": "Radio frequency", "unit": "—", "body": "The incident field $p_{\\mathrm{in}}$ and the harvest/transmit radio.", "effect": "All energy numbers start from RF incident power." },
+    "prach": { "short": "PRACH", "full": "Physical random access (Msg1)", "unit": "0.5 ms", "body": "Msg1 is the Ambient IoT random-access uplink, 0.5 ms on Device 1.", "effect": "A 1 ms energy trace would skip entire Msg1 slots; this sim uses 0.5 ms dt." },
+    "cdf": { "short": "CDF", "full": "Cumulative distribution of $p_{\\mathrm{in}}$", "unit": "input", "body": "Digitized indoor incident-power distribution. Hash is shown in CBRA meta.", "effect": "Source of device harvest diversity." },
+    "rx": { "short": "RX", "full": "Receive / monitor", "unit": "mode", "body": "ON listening at $P_{\\mathrm{rx}}$, or Msg2 reception.", "effect": "ON windows drain energy even with no Msg1." },
+    "tx": { "short": "TX", "full": "Transmit", "unit": "mode", "body": "Msg1 or Msg3 at $P_{\\mathrm{tx}}$.", "effect": "Short, but can still cross $E_{\\mathrm{low}}$." },
+    "off": { "short": "OFF", "full": "Radio off / harvesting", "unit": "state", "body": "Energy rises with $P_{\\mathrm{eh}}$ until $E_{\\mathrm{up}}$.", "effect": "Cannot hear paging or send Msg1." },
+    "on": { "short": "ON", "full": "Monitoring paging", "unit": "state", "body": "Listening at $P_{\\mathrm{rx}}$.", "effect": "Eligible for paging if not DONE and above $E_{\\mathrm{low}}$." },
+    "sleep": { "short": "SLEEP", "full": "DCM sleep", "unit": "state", "body": "Low-power timer, still harvests, pays $P_{\\mathrm{sl}}$.", "effect": "Net power $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$." },
+    "done": { "short": "DONE", "full": "Inventory completed", "unit": "state", "body": "Successful Msg3. Energy trace freezes.", "effect": "Completion time feeds the inventoried-fraction plot." },
+    "nj": { "short": "nJ", "full": "Nanojoule", "unit": "energy", "body": "$e_{\\mathrm{ES}}$, $E_{\\max}$, $E_{\\mathrm{up}}$, $E_{\\mathrm{low}}$.", "effect": "Device 1 storage is hundreds of nJ; a CBRA costs a few nJ." },
+    "uw": { "short": "μW", "full": "Microwatt", "unit": "power", "body": "Table 1 $P_{\\mathrm{rx}}$, $P_{\\mathrm{tx}}$, $P_{\\mathrm{sl}}$.", "effect": "1 μW × 3 ms = 3 nJ." },
+    "nw": { "short": "nW", "full": "Nanowatt", "unit": "power", "body": "Harvest $P_{\\mathrm{eh}}$ is shown in nW (often ≪ 1 μW for weak tags).", "effect": "Weak $p_{\\mathrm{in}}$ → slow $E_{\\mathrm{low}}\\to E_{\\mathrm{up}}$." },
+    "dbm": { "short": "dBm", "full": "Decibels relative to 1 mW", "unit": "power", "body": "$p_{\\mathrm{in}}$ and reader CW (33 dBm).", "effect": "CDF clip in the inspector hint is −36 dBm." },
+    "ms": { "short": "ms", "full": "Millisecond", "unit": "time", "body": "Paging, Msg, and ON windows.", "effect": "dt = 0.5 ms; paging = 1 ms; Msg1/2 = 0.5 ms; Msg3 = 3 ms." },
+    "tpag": { "short": "$T_{\\mathrm{pag}}$", "full": "Paging duration", "unit": "ms", "body": "Length of one paging transmission. Paper: 1 ms.", "effect": "Hearing paging costs ON energy for that interval (and the rest of the ON window)." },
+    "nt": { "short": "$N_t$", "full": "Time-domain access occasions", "unit": "4", "body": "Device 1: 4 time AOs per paging (T0–T3).", "effect": "$N_{\\mathrm{AO}}=N_t\\times N_f$." },
+    "nf": { "short": "$N_f$", "full": "Frequency-domain access occasions", "unit": "2", "body": "Device 1: 2 frequency AOs (F0, F1).", "effect": "Together with $N_t$ this makes 8 AOs." },
+    "nao": { "short": "$N_{\\mathrm{AO}}$", "full": "Access occasions per paging", "unit": "8", "body": "$4\\times 2=8$ AOs. A device picks one at random for Msg1.", "effect": "Two Msg1 on the same AO is a collision." },
+    "ng": { "short": "$N_g$", "full": "Number of DCM groups", "unit": "1 or 4", "body": "1-group: $N_g=1$. 4-group: $N_g=4$. Default $g=\\mathrm{id}\\bmod N_g$ is a reproduction assumption.", "effect": "Sets who is eligible on each paging index." },
+    "nDevices": { "short": "$N$", "full": "Number of devices", "unit": "count", "body": "Paper Device 1 figure uses $N=600$.", "effect": "Contention and $p_{\\mathrm{access}}$ scale with $N$ and $N_g$." },
+    "dt": { "short": "$\\mathrm{d}t$", "full": "Simulation time step", "unit": "0.5 ms", "body": "Internal slot length. Energy History on-demand traces use this dt (not 1 ms).", "effect": "Msg1 and Msg2 are 0.5 ms; coarser traces can skip them." }
+  }
+}

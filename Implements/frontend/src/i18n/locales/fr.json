@@ -1,0 +1,290 @@
+{
+  "common": {
+    "running": "En cours…",
+    "yes": "Oui",
+    "no": "Non",
+    "play": "Lecture",
+    "pause": "Pause",
+    "checking": "vérification",
+    "apiUp": "API OK",
+    "apiDown": "API hors ligne"
+  },
+  "app": {
+    "title": "Inventaire IoT ambiant 3GPP",
+    "documentTitle": "Simulateur d’inventaire IoT ambiant 3GPP",
+    "kicker": "Atelier d’usine indoor",
+    "subtitle": "Figure 5(b) · Indisponibilité des dispositifs due à la collecte d’énergie",
+    "time": "t = {{value}} s",
+    "done": "{{value}} % terminé",
+    "runPaper": "Lancer la configuration papier"
+  },
+  "hud": {
+    "setup": "Réglages",
+    "inspect": "Inspecter",
+    "plots": "Courbes",
+    "resizeSetup": "Redimensionner Réglages",
+    "resizeInspect": "Redimensionner Inspecter",
+    "resizePlots": "Redimensionner Courbes"
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre"
+  },
+  "lang": {
+    "label": "Langue"
+  },
+  "state": {
+    "OFF": "OFF",
+    "ON": "ON",
+    "SLEEP": "SOMMEIL",
+    "ACCESS": "ACCÈS",
+    "COLLISION": "COLLISION",
+    "DONE": "FAIT"
+  },
+  "strategy": {
+    "em": "EM, paging apériodique",
+    "dcm_1_group": "DCM — 1 groupe",
+    "dcm_4_group": "DCM — 4 groupes"
+  },
+  "sim": {
+    "title": "Simulation",
+    "description": "Les défauts papier verrouillent Device 1, N=600. Les (x, y) de l’usine ne servent qu’à la visualisation.",
+    "numDevices": "Nombre de dispositifs",
+    "deviceType": "Type de dispositif",
+    "device1": "Dispositif 1 (fig. 5(b))",
+    "device2": "Dispositif 2",
+    "strategies": "Stratégies",
+    "seed": "Graine aléatoire",
+    "reshuffleSeed": "Nouvelle réalisation (nouvelle graine)",
+    "maxTime": "Temps max (s)",
+    "run": "Lancer la simulation",
+    "paper": "Configuration papier"
+  },
+  "hints": {
+    "numDevices": "Nombre d’étiquettes N. La figure 5(b) utilise N = 600. Les (x, y) au sol sont d’affichage seulement ; $p_{\\mathrm{in}}$ vient de la CDF numérisée.",
+    "deviceType": "Le dispositif 1 est le modèle d’énergie de la fig. 5(b) ($E_{\\max}$ = $E_{\\mathrm{up}}$ = 500 nJ, $E_{\\mathrm{low}}$ = 250 nJ). Le dispositif 2 est l’autre ligne du tableau 1.",
+    "strategies": "Toutes les stratégies sélectionnées partagent les mêmes nombres aléatoires (mêmes $p_{\\mathrm{in}}$, positions, phases d’énergie).",
+    "em": "Surveillance sensible à l’énergie. Le paging suivant commence quand le CBRA précédent se termine (stratégie 1 du papier).",
+    "dcm1": "Mode de couverture discontinue, un seul groupe. Tous les dispositifs partagent la même fenêtre ON.",
+    "dcm4": "DCM à 4 groupes. Les dispositifs sont répartis également (id modulo 4) ; chaque paging sert un groupe. Papier : réduction d’environ 50 % du $T_{99}$ vs EM.",
+    "seed": "Graine du PRNG. Même graine + même N rejoue le même tirage de Monte Carlo : (x, y) au sol, $p_{\\mathrm{in}}$, phase d’énergie, et chaque tirage d’accès. Les dispositifs ne se déplacent pas ; la « route » usine n’est que la lecture des états. Changez la graine, puis Lancez, pour un nouveau plan et un nouvel ordre d’inventaire. 42 est la valeur par défaut de reproduction du papier.",
+    "maxTime": "Horizon de simulation en secondes. Qualitatif du papier : $T_{99}$ EM autour de 20 s. Les instantanés web sont stockés toutes les 100 ms."
+  },
+  "assumptions": {
+    "title": "Paramètres vs hypothèses",
+    "summary": "Tableau 1 et hypothèses de reproduction",
+    "paperSpecified": "Spécifié par le papier",
+    "repro": "Hypothèses de reproduction",
+    "loadPaper": "Charger la configuration papier depuis l’API.",
+    "notLoaded": "Non chargé."
+  },
+  "paperHints": {
+    "E_max_nJ": "Capacité de stockage. Dispositif 1 : 500 nJ. Identique à $E_{\\mathrm{up}}$.",
+    "E_up_nJ": "Énergie pour terminer la procédure ON / accès. Dispositif 1 : 500 nJ.",
+    "E_low_nJ": "Seuil de réveil. En dessous, le dispositif est OFF. Dispositif 1 : 250 nJ.",
+    "P_rx_uW": "Puissance du circuit de réception, 1 μW.",
+    "P_tx_uW": "Puissance du circuit d’émission, 1 μW.",
+    "P_sl_uW": "Puissance en sommeil, 0,1 μW.",
+    "paging_ms": "Durée de paging, 1 ms.",
+    "T_pg_ms": "Intervalle de paging périodique, 12 ms (DCM).",
+    "Msg1_ms": "PRACH / $\\mathrm{Msg}_{1}$, 0,5 ms.",
+    "Msg2_ms": "$\\mathrm{Msg}_{2}$, 0,5 ms.",
+    "Msg3_ms": "$\\mathrm{Msg}_{3}$, 3 ms.",
+    "T_on_DCM_ms": "Fenêtre ON DCM publiée : 3 ms (l’arXiv indiquait 2 ms).",
+    "T_on_timer_ms": "Temporisateur ON de l’EM, 18 ms.",
+    "n_time_ao": "Occasions d’accès temporelles : 4.",
+    "n_freq_ao": "Occasions d’accès fréquentielles : 2.",
+    "n_ao": "Total des AO = 4 × 2 = 8.",
+    "N": "Nombre de dispositifs de cette exécution."
+  },
+  "assumptionHints": {
+    "pin_source": "$p_{\\mathrm{in}}$ est échantillonné depuis la CDF numérisée de la fig. 5(a), pas depuis un affaiblissement de parcours (x, y).",
+    "warmup": "Énergie initiale : `stationary` = phase de cycle analytique ; `explicit` = machine ON/OFF pendant warmup_s depuis $E_{\\mathrm{low}}$. Ce n’est pas équivalent.",
+    "access_probability": "Le papier ne donne pas d’équation pour $p_{\\mathrm{access}}$. `poisson_idle` est une hypothèse non publiée.",
+    "aperiodic_paging": "EM : paging suivant dès que le CBRA précédent se termine.",
+    "periodic_paging": "DCM : grilles d’époques $0, T_{\\mathrm{pg}}, 2T_{\\mathrm{pg}},\\ldots$. Un dépassement saute l’occasion.",
+    "group_assignment": "Par défaut $g = i \\bmod N_g$ est une hypothèse de répartition égale préconfigurée, pas une procédure publiée. `first_paging_mod` n’est pas équivalent au papier.",
+    "off_clears_sync": "Vrai par défaut : OFF efface la synchro DCM. Faux : on conserve la synchro et on recharge jusqu’à la prochaine époque du groupe."
+  },
+  "anatomy": {
+    "title": "Intérieur du dispositif",
+    "subtitle": "Deux blocs sur une étiquette sans batterie",
+    "device": "Dispositif A-IoT",
+    "wur": "Récepteur de réveil basse consommation",
+    "wurRole": "sonnette — écouter le paging",
+    "wurHint": "Récepteur 1 μW qui demande seulement « quelqu’un m’appelle ? ». Papier : utile pour le Device 2 ($P_{\\mathrm{rx}}$ du CI = 50 μW). Absent de la Figure 5(b) Device 1.",
+    "ic": "CI principal de communication A-IoT",
+    "icRole": "paging · CBRA $\\mathrm{Msg}_{1}$–$\\mathrm{Msg}_{3}$ · EM/DCM",
+    "icHint": "La radio qui fait l’inventaire. Device 1 : $P_{\\mathrm{rx}}$ = $P_{\\mathrm{tx}}$ = 1 μW. C’est le modèle de la Figure 5(b).",
+    "wake": "réveil",
+    "inUse": "cette simu",
+    "notThisFig": "pas Fig. 5(b)",
+    "d1Note": "Cette simu est Device 1 : le CI principal écoute. Le récepteur de réveil est dessiné pour la structure ; il n’est pas dans la Figure 5(b).",
+    "d2Note": "Cette simu est Device 2 : le récepteur 1 μW peut écouter à la place du CI principal à 50 μW."
+  },
+  "inspect": {
+    "title": "Inspecteur de dispositif",
+    "empty": "Cliquer une étiquette sur le sol de l’usine.",
+    "device": "Dispositif n°{{id}}",
+    "energy": "Énergie",
+    "energyHint": "Énergie stockée $e_{\\mathrm{ES}}$. $E_{\\mathrm{low}}$ = 250 nJ pour se réveiller, $E_{\\mathrm{up}}$ = $E_{\\max}$ = 500 nJ. OFF sous $E_{\\mathrm{low}}$.",
+    "pinHint": "Puissance RF reçue depuis la CDF numérisée de la fig. 5(a), saturée à −36 dBm. Pas calculée depuis (x, y).",
+    "pehHint": "Puissance collectée $P_{\\mathrm{eh}} = \\eta(p_{\\mathrm{in}})\\, p_{\\mathrm{in}}$. $\\eta$ suit la formule publiée par morceaux (pas l’inversion arXiv).",
+    "group": "Groupe",
+    "groupHint": "DCM $g = i \\bmod N_g$. L’EM n’a pas de groupe.",
+    "attempts": "Tentatives",
+    "attemptsHint": "Nombre de tentatives $\\mathrm{Msg}_{1}$ de ce dispositif.",
+    "collisions": "Collisions",
+    "collisionsHint": "Collisions $\\mathrm{Msg}_{1}$ sur une occasion d’accès.",
+    "inventoried": "Inventorié",
+    "inventoriedHint": "Vrai après un CBRA $\\mathrm{Msg}_{1}$–$\\mathrm{Msg}_{3}$ réussi.",
+    "completion": "Achèvement",
+    "completionHint": "Instant où ce dispositif a fini l’inventaire. La fig. 5(b) est construite à partir de ces instants, pas d’une courbe ajustée.",
+    "firstPaging": "Premier paging",
+    "firstPagingHint": "Première détection de paging, écrite une seule fois. Les resynchronisations vont dans last-sync.",
+    "lastSync": "Dernière synchro",
+    "lastSyncHint": "Dernier instant de synchro d’inventaire (éventuellement après E_low).",
+    "syncCount": "Synchro / perte",
+    "syncCountHint": "Nombre de prises de synchro DCM vs de passages sous E_low pendant la synchro."
+  },
+  "energy": {
+    "title": "Historique d’énergie",
+    "empty": "Sélectionner un dispositif pour tracer l’énergie stockée en fonction du temps.",
+    "timeAxis": "Temps (s)",
+    "energyAxis": "Énergie (nJ)",
+    "stopAtDone": "Arrêter à l’achèvement (+80 ms)",
+    "loading": "Chargement de la trace scientifique 1 ms…",
+    "frozen": "Gelé après DONE — pas une évolution physique",
+    "completedAt": "Inventaire terminé · {{t}} s",
+    "bgLegend": "Fond : OFF harvest, ON monitor, SLEEP, TX. Marqueurs : paging, Msg1, collision, Msg2, Msg3, DONE."
+  },
+  "cbra": {
+    "title": "CBRA / AO",
+    "subtitle": "4 temps × 2 fréquences = 8 AO",
+    "empty": "Aucun événement de paging pour l’instant.",
+    "paging": "Paging n°{{id}}",
+    "pAccessHint": "$p_{\\mathrm{access}}$ de ce paging. Le papier n’a pas d’équation ; ici une charge de Poisson sur les AO idle.",
+    "eligible": "éligibles {{n}}",
+    "eligibleHint": "Dispositifs qui ont entendu le paging et ont assez d’énergie pour tenter un CBRA.",
+    "attempting": "en tentative {{n}}",
+    "grid": "Occasions d’accès",
+    "ok": "Singleton",
+    "idle": "idle",
+    "collision": "X",
+    "singleton": "Singleton",
+    "emptyCell": "vide",
+    "metaStrategy": "Stratégie",
+    "runId": "ID d’exécution",
+    "grouping": "Groupement",
+    "cdf": "Hash CDF",
+    "prev": "Paging précédent",
+    "next": "Paging suivant",
+    "pagingJump": "Paging n°",
+    "jumpPlayback": "Le plus proche de la lecture",
+    "onCount": "ON {{n}}",
+    "heardNoAttempt": "entendu sans tentative {{n}}",
+    "planned": "prévu {{n}}",
+    "actualTx": "Msg1 réel {{n}}",
+    "aoCounts": "AO singleton {{s}} · collision {{c}} · idle {{i}}",
+    "plannedIds": "IDs prévus",
+    "txIds": "TX réels",
+    "droppedIds": "Tombés avant Msg1",
+    "msg1Result": "Résultat Msg1",
+    "finalResult": "Résultat final"
+  },
+  "playback": {
+    "title": "Lecture",
+    "subtitle": "instantanés, pas des slots temps réel"
+  },
+  "metrics": {
+    "empty": "Lancer une simulation pour obtenir $T_{50}$ / $T_{90}$ / $T_{99}$.",
+    "strategy": "Stratégie",
+    "final": "Final",
+    "collisions": "Collisions",
+    "inventoryTimes": "Temps d’inventaire",
+    "fromTimes": "D’après les instants d’achèvement, pas une courbe ajustée"
+  },
+  "maps": {
+    "view": "Voir la carte de stratégie",
+    "close": "Fermer",
+    "fit": "Ajuster la vue",
+    "reset": "Réinitialiser la disposition",
+    "how": "Fonctionnement",
+    "paperExpect": "Attente du papier (qualitative, pas une cible ajustée)",
+    "runMetrics": "Métriques de cette exécution",
+    "legend": "Faites glisser les nœuds pour ranger le graphe ; Réinitialiser la disposition restaure le défaut. Arrondi = état d’énergie · carré = protocole · pilule = décision · anguleux = échec · coche = succès. Les arêtes animées sont des retries ou des boucles de sommeil.",
+    "expect": {
+      "em": "Sur la figure publiée, le T99 EM Device 1 est autour de 20 s. Cette exécution est une réalisation de Monte Carlo, pas un ajustement.",
+      "dcm1": "Le DCM 1 groupe ne doit pas beaucoup améliorer Device 1 vs EM : les N tags restent un seul groupe de contention.",
+      "dcm4": "Le DCM 4 groupes est qualitativement ~10 s / ~50 % de T99 vs EM. Le gros (T90) doit être clairement le plus rapide ; la queue T99 reste dictée par les plus faibles harvesters."
+    },
+    "em": {
+      "summary": "ON est commandé par les seuils d’énergie. Le paging est apériodique. Les tags faibles rechargent E_low→E_up à l’échelle de 20 s.",
+      "steps": "OFF harvest jusqu’à E_up.\nON écoute le paging et ne harvest pas.\nTirage d’accès : un rejet continue l’écoute.\nCollision Msg1 : paging suivant.\nSingleton : Msg2 RX, Msg3 TX, DONE si l’énergie reste."
+    },
+    "dcm1": {
+      "summary": "Les 600 tags Device 1 partagent un groupe. p_access bas ; beaucoup entendent le paging et paient le monitoring sans émettre.",
+      "steps": "Timer ON pré-inventaire 18 ms, puis OFF sans paging.\nPremier paging : sync à 12 ms.\nDCM ON 3 ms, SLEEP 9 ms.\nSans tentative, P_rx est quand même payé.\nE_low efface la sync."
+    },
+    "dcm4": {
+      "summary": "Partition paire g = id mod 4. Réveil toutes les 48 ms (ON 3 ms + SLEEP 45 ms). Environ 150 en contention par paging.",
+      "steps": "Le premier paging ne fait que synchroniser.\nLe groupe est device_id modulo 4 (pas l’index du premier paging).\nRéveil si paging_index mod 4 = g.\nN_g × T_pg = 48 ms.\np_access plus élevé car l’ensemble de contention est ~N/4."
+    }
+  },
+  "curve": {
+    "title": "Figure 5(b)",
+    "subtitle": "d’après les instants d’achèvement, pas une courbe ajustée. Tendance proche ; pas une reproduction exacte.",
+    "x": "Temps (ms)",
+    "y": "Inventorié (%)",
+    "panHint": "Glisser la barre sous le graphe pour parcourir le temps. Double-clic pour toute la simulation.",
+    "paperRef": "papier",
+    "paperDigitized": "Tirets gris : CSV IEEE fig. 5(b) numérisée. Verticales : T99 énoncé (EM ≈ 20 s, 4 groupes ≈ 10 s).",
+    "paperMarkersOnly": "Pas de CSV Device 1 numérisé dans le dépôt. Les verticales marquent seulement le T99 du texte (EM ≈ 20 s, DCM+groupes ≈ 10 s).",
+    "overlay": {
+      "sim": "Simulation",
+      "paper": "Référence papier",
+      "both": "Les deux"
+    }
+  },
+  "factory": {
+    "devices": "Dispositifs A-IoT",
+    "reader": "Lecteur",
+    "readerHover": "Lecteur / BS<br>33 dBm CW",
+    "deviceHover": "<b>Dispositif n°%{customdata[0]}</b><br>État : %{customdata[1]}<br>Énergie : %{customdata[2]:.1f} nJ<br><i>p</i><sub>in</sub> : %{customdata[3]:.2f} dBm<extra></extra>",
+    "xAxis": "x (m)",
+    "yAxis": "y (m)"
+  },
+  "overview": {
+    "button": "Vue d’ensemble",
+    "buttonAria": "Ouvrir le flux lecteur–dispositif",
+    "title": "Lecteur ↔ dispositif",
+    "lead": "Un cycle de paging. Hors ON, le dispositif n’entend pas le paging.",
+    "asciiTitle": "Même flux",
+    "edge": {
+      "paging": "Paging",
+      "yes": "YES",
+      "no": "NO",
+      "join": "joindre",
+      "skip": "passer",
+      "success": "SUCCESS",
+      "collision": "COLLISION",
+      "next": "paging suivant"
+    },
+    "steps": "Le lecteur envoie un paging.\nSeuls les ON l’entendent.\nProbabilité d’accès : passer ou choisir un AO.\nCollision : attendre le paging suivant.\nSingleton : Msg2, Msg3, DONE.",
+    "node": {
+      "reader": "READER",
+      "onq": "Dispositif ON ?",
+      "heard": "Paging reçu",
+      "draw": "access probability",
+      "skip": "Passer",
+      "ao": "Choisir AO",
+      "col": "COLLISION",
+      "ok": "SUCCESS",
+      "m2": "Msg2",
+      "m3": "Msg3",
+      "done": "DONE",
+      "wait": "Paging suivant"
+    },
+    "ascii": "READER\n  |\n  | Paging\n  v\nDispositif actuellement ON ?\n NO              YES\n  |               |\n  |            paging reçu\n  |               |\n  |         access probability\n  |            /        \\\n  |         skip         join\n  |           |            |\n  |           |         pick AO\n  |           |         /      \\\n  |           |  COLLISION    SUCCESS\n  |           |      |           |\n  |           |      |         Msg2\n  |           |      |           |\n  |           |      |         Msg3\n  |           |      |           |\n  |           |      |          DONE\n  |           +------+-----------+\n  |                  |\n  +----------- wait next paging"
+  }
+}

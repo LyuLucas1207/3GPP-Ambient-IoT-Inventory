@@ -1,0 +1,437 @@
+{
+  "explain": {
+    "button": "Explain this view",
+    "buttonAria": "Explain {{view}}",
+    "termAria": "Explain {{term}}",
+    "close": "Close",
+    "example": "This device",
+    "source": {
+      "paper": "Paper",
+      "digitized": "Digitized input",
+      "assumption": "Reproduction assumption",
+      "viz": "Factory overlay"
+    }
+  },
+  "energy": {
+    "title": "Energy history",
+    "lead": "Stored energy $e_{\\mathrm{ES}}$ of the selected device vs simulation time.",
+    "empty": "Select a device to plot stored energy vs time.",
+    "timeAxis": "Time (s)",
+    "energyAxis": "Energy (nJ)",
+    "loading": "Loading scientific trace…",
+    "chartKey": "Chart key",
+    "trim": {
+      "label": "Trim chart after completion",
+      "hint": "Changes only the visible time range, not the simulation.",
+      "ms": "+{{ms}} ms",
+      "full": "Full run"
+    },
+    "y": {
+      "label": "Vertical scale",
+      "auto": "Auto",
+      "full": "Full range",
+      "zoom": "Zoom variation",
+      "hint": "Full range is 0 to $E_{\\max}$. Zoom variation scales to the min/max of this trace so a few-nJ drop is visible. Auto uses zoom when the span is under 10% of $E_{\\mathrm{up}}$."
+    },
+    "legend": {
+      "ees": "e_ES — stored energy",
+      "frozen": "Frozen after DONE — not physical evolution",
+      "eup": "E_up — turn-on threshold",
+      "elow": "E_low — turn-off threshold",
+      "eupShort": "E_up",
+      "elowShort": "E_low",
+      "doneLine": "Inventory completed"
+    },
+    "state": {
+      "OFF": "OFF / harvesting",
+      "ON": "ON / monitoring",
+      "SLEEP": "SLEEP / P_sl harvest",
+      "TX": "TX",
+      "DONE": "DONE / frozen display"
+    },
+    "event": {
+      "pagingHeard": "Paging heard",
+      "pagingRejected": "Access probability rejected",
+      "pagingMissed": "Paging missed",
+      "msg1Planned": "Msg1 planned",
+      "msg1Tx": "Msg1 transmitted",
+      "msg1Singleton": "Msg1 singleton",
+      "collision": "Msg1 collision",
+      "dropped": "Dropped before Msg1",
+      "msg2": "Msg2 RX",
+      "msg3Start": "Msg3 TX start",
+      "msg3Done": "Msg3 completed",
+      "done": "Inventory completed",
+      "energyFail": "Energy failure"
+    },
+    "tip": {
+      "state": "state",
+      "phase": "phase",
+      "draw": "draw",
+      "net": "net",
+      "reason": "why",
+      "page": "paging #"
+    },
+    "reason": {
+      "hold": "Change too small to see at this scale, or net power ≈ 0.",
+      "harvest": "Energy is rising: harvest exceeds consumption.",
+      "draw": "Energy is falling: RX, TX, or sleep draw exceeds harvest.",
+      "frozen": "DONE: the simulator froze this device; the line is not physical evolution."
+    },
+    "footer": "On-demand scientific trace · simulation dt={{sim}} ms · chart dt={{chart}} ms · completed {{done}} s",
+    "stateKey": "Scientific state (background)",
+    "eventKey": "Protocol events",
+    "itemHelp": {
+      "ees": "Solid blue: live stored energy $e_{\\mathrm{ES}}(t)$. Up = harvest > draw. Down = RX/TX/sleep draw exceeds harvest.",
+      "frozen": "Grey dotted line after DONE. The simulator stopped tracking this device; the flat line is not physical evolution.",
+      "eup": "Dashed $E_{\\mathrm{up}}$: OFF device turns ON when $e_{\\mathrm{ES}}$ reaches this threshold (Device 1: 500 nJ).",
+      "elow": "Dotted $E_{\\mathrm{low}}$: ON/SLEEP/TX drops to OFF at this threshold (Device 1: 250 nJ).",
+      "doneLine": "Green vertical line: inventory completed — only after Msg3 has fully transmitted above $E_{\\mathrm{low}}$.",
+      "bg-OFF": "Pale blue band: radio OFF, harvesting toward $E_{\\mathrm{up}}$.",
+      "bg-ON": "Pale orange band: ON / monitoring paging at $P_{\\mathrm{rx}}$ (no harvest credit in ON).",
+      "bg-SLEEP": "Pale violet band: DCM SLEEP. Harvest continues, minus $P_{\\mathrm{sl}}$.",
+      "bg-TX": "Pale red band: transmitting Msg1 or Msg3 at $P_{\\mathrm{tx}}$.",
+      "bg-DONE": "Pale green band: DONE display. Energy is frozen, not a real capacitor trajectory.",
+      "pagingHeard": "Yellow marker: this device heard that paging occasion. Hearing ≠ sending Msg1.",
+      "pagingRejected": "Heard paging but $p_{\\mathrm{access}}$ rejected the attempt. Still paid $P_{\\mathrm{rx}}$.",
+      "pagingMissed": "A paging occurred while this device was not eligible (OFF, wrong group, or already DONE).",
+      "msg1Planned": "Passed $p_{\\mathrm{access}}$ and was scheduled to send Msg1. Energy may still fail before TX.",
+      "msg1Tx": "Msg1 actually transmitted on a chosen AO (0.5 ms on Device 1).",
+      "msg1Singleton": "Exactly one Msg1 on that AO. Necessary for Msg2, not yet DONE.",
+      "collision": "Two or more Msg1 on the same AO. Retry on a later paging; not inventoried.",
+      "dropped": "Planned Msg1 but energy hit $E_{\\mathrm{low}}$ before the slot.",
+      "msg2": "Reader decoded the singleton and this device received Msg2 (0.5 ms).",
+      "msg3Start": "First Msg3 slot. Inventory is not complete yet.",
+      "msg3Done": "Msg3 fully sent. DONE follows only if energy stayed above $E_{\\mathrm{low}}$.",
+      "done": "Inventory completed for this device after successful Msg3.",
+      "energyFail": "Energy fell to $E_{\\mathrm{low}}$ during paging/Msg1/Msg2/Msg3. CBRA aborted."
+    }
+  },
+  "terms": {
+    "pin": {
+      "short": "p_in",
+      "full": "Incident RF power $p_{\\mathrm{in}}$",
+      "unit": "dBm",
+      "body": "Power arriving at the device antenna. Drawn from the paper’s digitized indoor CDF, not from (x, y) on the factory floor.",
+      "effect": "Sets harvest power $P_{\\mathrm{eh}}$ and therefore how fast a device can recharge."
+    },
+    "peh": {
+      "short": "P_eh",
+      "full": "Harvested electrical power $P_{\\mathrm{eh}}$",
+      "unit": "nW",
+      "body": "Electrical power from the energy harvester, $P_{\\mathrm{eh}}=\\xi\\,p_{\\mathrm{in}}$ with efficiency $\\xi$.",
+      "effect": "While OFF or SLEEP, energy rises at about $P_{\\mathrm{eh}}$ minus any sleep draw."
+    },
+    "xi": {
+      "short": "ξ",
+      "full": "Harvest efficiency $\\xi$",
+      "unit": "—",
+      "body": "Paper Table 1 conversion efficiency from incident RF power to stored energy.",
+      "effect": "Scales $P_{\\mathrm{eh}}$. Device 1 uses the Table 1 value; it is not fitted."
+    },
+    "ees": {
+      "short": "e_ES",
+      "full": "Stored energy $e_{\\mathrm{ES}}$",
+      "unit": "nJ",
+      "body": "Energy in the device capacitor at time $t$. Capped at $E_{\\max}$.",
+      "effect": "Compared with $E_{\\mathrm{up}}$ and $E_{\\mathrm{low}}$ to turn the radio ON or OFF."
+    },
+    "emax": {
+      "short": "E_max",
+      "full": "Storage ceiling $E_{\\max}$",
+      "unit": "nJ",
+      "body": "Maximum stored energy. For Device 1, $E_{\\max}=E_{\\mathrm{up}}=500$ nJ (paper Table 1).",
+      "effect": "Harvest cannot push $e_{\\mathrm{ES}}$ above this cap."
+    },
+    "eup": {
+      "short": "E_up",
+      "full": "Turn-on threshold $E_{\\mathrm{up}}$",
+      "unit": "nJ",
+      "body": "An OFF device enters ON when $e_{\\mathrm{ES}}\\ge E_{\\mathrm{up}}$.",
+      "effect": "Sets how long a depleted tag must harvest before it can listen again."
+    },
+    "elow": {
+      "short": "E_low",
+      "full": "Turn-off threshold $E_{\\mathrm{low}}$",
+      "unit": "nJ",
+      "body": "ON, SLEEP, or TX devices drop to OFF when $e_{\\mathrm{ES}}\\le E_{\\mathrm{low}}$ (250 nJ on Device 1).",
+      "effect": "Aborts CBRA if energy fails during Msg1–3; DCM may also lose sync."
+    },
+    "prx": {
+      "short": "P_rx",
+      "full": "Receive/monitor power $P_{\\mathrm{rx}}$",
+      "unit": "μW",
+      "body": "Power while ON and listening for paging. Device 1: $1\\,\\mu$W (Table 1).",
+      "effect": "ON windows drain energy even if the device never transmits Msg1."
+    },
+    "ptx": {
+      "short": "P_tx",
+      "full": "Transmit power $P_{\\mathrm{tx}}$",
+      "unit": "μW",
+      "body": "Power during Msg1/Msg3 transmission. Device 1: $P_{\\mathrm{tx}}=P_{\\mathrm{rx}}$.",
+      "effect": "TX intervals are short but still cost energy; failure below $E_{\\mathrm{low}}$ aborts."
+    },
+    "psl": {
+      "short": "P_sl",
+      "full": "Sleep power $P_{\\mathrm{sl}}$",
+      "unit": "μW",
+      "body": "DCM sleep-mode draw. Device 1: $0.1\\,\\mu$W. The device still harvests.",
+      "effect": "Net SLEEP power is $P_{\\mathrm{eh}}-P_{\\mathrm{sl}}$, usually a slow charge."
+    },
+    "em": {
+      "short": "EM",
+      "full": "Energy-aware monitoring",
+      "unit": "strategy",
+      "body": "Paper strategy 1: devices stay ON while $E_{\\mathrm{low}}<e_{\\mathrm{ES}}\\le E_{\\max}$ and listen for aperiodic paging.",
+      "effect": "Next paging starts when the previous CBRA ends. Weak devices recharge on the order of tens of seconds."
+    },
+    "dcm": {
+      "short": "DCM",
+      "full": "Discontinuous coverage mode",
+      "unit": "strategy",
+      "body": "Paper strategy 2: short ON windows aligned to periodic paging, then SLEEP.",
+      "effect": "Cuts monitor energy. With 4 groups, about 1/4 of tags contend each paging."
+    },
+    "paging": {
+      "short": "Paging",
+      "full": "Paging occasion",
+      "unit": "event",
+      "body": "The reader’s 1 ms invitation. Hearing paging is not the same as sending Msg1.",
+      "effect": "Eligible ON devices may attempt CBRA; others ignore or miss it."
+    },
+    "cbra": {
+      "short": "CBRA",
+      "full": "Contention-based random access",
+      "unit": "procedure",
+      "body": "Msg1 on an access occasion, then Msg2 from the reader, then Msg3 from the device.",
+      "effect": "A singleton Msg1 is necessary but not sufficient: Msg2/Msg3 can still fail on energy."
+    },
+    "ao": {
+      "short": "AO",
+      "full": "Access occasion",
+      "unit": "resource",
+      "body": "Paper Device 1: 4 time × 2 frequency = 8 AOs per paging. Devices pick one at random for Msg1.",
+      "effect": "Two Msg1 on the same AO is a collision; one Msg1 is a singleton."
+    },
+    "msg1": {
+      "short": "Msg1",
+      "full": "Message 1",
+      "unit": "0.5 ms",
+      "body": "Device uplink of a random ID on one AO. Duration 0.5 ms on Device 1.",
+      "effect": "Collision → retry later. Singleton → reader may send Msg2."
+    },
+    "msg2": {
+      "short": "Msg2",
+      "full": "Message 2",
+      "unit": "0.5 ms",
+      "body": "Reader downlink acknowledging a singleton Msg1.",
+      "effect": "The device must stay ON and receive it before sending Msg3."
+    },
+    "msg3": {
+      "short": "Msg3",
+      "full": "Message 3",
+      "unit": "3 ms",
+      "body": "Device uplink of identity/data. Inventory completes only after Msg3 is fully sent.",
+      "effect": "If energy hits $E_{\\mathrm{low}}$ during Msg3, the device is not marked DONE."
+    },
+    "paccess": {
+      "short": "p_access",
+      "full": "Access probability $p_{\\mathrm{access}}$",
+      "unit": "—",
+      "body": "Probability that an eligible device answers this paging with Msg1. The paper does not publish the controller equation; this simulator uses a reproduction assumption (idle-AO Poisson load by default).",
+      "effect": "Too high → collisions. Too low → many heard-no-attempt events that still pay $P_{\\mathrm{rx}}$."
+    },
+    "eligible": {
+      "short": "Eligible",
+      "full": "Eligible device",
+      "unit": "count",
+      "body": "ON, not yet inventoried, above $E_{\\mathrm{low}}$, and (in DCM) in the group served by this paging.",
+      "effect": "Only eligible devices can hear-and-attempt. Eligibility ≠ transmission."
+    },
+    "collision": {
+      "short": "Collision",
+      "full": "Msg1 collision",
+      "unit": "event",
+      "body": "Two or more Msg1 on the same AO. The reader cannot decode a singleton.",
+      "effect": "Those devices retry on a later paging; they are not DONE."
+    },
+    "singleton": {
+      "short": "Singleton",
+      "full": "Msg1 singleton",
+      "unit": "event",
+      "body": "Exactly one Msg1 on that AO, so the reader can decode the random ID.",
+      "effect": "Opens Msg2/Msg3. It is not yet a completed inventory."
+    },
+    "tpg": {
+      "short": "T_pg",
+      "full": "Paging period $T_{\\mathrm{pg}}$",
+      "unit": "ms",
+      "body": "12 ms in the paper. DCM paging epochs are $0, T_{\\mathrm{pg}}, 2T_{\\mathrm{pg}}, \\ldots$",
+      "effect": "Sets how often a group is invited. 4-group DCM wakes every $4T_{\\mathrm{pg}}=48$ ms."
+    },
+    "tonTimer": {
+      "short": "T_on_timer",
+      "full": "Pre-inventory ON timer",
+      "unit": "ms",
+      "body": "18 ms DCM timer: after first power-up, stay ON this long waiting for paging.",
+      "effect": "No paging in that window → back to OFF/harvest."
+    },
+    "tonDcm": {
+      "short": "T_on_DCM",
+      "full": "DCM ON window",
+      "unit": "ms",
+      "body": "3 ms ON per paging for Device 1 DCM, then SLEEP for the rest of the group period.",
+      "effect": "Limits $P_{\\mathrm{rx}}$ drain compared with always-ON EM."
+    },
+    "group": {
+      "short": "Group",
+      "full": "DCM group index",
+      "unit": "0…N_g−1",
+      "body": "Default $g=\\mathrm{device\\_id}\\bmod N_g$. This split is a reproduction assumption, not a published 3GPP procedure.",
+      "effect": "4 groups ⇒ about $N/4$ tags contend per paging, raising $p_{\\mathrm{access}}$ and cutting collisions."
+    },
+    "t50": {
+      "short": "T50",
+      "full": "Time to 50% inventoried",
+      "unit": "s",
+      "body": "First time at least 50% of devices have completed Msg3. From completion times, not a fitted curve.",
+      "effect": "Describes the bulk of the population, not the weakest harvesters."
+    },
+    "t90": {
+      "short": "T90",
+      "full": "Time to 90% inventoried",
+      "unit": "s",
+      "body": "Same definition at 90%. Still bulk; the tail is T99.",
+      "effect": "DCM 4-group usually improves T90 clearly versus EM."
+    },
+    "t99": {
+      "short": "T99",
+      "full": "Time to 99% inventoried",
+      "unit": "s",
+      "body": "Paper Figure 5(b) headline. Set by the weakest $p_{\\mathrm{in}}$ devices that must recharge $E_{\\mathrm{low}}\\to E_{\\mathrm{up}}$.",
+      "effect": "Long plateaus on the curve are tags sitting OFF while harvesting, not protocol bugs."
+    }
+  },
+  "views": {
+    "factory": {
+      "title": "Factory view",
+      "lead": "Indoor bay layout. Positions are visualization only.",
+      "body": "Each marker is one Ambient IoT device. Colour is the playback snapshot state (OFF, ON, SLEEP, ACCESS, COLLISION, DONE), not a live 0.5 ms slot.\nThe reader/BS is the large marker. Floor (x, y) does not compute $p_{\\mathrm{in}}$; incident power comes from the digitized CDF.\nClick a device to open Inspect: energy history and CBRA details for that tag.\nPlayback in the bottom dock steps 100 ms factory snapshots. That is coarser than the scientific energy trace."
+    },
+    "inspector": {
+      "title": "Device inspector",
+      "lead": "Numbers for the selected tag at the current playback time.",
+      "body": "$e_{\\mathrm{ES}}$ is stored energy at this snapshot (100 ms grid), not the 0.5 ms scientific trace.\n$p_{\\mathrm{in}}$ and $P_{\\mathrm{eh}}$ are fixed for the run. Group is used only in DCM.\nAttempts and collisions count Msg1 TX and AO collisions over the whole simulation, not just this frame.\nUse Energy history below for slot-level $e_{\\mathrm{ES}}(t)$."
+    },
+    "energy": {
+      "title": "Energy history",
+      "lead": "On-demand $e_{\\mathrm{ES}}(t)$ at simulation dt, not the factory snapshot.",
+      "body": "Horizontal axis is Time (s). Vertical axis is Energy (nJ).\nThe solid blue line is live $e_{\\mathrm{ES}}$. After DONE it becomes a grey dotted freeze: the simulator stopped tracking that device; the flat line is not physics.\nDashed $E_{\\mathrm{up}}$ is the OFF→ON threshold. Dotted $E_{\\mathrm{low}}$ is the ON/SLEEP/TX→OFF threshold.\nBackground bands are scientific_state: pale blue OFF, pale orange ON, pale violet SLEEP, pale red TX, pale green DONE.\nMarkers are protocol events at exact slot times: paging heard is not Msg1. Sequence on success: Paging → Msg1 → singleton → Msg2 → Msg3 start → Msg3 completed → DONE. Collision: Paging → Msg1 → Collision → retry later.\nTrim only crops the plot after completion. Zoom variation enlarges a few-nJ drop that is invisible on a 0–500 nJ axis.\nHover shows time, energy, Δe, state, phase, harvest, draw, and why the sample rose or fell.",
+      "example": "Device #{{id}} finished inventory at {{t}} s with initial energy about {{e}} nJ."
+    },
+    "cbra": {
+      "title": "CBRA / AO grid",
+      "lead": "One paging occasion: 4 time × 2 frequency = 8 access occasions.",
+      "body": "Each cell is one AO. Idle = empty. Singleton = exactly one Msg1 (reader can decode). Collision = two or more Msg1.\nPlanned attempts passed $p_{\\mathrm{access}}$; actual TX is who still had energy at the Msg1 slot. Heard-no-attempt devices paid $P_{\\mathrm{rx}}$ without transmitting.\nA singleton is not inventory complete. Msg2 then Msg3 must succeed and energy must stay above $E_{\\mathrm{low}}$.\n$p_{\\mathrm{access}}$ is a reproduction controller: the paper does not publish its update equation."
+    },
+    "fig5b": {
+      "title": "Figure 5(b)",
+      "lead": "Inventoried fraction vs time from completion timestamps, not a curve fit.",
+      "body": "X: time (ms). Y: percent inventoried. Three strategies share the same random $p_{\\mathrm{in}}$ draw.\nT50/T90/T99 are first crossing times of 50/90/99%.\nPlateaus are batches of tags OFF harvesting $E_{\\mathrm{low}}\\to E_{\\mathrm{up}}$. The long tail is the weakest harvesters (T99).\nPaper parameters come from Table 1. Digitized CDF is an input. Grouping and $p_{\\mathrm{access}}$ are reproduction assumptions.\nThis run is one Monte Carlo realization. It is not fitted to the IEEE plot. Dotted T99 markers are paper-stated qualitative values when a digitized Device-1 CSV is absent."
+    },
+    "metrics": {
+      "title": "Metrics table",
+      "lead": "T50, T90, T99 and collision counts per strategy.",
+      "body": "Times are computed from each device’s completion_time after successful Msg3, not from a smoothed curve.\nClick a row to open that strategy’s state map.\nCollision rate is Msg1 collisions / Msg1 attempts. Heard-no-attempt counts eligible devices that skipped Msg1 because of $p_{\\mathrm{access}}$."
+    },
+    "strategyMap": {
+      "title": "Strategy map",
+      "lead": "State machine for the selected inventory strategy.",
+      "body": "The happy path falls top to bottom. Side boxes are sleep, collision, or energy failure.\nClick a node for what that state means, which paper parameter it uses, and what happens next.\nColours: blue energy, amber protocol, violet decision, red failure, green success. Dashed edges are retries or sleep loops.\nDrag nodes to tidy the layout. Reset layout restores the default. This diagram is explanatory; the simulator is the authority."
+    }
+  },
+  "maps": {
+    "clickNode": "Click a block for an explanation.",
+    "nodeHelp": {
+      "em": {
+        "off": { "title": "OFF / Harvest", "body": "Radio off. Energy rises with $P_{\\mathrm{eh}}$ until $E_{\\mathrm{up}}$, then the device turns ON." },
+        "on": { "title": "ON / Monitor paging", "body": "Listening at $P_{\\mathrm{rx}}$ (no harvest credit in ON). If energy falls to $E_{\\mathrm{low}}$, go OFF." },
+        "p": { "title": "Aperiodic paging", "body": "EM paging is scheduled when the previous CBRA ends, not on a fixed 12 ms grid." },
+        "draw": { "title": "Access probability", "body": "Eligible devices toss $p_{\\mathrm{access}}$. Reject stays ON and keeps monitoring (still pays $P_{\\mathrm{rx}}$)." },
+        "ao": { "title": "Select Msg1 AO", "body": "Pick 1 of 8 access occasions at random. One occupant → singleton. Two or more → collision." },
+        "m2": { "title": "Msg2 RX", "body": "Reader decoded the singleton random ID and sends Msg2. The device must receive it." },
+        "m3": { "title": "Msg3 TX", "body": "Device sends identity/data (3 ms). DONE only after this completes above $E_{\\mathrm{low}}$." },
+        "done": { "title": "DONE", "body": "Inventoried. The energy trace freezes; later samples are not physical evolution." },
+        "elow": { "title": "E ≤ E_low → OFF", "body": "Energy failure while ON/TX. Return to harvest until $E_{\\mathrm{up}}$ again." },
+        "col": { "title": "Collision", "body": "≥2 Msg1 on the same AO. Wait for the next paging; not inventoried." }
+      },
+      "dcm1": {
+        "off": { "title": "OFF / Harvest", "body": "Same energy thresholds as EM. DCM adds ON/SLEEP timing after first sync." },
+        "pre": { "title": "Pre-inventory ON · 18 ms", "body": "$T_{\\mathrm{on,timer}}$: stay ON waiting for the first paging. None heard → OFF." },
+        "sync": { "title": "First paging / sync", "body": "Aligns the device to the 12 ms paging grid. Does not yet mean a Msg1 attempt." },
+        "on": { "title": "DCM ON · 3 ms", "body": "$T_{\\mathrm{on,DCM}}$ listen window. All 600 Device-1 tags share one contention group." },
+        "draw": { "title": "Access probability", "body": "Low $p_{\\mathrm{access}}$ because N=600 share the paging. No-attempt still pays $P_{\\mathrm{rx}}$." },
+        "cbra": { "title": "Msg2 → Msg3", "body": "Singleton path: receive Msg2, send Msg3, DONE if energy remains." },
+        "done": { "title": "DONE", "body": "Inventory complete. Trace freeze applies as in EM." },
+        "sleep": { "title": "DCM SLEEP · 9 ms", "body": "After the 3 ms ON, sleep 9 ms (1-group period 12 ms) while harvesting at $P_{\\mathrm{sl}}$." },
+        "col": { "title": "Collision → next 12 ms", "body": "Retry on the next paging occasion of this single group." },
+        "lose": { "title": "E_low / lose sync", "body": "Hitting $E_{\\mathrm{low}}$ while synced typically clears DCM sync (default assumption) and returns to OFF." }
+      },
+      "dcm4": {
+        "sync": { "title": "First paging / sync", "body": "Synchronization only. Group is not taken from this paging index in the default assumption." },
+        "grp": { "title": "g = device_id mod 4", "body": "Even split of 600 tags into 4 groups. Reproduction assumption, not a published assignment procedure." },
+        "route": { "title": "Wake iff paging ≡ g", "body": "A device is eligible only when paging_index mod 4 equals its group." },
+        "on": { "title": "DCM ON · 3 ms · ~150", "body": "About N/4 devices listen and may contend. Higher $p_{\\mathrm{access}}$ than 1-group." },
+        "cbra": { "title": "CBRA", "body": "Same Msg1/2/3 procedure, smaller contention set." },
+        "done": { "title": "DONE", "body": "Successful Msg3. Paper qualitative T99 is about half of EM (~10 s vs ~20 s)." },
+        "sleep": { "title": "SLEEP · 45 ms", "body": "3 ms ON + 45 ms sleep = 48 ms = $4T_{\\mathrm{pg}}$ until this group is paged again." },
+        "col": { "title": "Collision / retry", "body": "Wait until this group’s next paging (48 ms later), not the next 12 ms epoch." },
+        "fail": { "title": "Energy failure", "body": "Drop during Msg1–3. After recharge and resync, rejoin the group schedule." }
+      },
+      "overview": {
+        "reader": { "title": "READER", "body": "The base station sends paging, then runs CBRA (Msg1/2/3) with devices that heard it." },
+        "onq": { "title": "Device currently ON?", "body": "Paper on state: available for reception/transmission. OFF and SLEEP cannot hear paging." },
+        "heard": { "title": "Hear paging", "body": "Only an ON device receives the paging and may join this CBRA." },
+        "draw": { "title": "Access probability", "body": "Eligible devices draw $p_{\\mathrm{access}}$. Skip still paid the ON listen cost." },
+        "skip": { "title": "Skip", "body": "Did not attempt Msg1. Wait for the next paging." },
+        "ao": { "title": "Pick AO", "body": "Join: pick one of 8 access occasions at random for Msg1." },
+        "col": { "title": "COLLISION", "body": "Paper Figure 1: ≥2 Msg1 on the same AO. This CBRA fails; wait for the next paging." },
+        "ok": { "title": "SUCCESS", "body": "Singleton Msg1 on that AO. The reader can decode it and continue the CBRA." },
+        "m2": { "title": "Msg2", "body": "Reader decoded a singleton Msg1 and sends Msg2." },
+        "m3": { "title": "Msg3", "body": "Device reports its ID. Inventory is not done until this finishes above $E_{\\mathrm{low}}$." },
+        "done": { "title": "DONE", "body": "Inventoried after Msg3. The device leaves later CBRAs. Figure 5(b) counts this event." },
+        "wait": { "title": "Wait next paging", "body": "OFF, skip, or collision: try again when the reader pages." }
+      }
+    }
+  },
+  "factory": {
+    "paperWording": "Paper",
+    "thisColour": "This colour",
+    "stateHelp": {
+      "OFF": {
+        "paper": "Two paper states first: on and off. Off: the IC is turned off for lack of energy, so the device cannot receive or transmit. Off-state power is negligible. The device can still harvest energy. It turns on at $E_{\\mathrm{up}}$ and off at $E_{\\mathrm{low}}$ (Device 1: 500 nJ / 250 nJ).",
+        "ui": "Grey factory marker. 100 ms playback snapshot, not a 0.5 ms slot."
+      },
+      "ON": {
+        "paper": "On: the device is available for A-IoT reception and transmission. Stored energy falls at $P_{\\mathrm{rx}}$ (listen/Msg2) or $P_{\\mathrm{tx}}$ (Msg1/Msg3). Device 1: both $1\\,\\mu$W.",
+        "ui": "Blue factory marker: listening for paging in this snapshot."
+      },
+      "SLEEP": {
+        "paper": "DCM adds a sleep state (not the same as off). The IC keeps a sleep timer until the next on occasion for CBRA. Like off, the device harvests but cannot transmit or receive. Sleep draw is $P_{\\mathrm{sl}}$ ($0.1\\,\\mu$W on Device 1), with $P_{\\mathrm{sl}}<P_{\\mathrm{rx}}$.",
+        "ui": "Violet factory marker. EM has no sleep; only DCM after the first paging."
+      },
+      "ACCESS": {
+        "paper": "The paper does not define an ACCESS state. Transmission is still the on state, consuming $P_{\\mathrm{tx}}$ during Msg1/Msg3.",
+        "ui": "Amber factory overlay for a 100 ms snapshot that caught Msg1–3. The 0.5 ms energy trace labels that interval TX."
+      },
+      "COLLISION": {
+        "paper": "Paper Figure 1: two Msg1 on the same access occasion is a collision; that CBRA fails and the device must re-access. Collision is a protocol outcome, not an energy state like on/off/sleep.",
+        "ui": "Red factory overlay: this 100 ms snapshot caught a colliding Msg1. The device is not inventoried."
+      },
+      "DONE": {
+        "paper": "Inventory of one device succeeds after paging → Msg1 → Msg2 → Msg3 reports the device ID. That device then leaves later CBRAs. Figure 5(b)’s y-axis is the successfully inventoried ratio.",
+        "ui": "Green factory marker. Our label DONE; the paper says inventoried. Later bay energy may be frozen."
+      }
+    }
+  }
+}
