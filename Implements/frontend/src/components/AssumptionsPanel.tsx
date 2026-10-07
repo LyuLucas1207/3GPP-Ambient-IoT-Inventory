@@ -10,6 +10,13 @@ interface Props {
   assumptions: Record<string, string | boolean> | null
 }
 
+/** Drop binary noise such as 0.1e-6 * 1e6 → 0.09999999999999999. */
+function formatPaperValue(value: number): string {
+  if (!Number.isFinite(value)) return String(value)
+  if (Number.isInteger(value)) return String(value)
+  return String(Number(value.toPrecision(6)))
+}
+
 export function AssumptionsPanel({ paper, assumptions }: Props) {
   const { t } = useTranslation()
   return (
@@ -18,52 +25,59 @@ export function AssumptionsPanel({ paper, assumptions }: Props) {
         <CardTitle>{t('assumptions.title')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <details>
+        <details className="min-w-0 max-w-full">
           <summary className="cursor-pointer text-sm text-muted-foreground">{t('assumptions.summary')}</summary>
-          <div className="mt-3 grid gap-4">
-            <div>
+          <div className="mt-3 grid w-full min-w-0 max-w-full grid-cols-1 gap-4">
+            <section className="min-w-0">
               <h3 className="mb-1 text-sm font-medium">{t('assumptions.paperSpecified')}</h3>
               {paper == null ? (
                 <p className="text-sm text-muted-foreground">{t('assumptions.loadPaper')}</p>
               ) : (
-                <ul className="space-y-1 text-xs text-muted-foreground">
+                <dl className="w-full divide-y divide-border/70">
                   {Object.entries(paper).map(([k, v]) => {
                     const term = PAPER_TERM[k]
+                    const unit = PAPER_UNIT[k]
                     return (
-                    <li key={k} className="flex items-start justify-between gap-2">
-                        <span className="flex items-center gap-1.5">
-                          {PAPER_TEX[k] ? <MathInline tex={PAPER_TEX[k]} /> : <code className="text-foreground">{k}</code>}
+                      <div key={k} className="flex w-full min-w-0 items-center justify-between gap-3 py-1.5">
+                        <dt className="flex min-w-0 items-center gap-1 text-muted-foreground">
+                          {PAPER_TEX[k] ? (
+                            <MathInline tex={PAPER_TEX[k]} className="text-foreground" />
+                          ) : (
+                            <code className="text-foreground">{k}</code>
+                          )}
                           {term ? (
                             <TermHelp term={term} />
                           ) : (
                             <ParamHint text={t(`paperHints.${k}`, { defaultValue: k })} />
                           )}
-                        </span>
-                        <span>
-                          {v}
-                          {PAPER_UNIT[k] ? ` ${PAPER_UNIT[k]}` : ''}
-                        </span>
-                    </li>
+                        </dt>
+                        <dd className="shrink-0 text-right text-xs font-medium tabular-nums text-foreground">
+                          {formatPaperValue(v)}
+                          {unit ? <span className="ml-1 font-normal text-muted-foreground">{unit}</span> : null}
+                        </dd>
+                      </div>
                     )
                   })}
-                </ul>
+                </dl>
               )}
-            </div>
-            <div>
+            </section>
+            <section className="min-w-0">
               <h3 className="mb-1 text-sm font-medium">{t('assumptions.repro')}</h3>
               {assumptions == null ? (
                 <p className="text-sm text-muted-foreground">{t('assumptions.notLoaded')}</p>
               ) : (
-                <ul className="space-y-1 text-xs text-muted-foreground">
+                <ul className="w-full min-w-0 divide-y divide-border/70">
                   {Object.entries(assumptions).map(([k, v]) => (
-                    <li key={k} className="grid grid-cols-[1fr_auto] items-start gap-2">
-                      <MathText text={t(`assumptionHints.${k}`, { defaultValue: k })} />
-                      <span className="shrink-0 text-foreground">{String(v)}</span>
+                    <li key={k} className="min-w-0 py-2">
+                      <p className="text-[11px] leading-4 break-words text-muted-foreground">
+                        <MathText text={t(`assumptionHints.${k}`, { defaultValue: k })} />
+                      </p>
+                      <p className="mt-1 text-xs font-medium break-all text-foreground">{String(v)}</p>
                     </li>
                   ))}
                 </ul>
               )}
-            </div>
+            </section>
           </div>
         </details>
       </CardContent>

@@ -188,7 +188,7 @@ function SimulatorPage() {
         inset={{ top: 12, left: 12, bottom: bottomClearance }}
       >
         <ScrollArea className="h-full">
-          <div className="flex flex-col divide-y divide-border">
+          <div className="flex w-full min-w-0 max-w-full flex-col divide-y divide-border overflow-x-hidden">
             <div className="p-3">
             <SimulationControls
               request={sim.request}
@@ -224,7 +224,7 @@ function SimulatorPage() {
         inset={{ top: 12, right: 12, bottom: bottomClearance }}
       >
         <ScrollArea className="h-full">
-          <div className="flex flex-col divide-y divide-border">
+          <div className="flex w-full min-w-0 flex-col divide-y divide-border">
             <div className="p-3">
             <DeviceAnatomy deviceType={sim.request.device_type} />
             </div>
