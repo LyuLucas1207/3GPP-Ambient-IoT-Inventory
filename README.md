@@ -90,9 +90,10 @@ Terminal 1:
 
 ```bash
 cd Implements/backend
-source .venv/bin/activate
-uvicorn app.main:app --reload --port 8000
+./start.sh
 ```
+
+`start.sh` creates `.venv` if needed, installs `requirements.txt`, then runs Uvicorn with `--reload` on port 8000.
 
 Terminal 2:
 
