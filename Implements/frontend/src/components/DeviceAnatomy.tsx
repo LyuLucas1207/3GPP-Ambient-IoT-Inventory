@@ -14,13 +14,13 @@ export function DeviceAnatomy({ deviceType }: Props) {
   const wurActive = deviceType === DeviceType.Device2
 
   return (
-    <Card className="bg-card/90 backdrop-blur-md" size="sm">
+    <Card plain size="sm">
       <CardHeader>
         <CardTitle>{t('anatomy.title')}</CardTitle>
         <CardDescription>{t('anatomy.subtitle')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg border border-border bg-muted/30 p-3">
+        <div>
           <p className="mb-2 text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
             {t('anatomy.device')}
           </p>

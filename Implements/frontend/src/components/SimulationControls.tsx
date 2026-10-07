@@ -71,7 +71,7 @@ export function SimulationControls({
     backendUp == null ? t('common.checking') : backendUp ? t('common.apiUp') : t('common.apiDown')
 
   return (
-    <Card className="bg-card/90 backdrop-blur-md" size="sm">
+    <Card plain size="sm">
       <CardHeader>
         <CardTitle>{t('sim.title')}</CardTitle>
         <CardAction>

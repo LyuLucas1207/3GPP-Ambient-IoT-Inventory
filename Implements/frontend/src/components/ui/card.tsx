@@ -5,14 +5,18 @@ import { cn } from "@/lib/utils"
 function Card({
   className,
   size = "default",
+  plain = false,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & { size?: "default" | "sm"; plain?: boolean }) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-plain={plain ? "true" : undefined}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        plain
+          ? "group/card flex flex-col gap-3 bg-transparent text-sm text-card-foreground [--card-spacing:--spacing(0)]"
+          : "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         className
       )}
       {...props}
@@ -84,7 +88,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing)",
+        "flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing) group-data-[plain=true]/card:rounded-none group-data-[plain=true]/card:border-0 group-data-[plain=true]/card:bg-transparent group-data-[plain=true]/card:p-0",
         className
       )}
       {...props}

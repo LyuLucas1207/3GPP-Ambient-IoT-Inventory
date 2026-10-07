@@ -41,7 +41,7 @@ export function DeviceInspector({ device, stats, snapshot }: Props) {
   const { t } = useTranslation()
   if (device == null) {
     return (
-      <Card className="bg-card/90 backdrop-blur-md" size="sm">
+      <Card plain size="sm">
         <CardHeader>
           <CardTitle>{t('inspect.title')}</CardTitle>
           <CardAction>
@@ -55,7 +55,7 @@ export function DeviceInspector({ device, stats, snapshot }: Props) {
   const energy = snapshot?.energy_nj[device.id]
   const state = snapshot?.state[device.id] ?? DeviceVizState.OFF
   return (
-    <Card className="bg-card/90 backdrop-blur-md" size="sm">
+    <Card plain size="sm">
       <CardHeader>
         <CardTitle>{t('inspect.device', { id: device.id })}</CardTitle>
         <CardAction>

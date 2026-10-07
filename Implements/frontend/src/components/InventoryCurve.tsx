@@ -52,7 +52,7 @@ export function InventoryCurve({ result }: Props) {
   }, [traces])
 
   return (
-    <Card className="flex h-full min-h-0 flex-col bg-transparent ring-0" size="sm">
+    <Card plain className="flex h-full min-h-0 flex-col px-3 py-2" size="sm">
       <CardHeader>
         <CardTitle className="inline-flex items-center gap-1">
           {t('curve.title')}

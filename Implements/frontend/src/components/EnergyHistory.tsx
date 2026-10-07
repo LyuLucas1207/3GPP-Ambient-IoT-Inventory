@@ -304,7 +304,7 @@ export function EnergyHistory({ deviceId, result, strategy }: Props) {
 
   if (deviceId == null) {
     return (
-      <Card className="bg-card/90 backdrop-blur-md" size="sm">
+      <Card plain size="sm">
         <CardHeader>
           <CardTitle>{t('energy.title')}</CardTitle>
           <CardAction>
@@ -317,7 +317,7 @@ export function EnergyHistory({ deviceId, result, strategy }: Props) {
   }
 
   return (
-    <Card className="bg-card/90 backdrop-blur-md" size="sm">
+    <Card plain size="sm">
       <CardHeader>
         <CardTitle className="inline-flex items-center gap-1">
           {t('energy.title')}

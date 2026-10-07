@@ -188,7 +188,8 @@ function SimulatorPage() {
         inset={{ top: 12, left: 12, bottom: bottomClearance }}
       >
         <ScrollArea className="h-full">
-          <div className="grid gap-3 p-3">
+          <div className="flex flex-col divide-y divide-border">
+            <div className="p-3">
             <SimulationControls
               request={sim.request}
               setRequest={sim.setRequest}
@@ -197,12 +198,15 @@ function SimulatorPage() {
               onRun={() => void sim.run()}
               onPaper={runPaper}
             />
+            </div>
+            <div className="p-3">
             <AssumptionsPanel
               paper={sim.result?.paper_parameters ?? sim.paper?.paper_parameters ?? null}
               assumptions={
                 sim.result?.reproduction_assumptions ?? sim.paper?.reproduction_assumptions ?? null
               }
             />
+            </div>
           </div>
         </ScrollArea>
       </HudPanel>
@@ -220,14 +224,21 @@ function SimulatorPage() {
         inset={{ top: 12, right: 12, bottom: bottomClearance }}
       >
         <ScrollArea className="h-full">
-          <div className="grid gap-3 p-3">
+          <div className="flex flex-col divide-y divide-border">
+            <div className="p-3">
             <DeviceAnatomy deviceType={sim.request.device_type} />
+            </div>
+            <div className="p-3">
             <DeviceInspector device={selected} stats={sim.selectedStats} snapshot={snap} />
+            </div>
+            <div className="p-3">
             <EnergyHistory
               deviceId={sim.selectedId}
               result={sim.result}
               strategy={sim.viewStrategy}
             />
+            </div>
+            <div className="p-3">
             <CBRAInspector
               events={sim.events}
               index={sim.pagingIndex}
@@ -236,6 +247,7 @@ function SimulatorPage() {
               strategy={sim.viewStrategy}
               playbackTimeS={snap?.time_s ?? null}
             />
+            </div>
           </div>
         </ScrollArea>
       </HudPanel>
@@ -253,7 +265,7 @@ function SimulatorPage() {
         inset={{ left: 12, right: 12, bottom: 12 }}
       >
         <div className="flex h-full min-h-0 gap-0 pt-2">
-          <Card className="h-full min-h-0 min-w-0 bg-transparent ring-0" size="sm" style={{ width: `${split * 100}%` }}>
+          <Card plain className="h-full min-h-0 min-w-0 px-3 py-2" size="sm" style={{ width: `${split * 100}%` }}>
             <CardHeader>
               <CardTitle>{t('playback.title')}</CardTitle>
               <CardDescription>{t('playback.subtitle')}</CardDescription>

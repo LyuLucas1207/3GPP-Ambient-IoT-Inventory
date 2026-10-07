@@ -79,7 +79,7 @@ export function CBRAInspector({ events, index, setIndex, result, strategy, playb
   }, [ev])
 
   return (
-    <Card className="bg-card/90 backdrop-blur-md" size="sm">
+    <Card plain size="sm">
       <CardHeader>
         <CardTitle className="inline-flex items-center gap-1">
           {t('cbra.title')}

@@ -13,7 +13,7 @@ interface Props {
 export function AssumptionsPanel({ paper, assumptions }: Props) {
   const { t } = useTranslation()
   return (
-    <Card className="bg-card/90 backdrop-blur-md" size="sm">
+    <Card plain size="sm">
       <CardHeader>
         <CardTitle>{t('assumptions.title')}</CardTitle>
       </CardHeader>
