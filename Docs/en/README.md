@@ -32,7 +32,13 @@ Every chapter has: back to TOC / previous / next.
 
 Chinese notes: [`../zh/`](../zh/).
 
+## Reproduction notes
+
+- [PAPER_NOTES.md](../PAPER_NOTES.md)
+- [SIMULATION_MODEL.md](../SIMULATION_MODEL.md)
+- [REPRODUCTION_ASSUMPTIONS.md](../REPRODUCTION_ASSUMPTIONS.md)
+
 ## Paper and materials
 
-- [`../Papers/`](../Papers/)
-- [`../Files/`](../Files/)
+- [`../../Papers/`](../../Papers/)
+- [`../../Files/`](../../Files/)

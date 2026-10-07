@@ -14,13 +14,12 @@ The scientific core is the Python Monte Carlo engine under `Implements/`. The Re
 ├── .gitignore
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
-├── Docs/                  ← paper walkthrough notes (en / zh)
+├── Docs/                  ← walkthrough notes (en / zh) + reproduction notes
 ├── Papers/                ← paper PDFs
 ├── Files/
 └── Implements/            ← simulator (Python engine + React dashboard)
     ├── backend/
     ├── frontend/
-    ├── docs/
     └── results/
 ```
 
@@ -164,7 +163,7 @@ Noise, interference, and channel decoding failures are **not** modelled. Msg1 fa
 - **OFF clears DCM sync**: IC off loses the sleep timer.
 - **Group id**: default `first_paging_spread` (group drawn at first detection, not paging index). Alternatives: `even_id_mod`, `random_preconfigured`, `first_paging_mod`.
 
-See `Implements/docs/REPRODUCTION_ASSUMPTIONS.md` and `Implements/docs/PAPER_NOTES.md`.
+See `Docs/REPRODUCTION_ASSUMPTIONS.md` and `Docs/PAPER_NOTES.md`.
 
 ## Paper walkthrough notes
 
@@ -177,6 +176,9 @@ English notes are under `Docs/en/`; Chinese notes are under `Docs/zh/`. Both tra
 | [Docs/en/story.md](./Docs/en/story.md) | English real-world story (factory inventory) |
 | [Docs/en/chapters/](./Docs/en/chapters/) | English chapter markdown |
 | [Docs/en/figures/](./Docs/en/figures/README.md) | Figure 1–5 close reading |
+| [Docs/PAPER_NOTES.md](./Docs/PAPER_NOTES.md) | arXiv vs published IEEE discrepancies |
+| [Docs/SIMULATION_MODEL.md](./Docs/SIMULATION_MODEL.md) | Energy, EM/DCM, and CBRA model |
+| [Docs/REPRODUCTION_ASSUMPTIONS.md](./Docs/REPRODUCTION_ASSUMPTIONS.md) | Assumptions the paper does not specify |
 | `Papers/` | Paper PDFs |
 | `Files/` | Supporting files |
 

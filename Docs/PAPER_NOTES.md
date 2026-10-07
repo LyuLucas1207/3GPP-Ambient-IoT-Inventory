@@ -33,13 +33,13 @@ This implementation follows the **published** Device-1 comparison: EM aperiodic,
 
 CDF of \(p_{in}\) for D1T1 120 m × 60 m factory, one of 18 BSs at 33 dBm, devices below −36 dBm excluded.
 
-Re-digitized from the published IEEE Figure 5(a) (page 7). Median \(p_{in}\approx -30\,\mathrm{dBm}\), \(F(-35\,\mathrm{dBm})\approx 0.10\). Method: `backend/data/FIG5A_DIGITIZATION.md`. Do not fit this CDF to Figure 5(b).
+Re-digitized from the published IEEE Figure 5(a) (page 7). Median \(p_{in}\approx -30\,\mathrm{dBm}\), \(F(-35\,\mathrm{dBm})\approx 0.10\). Method: `Implements/backend/data/FIG5A_DIGITIZATION.md`. Do not fit this CDF to Figure 5(b).
 
 ## Grouping
 
 Paper (Device Grouping for Congestion Control, Fig. 4): a device that receives odd-numbered paging continues odd-numbered paging (\(N_g=2\)). Wake period \(N_g T_{pg}\).
 
-Default here: `first_paging_spread` — grouping happens at first detection, but the group id is a uniform draw, **not** `paging_index % N_g`. Using the paging index would put every device that is ON at t=0 into group 0, which fights Fig. 4’s purpose. `first_paging_mod` is the paper-literal alternative and is compared in `scripts/compare_assumptions.py`. Preconfigured `even_id_mod` / `random_preconfigured` are also available.
+Default here: `first_paging_spread` — grouping happens at first detection, but the group id is a uniform draw, **not** `paging_index % N_g`. Using the paging index would put every device that is ON at t=0 into group 0, which fights Fig. 4’s purpose. `first_paging_mod` is the paper-literal alternative and is compared in `Implements/backend/scripts/compare_assumptions.py`. Preconfigured `even_id_mod` / `random_preconfigured` are also available.
 
 ## DCM ON after paging
 

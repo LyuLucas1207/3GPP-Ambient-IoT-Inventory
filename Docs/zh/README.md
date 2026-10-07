@@ -32,7 +32,13 @@ Docs/zh/
 
 每章文件内都有：返回目录 / 上一章 / 下一章。
 
+## 复现说明
+
+- [PAPER_NOTES.md](../PAPER_NOTES.md)
+- [SIMULATION_MODEL.md](../SIMULATION_MODEL.md)
+- [REPRODUCTION_ASSUMPTIONS.md](../REPRODUCTION_ASSUMPTIONS.md)
+
 ## 论文与材料
 
-- [`../Papers/`](../Papers/)
-- [`../Files/`](../Files/)
+- [`../../Papers/`](../../Papers/)
+- [`../../Files/`](../../Files/)

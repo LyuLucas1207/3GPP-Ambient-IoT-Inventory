@@ -8,7 +8,7 @@ Canonical efficiency (published IEEE, physically consistent):
 where p_in is the numerical dBm value. At p_in = -36 dBm, xi = 0.05.
 
 The arXiv v1 preprint swaps the piecewise condition; do not use that form.
-See docs/PAPER_NOTES.md.
+See Docs/PAPER_NOTES.md.
 """
 
 from pathlib import Path
