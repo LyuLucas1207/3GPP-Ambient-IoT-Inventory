@@ -90,28 +90,28 @@ Others:
 
 ```bash
 cd Implements/backend && source .venv/bin/activate
-python scripts/reproduce_aperiodic_fig4.py                     # CDF of P_in, N_eff, type shares
-python scripts/reproduce_aperiodic_fig5.py --episodes 100      # + Table IV
-python scripts/reproduce_aperiodic_fig6.py --episodes 100
-python scripts/reproduce_aperiodic_fig7.py --episodes 100      # needs the alpha=0.5 checkpoint for RL
-python scripts/reproduce_aperiodic_fig8.py --episodes 100
-python scripts/reproduce_aperiodic_tables.py --episodes 100    # Tables V and VI
-python scripts/validate_aperiodic_paper.py                     # §30 report
+python scripts/aperiodic/figure4/reproduce_fig4.py                     # CDF of P_in, N_eff, type shares
+python scripts/aperiodic/figure5/reproduce_fig5.py --episodes 100      # + Table IV
+python scripts/aperiodic/figure6/reproduce_fig6.py --episodes 100
+python scripts/aperiodic/figure7/reproduce_fig7.py --episodes 100      # needs the alpha=0.5 checkpoint for RL
+python scripts/aperiodic/figure8/reproduce_fig8.py --episodes 100
+python scripts/aperiodic/tables/reproduce_tables.py --episodes 100    # Tables V and VI
+python scripts/aperiodic/validation/validate.py                     # §30 report
 ```
 
-- Outputs go to `Implements/results/aperiodic/<figure>/`: JSON, CSV and PNG with the paper curves dashed.
-- The validation report goes to `Implements/results/aperiodic/validation/validation_report.md`.
+- Outputs go to `Implements/backend/scripts/aperiodic/<figure>/`: JSON, CSV and PNG with the paper curves dashed.
+- The validation report goes to `Implements/backend/scripts/aperiodic/validation/validation_report.md`.
 - The page's "Paper reproduction" panel loads these cached outputs, or recomputes them as a background job.
 - A cached result is never overwritten by a run with fewer episodes.
 
 Reference data (vector-extracted figure curves and the tables) is in
-`backend/data/aperiodic/`. It is used for validation and overlays only.
+`backend/scripts/aperiodic/<target>/paper/`. It is used for validation and overlays only.
 
 ## Recurrent PPO
 
 ```bash
-python backend/scripts/train_aperiodic_ppo.py --steps 1000000 --seed 42          # paper setting (alpha 0.5)
-python backend/scripts/train_aperiodic_ppo.py --steps 1000000 --seed 42 --alpha 0.25
+python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42          # paper setting (alpha 0.5)
+python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42 --alpha 0.25
 ```
 
 - The shipped checkpoints are **20,480-step smoke checkpoints** (seed 42, α ∈ {0, 0.25, 0.5, 0.75}). They are real RecurrentPPO policies with SHA-256-verified metadata, but they are not the paper's 1,000,000-step policy.

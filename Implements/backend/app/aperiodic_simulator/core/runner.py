@@ -3,7 +3,8 @@
 from dataclasses import dataclass
 
 from app.aperiodic_simulator.core.config import EpisodeConfig
-from app.aperiodic_simulator.controllers import Controller, make_controller
+from app.aperiodic_simulator.controllers.base import Controller
+from app.aperiodic_simulator.controllers.factory import make_controller
 from app.aperiodic_simulator.controllers.grouped import GroupedController
 from app.aperiodic_simulator.physics.energy import compute_global_lmax
 from app.aperiodic_simulator.physics.harvesting import Population

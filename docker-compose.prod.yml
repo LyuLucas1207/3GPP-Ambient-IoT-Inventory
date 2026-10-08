@@ -11,8 +11,6 @@ services:
     pull_policy: missing
     ports:
       - "8000:8000"
-    volumes:
-      - ./Implements/results:/results
     environment:
       PYTHONUNBUFFERED: "1"
 

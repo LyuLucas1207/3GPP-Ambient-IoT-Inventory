@@ -4,7 +4,10 @@ import numpy as np
 import pytest
 
 from app.aperiodic_simulator.core.config import EpisodeConfig
-from app.aperiodic_simulator.controllers import CMEBEController, DFSASchouteController, PFSAPZEController, make_controller
+from app.aperiodic_simulator.controllers.cmebe import CMEBEController
+from app.aperiodic_simulator.controllers.dfsa_schoute import DFSASchouteController
+from app.aperiodic_simulator.controllers.factory import make_controller
+from app.aperiodic_simulator.controllers.pfsa_pze import PFSAPZEController
 from app.aperiodic_simulator.controllers.cmebe import cmebe_estimate
 from app.aperiodic_simulator.controllers.dfsa_schoute import SCHOUTE_COLLISION_FACTOR, schoute_backlog
 from app.aperiodic_simulator.core.runner import run_episode

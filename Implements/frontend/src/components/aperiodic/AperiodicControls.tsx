@@ -328,7 +328,7 @@ export function AperiodicControls({
           </div>
           {!ppoAvailable && (
             <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-700 dark:text-amber-300">
-              {t('ap.ppo.missing')} <code className="font-mono">{ppo?.train_command ?? 'python backend/scripts/train_aperiodic_ppo.py --steps 1000000 --seed 42'}</code>
+              {t('ap.ppo.missing')} <code className="font-mono">{ppo?.train_command ?? 'python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42'}</code>
             </p>
           )}
           {ppoOn ? (

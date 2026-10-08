@@ -241,17 +241,17 @@ def is_periodic(strategy: str) -> bool:
     return is_dcm(strategy)
 
 
-def data_dir() -> Path:
-    return Path(__file__).resolve().parents[3] / "data" / "periodic"
+def periodic_dir() -> Path:
+    """``backend/scripts/periodic``; each target folder holds its script, outputs and ``paper/``."""
+    return Path(__file__).resolve().parents[3] / "scripts" / "periodic"
 
 
-def repo_root() -> Path:
-    # backend/app/simulator/core/config.py → Implements/
-    return Path(__file__).resolve().parents[4]
+def pin_cdf_csv() -> Path:
+    return periodic_dir() / "fig5a" / "paper" / "fig5a_pin_cdf.csv"
 
 
-def results_dir() -> Path:
-    return repo_root() / "results" / "periodic"
+def fig5b_paper_dir() -> Path:
+    return periodic_dir() / "fig5b" / "paper"
 
 
 def strategy_label(strategy: str) -> str:

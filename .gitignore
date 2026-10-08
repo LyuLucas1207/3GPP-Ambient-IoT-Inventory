@@ -20,7 +20,7 @@ dist/
 Implements/frontend/src/assets/hero.png
 
 # Debug screenshots (keep fig5b_reproduced.* in git)
-Implements/results/**/ui_*.png
+Implements/backend/scripts/**/ui_*.png
 
 # Local papers
 Papers/3GPP Ambient IoT Inventory with Aperiodic Paging.pdf

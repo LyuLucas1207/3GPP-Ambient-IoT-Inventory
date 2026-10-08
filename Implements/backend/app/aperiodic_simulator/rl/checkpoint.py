@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 CHECKPOINT_DIR = Path(__file__).resolve().parent / "checkpoints"
-TRAIN_COMMAND = "python backend/scripts/train_aperiodic_ppo.py --steps 1000000 --seed 42"
+TRAIN_COMMAND = "python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42"
 
 
 class CheckpointMissing(RuntimeError):

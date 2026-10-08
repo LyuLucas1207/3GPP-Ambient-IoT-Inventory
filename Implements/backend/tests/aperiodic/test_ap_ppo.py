@@ -140,4 +140,4 @@ def test_api_refuses_ppo_without_checkpoint(tmp_path, monkeypatch):
     body = {"num_devices": 200, "ppo_enabled": True, "controller": "recurrent_ppo", "L_mode": "adaptive", "max_time_s": 30}
     res = client.post("/api/aperiodic-simulator/simulate", json=body)
     assert res.status_code == 409
-    assert "train_aperiodic_ppo.py" in res.json()["detail"]
+    assert "train_ppo/train_ppo.py" in res.json()["detail"]

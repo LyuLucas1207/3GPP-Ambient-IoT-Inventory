@@ -17,7 +17,7 @@ import hashlib
 import numpy as np
 
 from app.common.rf import conversion_efficiency, dbm_to_watts, harvest_power_w, watts_to_dbm
-from app.simulator.core.config import data_dir
+from app.simulator.core.config import pin_cdf_csv
 
 __all__ = [
     "conversion_efficiency",
@@ -32,11 +32,11 @@ __all__ = [
 
 
 def load_pin_cdf(csv_path: Path | None = None) -> tuple[np.ndarray, np.ndarray]:
-    path = csv_path or (data_dir() / "fig5a_pin_cdf.csv")
+    path = csv_path or pin_cdf_csv()
     if not path.exists():
         raise FileNotFoundError(
             f"Digitized Figure 5(a) CDF not found: {path}. "
-            "Restore backend/data/periodic/fig5a_pin_cdf.csv."
+            "Restore backend/scripts/periodic/fig5a/paper/fig5a_pin_cdf.csv."
         )
     data = np.loadtxt(path, delimiter=",", skiprows=1)
     cdf = data[:, 0].astype(np.float64)
@@ -78,7 +78,7 @@ def sample_pin_dbm(
 
 
 def pin_cdf_fingerprint(csv_path: Path | None = None) -> dict:
-    path = csv_path or (data_dir() / "fig5a_pin_cdf.csv")
+    path = csv_path or pin_cdf_csv()
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     return {
         "file": path.name,

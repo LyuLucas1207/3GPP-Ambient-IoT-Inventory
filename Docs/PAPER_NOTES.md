@@ -27,19 +27,19 @@ arXiv Table I states times in **slots** (0.5 ms). Published Table 1 uses millise
 - arXiv emphasizes DCM leaving \(e_{es}\gtrsim 428\,\mathrm{nJ}\) and ~10 s for 99%.
 - Published Device 1: EM T99 \(\approx 20\,\mathrm{s}\); DCM without grouping does **not** help much; DCM + grouping \(\approx 50\%\) T99 reduction.
 
-This implementation follows the **published** Device-1 comparison: EM aperiodic, DCM 1-group, DCM 4-groups. It is a **preliminary reproduction** until `scripts/validate_fig5b.py` PASSes.
+This implementation follows the **published** Device-1 comparison: EM aperiodic, DCM 1-group, DCM 4-groups. It is a **preliminary reproduction** until `scripts/periodic/fig5b/validate_fig5b.py` PASSes.
 
 ## Figure 5(a)
 
 CDF of \(p_{in}\) for D1T1 120 m × 60 m factory, one of 18 BSs at 33 dBm, devices below −36 dBm excluded.
 
-Re-digitized from the published IEEE Figure 5(a) (page 7). Median \(p_{in}\approx -30\,\mathrm{dBm}\), \(F(-35\,\mathrm{dBm})\approx 0.10\). Method: `Implements/backend/data/periodic/FIG5A_DIGITIZATION.md`. Do not fit this CDF to Figure 5(b).
+Re-digitized from the published IEEE Figure 5(a) (page 7). Median \(p_{in}\approx -30\,\mathrm{dBm}\), \(F(-35\,\mathrm{dBm})\approx 0.10\). Method: `Implements/backend/scripts/periodic/fig5a/paper/FIG5A_DIGITIZATION.md`. Do not fit this CDF to Figure 5(b).
 
 ## Grouping
 
 Paper (Device Grouping for Congestion Control, Fig. 4): a device that receives odd-numbered paging continues odd-numbered paging (\(N_g=2\)). Wake period \(N_g T_{pg}\).
 
-Default here: `first_paging_spread` — grouping happens at first detection, but the group id is a uniform draw, **not** `paging_index % N_g`. Using the paging index would put every device that is ON at t=0 into group 0, which fights Fig. 4’s purpose. `first_paging_mod` is the paper-literal alternative and is compared in `Implements/backend/scripts/compare_assumptions.py`. Preconfigured `even_id_mod` / `random_preconfigured` are also available.
+Default here: `first_paging_spread` — grouping happens at first detection, but the group id is a uniform draw, **not** `paging_index % N_g`. Using the paging index would put every device that is ON at t=0 into group 0, which fights Fig. 4’s purpose. `first_paging_mod` is the paper-literal alternative and is compared in `Implements/backend/scripts/periodic/assumptions/compare_assumptions.py`. Preconfigured `even_id_mod` / `random_preconfigured` are also available.
 
 ## DCM ON after paging
 

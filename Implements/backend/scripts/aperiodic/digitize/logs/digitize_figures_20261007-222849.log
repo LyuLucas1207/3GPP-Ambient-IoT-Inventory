@@ -1,0 +1,29 @@
+warning: ICC support is not available
+warning: ICC support is not available
+warning: ICC support is not available
+warning: ICC support is not available
+scripts/aperiodic/figure4/paper/single_source.csv: 400 points
+scripts/aperiodic/figure4/paper/multi_source.csv: 400 points
+scripts/aperiodic/figure5/paper/a_L16_aperiodic.csv: 42 points
+scripts/aperiodic/figure5/paper/a_L16_periodic_Ng1.csv: 33 points
+scripts/aperiodic/figure5/paper/a_L16_periodic_Ng1_wo_depletion.csv: 34 points
+scripts/aperiodic/figure5/paper/a_L16_periodic_Ng4.csv: 34 points
+scripts/aperiodic/figure5/paper/a_L16_periodic_Ng4_wo_depletion.csv: 34 points
+scripts/aperiodic/figure5/paper/b_L1_aperiodic.csv: 42 points
+scripts/aperiodic/figure5/paper/b_L1_periodic_Ng1.csv: 42 points
+scripts/aperiodic/figure5/paper/b_L1_periodic_Ng1_wo_depletion.csv: 42 points
+scripts/aperiodic/figure5/paper/b_L1_periodic_Ng4.csv: 42 points
+scripts/aperiodic/figure5/paper/b_L1_periodic_Ng4_wo_depletion.csv: 42 points
+scripts/aperiodic/figure6/paper/a_L16_aperiodic.csv: 42 points
+scripts/aperiodic/figure6/paper/a_L16_periodic_Ng1.csv: 42 points
+scripts/aperiodic/figure6/paper/a_L16_periodic_Ng4.csv: 42 points
+scripts/aperiodic/figure6/paper/b_L1_aperiodic.csv: 42 points
+scripts/aperiodic/figure6/paper/b_L1_periodic_Ng1.csv: 42 points
+scripts/aperiodic/figure6/paper/b_L1_periodic_Ng4.csv: 42 points
+scripts/aperiodic/figure7/paper/recurrent_ppo.csv: 42 points
+scripts/aperiodic/figure7/paper/dfsa_schoute.csv: 42 points
+scripts/aperiodic/figure7/paper/cmebe.csv: 42 points
+scripts/aperiodic/figure8/paper/pfsa_L1.csv: 15 points
+scripts/aperiodic/figure8/paper/pfsa_L8.csv: 15 points
+scripts/aperiodic/figure8/paper/pfsa_L32.csv: 15 points
+scripts/aperiodic/figure8/paper/recurrent_ppo.csv: 15 points

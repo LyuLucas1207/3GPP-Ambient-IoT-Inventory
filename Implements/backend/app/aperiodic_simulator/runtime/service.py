@@ -125,11 +125,11 @@ PAPER_PANELS = {
 
 def paper_reference_payload(panel_id: str) -> dict:
     """Digitized paper curves of one inventory-vs-time panel (overlay only)."""
-    from app.aperiodic_simulator.analysis.reference_targets import DATA_DIR, reference_curve
+    from app.aperiodic_simulator.analysis.reference_targets import paper_dir, reference_curve
 
     figure, prefix = PAPER_PANELS[panel_id]
     curves = {}
-    for path in sorted((DATA_DIR / figure).glob(f"{prefix}*.csv")):
+    for path in sorted(paper_dir(figure).glob(f"{prefix}*.csv")):
         name = path.stem[len(prefix):]
         ref = reference_curve(figure, path.stem)
         if ref is not None:

@@ -1,4 +1,8 @@
-"""Loaders for the paper's reference data (validation only, never simulation input)."""
+"""Loaders for the paper's reference data (validation only, never simulation input).
+
+Layout of ``backend/scripts/aperiodic/<target>/``: the script, its outputs, and
+``paper/`` with the values extracted from the paper.
+"""
 
 import csv
 import json
@@ -8,23 +12,25 @@ from pathlib import Path
 import numpy as np
 
 BACKEND_DIR = Path(__file__).resolve().parents[3]
-DATA_DIR = BACKEND_DIR / "data" / "aperiodic"
+APERIODIC_DIR = BACKEND_DIR / "scripts" / "aperiodic"
 
 
 def results_dir() -> Path:
-    """``Implements/results/aperiodic`` (separate from ``results/periodic``)."""
-    d = BACKEND_DIR.parent / "results" / "aperiodic"
-    d.mkdir(parents=True, exist_ok=True)
-    return d
+    """``backend/scripts/aperiodic``; each target writes to ``results_dir() / <target>``."""
+    return APERIODIC_DIR
+
+
+def paper_dir(target: str) -> Path:
+    return APERIODIC_DIR / target / "paper"
 
 
 @lru_cache
 def scalar_targets() -> dict:
-    return json.loads((DATA_DIR / "scalar_targets.json").read_text())
+    return json.loads((APERIODIC_DIR / "scalar_targets.json").read_text())
 
 
 def _rows(name: str) -> list[dict]:
-    with open(DATA_DIR / name, newline="") as f:
+    with open(paper_dir("tables") / name, newline="") as f:
         return list(csv.DictReader(f))
 
 
@@ -67,7 +73,7 @@ PAPER_CAPTIONS = {
 
 def reference_curve(figure: str, name: str) -> tuple[np.ndarray, np.ndarray] | None:
     """Extracted paper curve (x, y); None if not available."""
-    path = DATA_DIR / figure / f"{name}.csv"
+    path = paper_dir(figure) / f"{name}.csv"
     if not path.exists():
         return None
     d = np.loadtxt(path, delimiter=",", skiprows=1, ndmin=2)

@@ -1,6 +1,6 @@
 """Published Figure 5(b) reference overlay.
 
-Pixel-digitized Device-1 curves live in backend/data/periodic/reference_fig5b/{em,dcm_1_group,dcm_4_group}.csv
+Pixel-digitized Device-1 curves live in backend/scripts/periodic/fig5b/paper/{em,dcm_1_group,dcm_4_group}.csv
 (time_ms,ratio_pct). They are **not** invented: if the files are absent, the
 overlay is omitted. Paper-stated T99 anchors (text, not a curve) are always
 available.
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from app.simulator.core.config import data_dir
+from app.simulator.core.config import fig5b_paper_dir
 from app.simulator.analysis.metrics import mae_rmse
 
 
@@ -23,13 +23,13 @@ PAPER_STATED_T99_S = {
 SOURCE_NOTE = (
     "IEEE published Figure 5(b), Device 1. T99 anchors are from the paper text "
     "(EM ≈ 20 s; DCM with grouping ≈ 10 s). Pixel-digitized curves are used only "
-    "when CSV files exist under backend/data/periodic/reference_fig5b/. The arXiv 6-page "
+    "when CSV files exist under backend/scripts/periodic/fig5b/paper/. The arXiv 6-page "
     "preprint does not include a readable Device-1 three-strategy plot."
 )
 
 
 def reference_dir() -> Path:
-    return data_dir() / "reference_fig5b"
+    return fig5b_paper_dir()
 
 
 def load_fig5b_reference() -> dict[str, dict]:

@@ -13,8 +13,8 @@
 
 ```bash
 cd Implements
-python backend/scripts/train_aperiodic_ppo.py --steps 1000000 --seed 42            # paper setting, alpha = 0.5
-python backend/scripts/train_aperiodic_ppo.py --steps 1000000 --seed 42 --alpha 0  # Table VI sweep: 0, 0.25, 0.75
+python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42            # paper setting, alpha = 0.5
+python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42 --alpha 0  # Table VI sweep: 0, 0.25, 0.75
 ```
 
 Each run writes `checkpoints/recurrent_ppo_alpha_<a>.zip` plus a `.json`

@@ -16,7 +16,6 @@ services:
       WATCHFILES_FORCE_POLLING: "true"
     volumes:
       - ./Implements/backend:/app
-      - ./Implements/results:/results
       - backend_venv_shadow:/app/.venv
     command:
       - uvicorn
