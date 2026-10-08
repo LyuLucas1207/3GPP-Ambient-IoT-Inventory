@@ -17,6 +17,16 @@ Canonical source for the periodic-paging paper: the **published IEEE** version (
 
 The scientific core is the Python Monte Carlo engine under `Implements/`. The React dashboard only **plays back** saved snapshots. Deleting the web UI does not change Figure 5(b).
 
+### Dashboard
+
+Periodic-paging page (`/periodic-paging`):
+
+![Periodic-paging dashboard](./Docs/PeriodicPaging.png)
+
+Aperiodic-paging page (`/aperiodic-paging`):
+
+![Aperiodic-paging dashboard](./Docs/AperiodicPaging.png)
+
 ```text
 3GPP-Ambient-IoT-Inventory/   ← git repository root
 ├── README.md
@@ -35,11 +45,10 @@ The scientific core is the Python Monte Carlo engine under `Implements/`. The Re
     │   │   ├── simulator/            ← periodic-paging paper engine (legacy)
     │   │   │   └── core/ physics/ protocol/ strategies/ analysis/ runtime/
     │   │   ├── aperiodic_simulator/  ← aperiodic-paging paper engine
-    │   │   │   └── core/ physics/ protocol/ controllers/ rl/ analysis/ reproduction/ runtime/
     │   │   └── common/               ← pure shared utilities (rf.py, metrics.py)
     │   ├── scripts/              ← one folder per paper target: script + outputs + paper/ (extracted paper data)
     │   │   ├── menu.sh           ← interactive launcher for every script
-    │   │   ├── aperiodic/        ← figure4…figure8/ tables/ train_ppo/ validation/ digitize/
+    │   │   ├── aperiodic/        ← aperiodic-paging paper targets
     │   │   └── periodic/         ← fig5a/ fig5b/ assumptions/
     │   └── tests/                ← tests/periodic/, tests/aperiodic/, tests/common/
     └── frontend/
@@ -78,31 +87,14 @@ Open http://localhost:3000. Do not run both compose files at once; they share po
 
 ## Aperiodic-paging paper
 
-Engine `app/aperiodic_simulator/`, page http://localhost:3000/aperiodic-paging. On the page, **Paper configuration** (or the header button *Run paper configuration*) applies the settings of one curve of Fig. 5(a)/(b), 6(a)/(b) or 7 and runs it. The run stage at the top right animates the factory, the inventory curve and the time–frequency map of the current CBRA round. Paper Figures 4–8 and Tables IV–VI from the command line:
+Engine `Implements/backend/app/aperiodic_simulator/`, page http://localhost:3000/aperiodic-paging. The reproduction scripts and their outputs live in `Implements/backend/scripts/aperiodic/`, one folder per paper target. Run them through the interactive launcher:
 
 ```bash
 cd Implements/backend
-source .venv/bin/activate
-python scripts/aperiodic/figure4/reproduce_fig4.py
-python scripts/aperiodic/figure5/reproduce_fig5.py --episodes 100      # Figure 5 + Table IV
-python scripts/aperiodic/figure6/reproduce_fig6.py --episodes 100
-python scripts/aperiodic/figure7/reproduce_fig7.py --episodes 100
-python scripts/aperiodic/figure8/reproduce_fig8.py --episodes 100
-python scripts/aperiodic/tables/reproduce_tables.py --episodes 100    # Tables V, VI
-python scripts/aperiodic/validation/validate.py                     # validation report, likely layer per miss
+./scripts/menu.sh aperiodic
 ```
 
-Outputs go to `Implements/backend/scripts/aperiodic/<target>/`.
-
-Recurrent PPO (sb3-contrib RecurrentPPO, Table III settings):
-
-```bash
-python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42   # run from Implements/
-```
-
-The repository ships **20,480-step smoke checkpoints** for α ∈ {0, 0.25, 0.5, 0.75}. They are real trained policies with SHA-256-verified metadata, but they fall far short of the paper's 1,000,000 steps, and the API and page say so. Run the command above to replace them.
-
-Equations, named assumptions and module map: [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md). Controller sources: `app/aperiodic_simulator/controllers/README.md`. PPO details: `app/aperiodic_simulator/rl/README.md`.
+Model notes: [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md).
 
 ## Figure 5(b) simulation (preliminary reproduction)
 
@@ -230,7 +222,7 @@ English notes are under `Docs/en/`; Chinese notes are under `Docs/zh/`. Both tra
 | [Docs/PAPER_NOTES.md](./Docs/PAPER_NOTES.md) | arXiv vs published IEEE discrepancies |
 | [Docs/SIMULATION_MODEL.md](./Docs/SIMULATION_MODEL.md) | Energy, EM/DCM, and CBRA model |
 | [Docs/REPRODUCTION_ASSUMPTIONS.md](./Docs/REPRODUCTION_ASSUMPTIONS.md) | Assumptions the paper does not specify |
-| [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md) | Aperiodic-paging paper: model, assumptions, reproduction, PPO |
+| [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md) | Aperiodic-paging paper notes |
 | `Papers/` | Paper PDFs |
 | `Files/` | Supporting files |
 
