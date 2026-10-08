@@ -4,6 +4,20 @@ You are working inside the existing `Implements/` repository. The repository alr
 
 This is a **full implementation task**, not a UI mockup and not a partial protocol demo. Implement the complete new-paper simulator, the protocol-level comparisons, the controller-level comparisons, and the **real recurrent PPO training/inference pipeline**. Do not substitute PPO with a hand-written heuristic and do not label a rule-based controller as PPO.
 
+## Revision notes (requirements added after the first version of this prompt)
+
+These supersede the corresponding parts of the original text; the sections below have been updated to match.
+
+1. **Engines live inside `backend/app/`.** `backend/app/` contains `main.py`, `routers/`, `schemas/`, `simulator/` (legacy), `aperiodic_simulator/` (new) and `common/`. Routers are a thin HTTP layer only (validate, delegate, map errors); no scientific logic in routers. HTTP prefixes and frontend routes are unchanged.
+2. **Both engines are split into subpackages** (`core/`, `physics/`, `protocol/`, `analysis/`, `runtime/`, plus `strategies/` for the legacy engine and `controllers/`, `rl/`, `reproduction/` for the new one). See §1.
+3. **Data, tests and results are split per paper:** `backend/data/{periodic,aperiodic}/`, `backend/tests/{periodic,aperiodic,common}/`, `results/{periodic,aperiodic}/`.
+4. **`/aperiodic-paging` uses the same page shell as `/periodic-paging`:** full-screen factory floor in the background, a floating header card, and resizable/collapsible docks (left = setup, right = inspect, bottom = plots). The page itself never scrolls; each dock scrolls independently. See §24.
+5. **Paper configuration button:** pick a paper figure (Fig. 5(a), 5(b), 6(a), 6(b), 7) and a curve, then *Apply* or *Apply & run*; a header button runs the selected configuration in one click. See §23.
+6. **Every figure/table in the UI and in generated PNGs is labelled with the paper figure/table it corresponds to** (e.g. "Paper Fig. 6(a)", "Paper Table IV", "Paper Fig. 1(b) / 2(b)"), with the paper caption available. See §24.
+7. **The CBRA round view is a time–frequency map** in the style of paper Fig. 1(b)/2(b), with labelled frequency (vertical, f1…fF) and time (horizontal) axes. See §24.
+8. **Interactive mode accepts up to `N_tot = 15000`** (the paper value) with one episode; the animation samples a subset of devices. See §18–19.
+9. **Approved deviations:** the shipped PPO checkpoints may be short smoke trainings (currently 20,480 steps per α) instead of 1,000,000 steps, provided their metadata, the API and the UI state the actual step count and that the RL numbers are not a paper reproduction. Episode counts may be reduced for iteration, but the actual counts must be reported (final outputs use 100 episodes).
+
 ---
 
 # 1. Non-negotiable final architecture
@@ -25,63 +39,39 @@ The target architecture is:
 Implements/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py
-│   │   ├── api/
+│   │   ├── main.py                          # FastAPI app, /api/health, router registration
+│   │   ├── routers/                         # THIN HTTP layer: validate, delegate, map errors
 │   │   │   ├── simulator.py                 # legacy-paper HTTP API only
 │   │   │   └── aperiodic_simulator.py       # new-paper HTTP API only
-│   │   └── schemas/
-│   │       ├── simulator.py                 # legacy request/response models
-│   │       └── aperiodic_simulator.py       # new-paper request/response models
+│   │   ├── schemas/
+│   │   │   ├── simulator.py                 # legacy request/response models
+│   │   │   └── aperiodic_simulator.py       # new-paper request/response models
+│   │   │
+│   │   ├── common/                          # ONLY paper-independent utilities
+│   │   │   ├── rf.py
+│   │   │   └── metrics.py
+│   │   │
+│   │   ├── simulator/                       # EXISTING legacy scientific engine
+│   │   │   ├── core/                        # config, scenario, warmup, simulation
+│   │   │   ├── physics/                     # channel, energy, device
+│   │   │   ├── protocol/                    # paging, cbra, grouping, access_control, reader
+│   │   │   ├── strategies/                  # em, dcm
+│   │   │   ├── analysis/                    # metrics, fig5b_validation, paper_reference, tail_diagnosis
+│   │   │   └── runtime/                     # run_store
+│   │   │
+│   │   └── aperiodic_simulator/             # NEW scientific engine
+│   │       ├── core/                        # config, states, timing, simulation, runner, batch, trace
+│   │       ├── physics/                     # layout, channel, harvesting, energy, device_types, impairments
+│   │       ├── protocol/                    # cbra, paging_aperiodic, paging_periodic, grouping
+│   │       ├── controllers/                 # base, pfsa_pze, grouped, dfsa_schoute, cmebe, recurrent_ppo
+│   │       ├── rl/                          # env, transforms, train, evaluate, checkpoint, checkpoints/
+│   │       ├── analysis/                    # metrics, reference_targets (paper data + figure captions)
+│   │       ├── reproduction/                # reproduce, controller_reproduce, presets
+│   │       └── runtime/                     # service, jobs, run_store
 │   │
-│   ├── common/                              # ONLY paper-independent utilities
-│   │   ├── __init__.py
-│   │   ├── rf.py
-│   │   ├── metrics.py
-│   │   ├── rng.py                           # if useful
-│   │   └── ...                              # only if genuinely common
-│   │
-│   ├── simulator/                           # EXISTING legacy scientific engine
-│   │   ├── config.py
-│   │   ├── channel.py
-│   │   ├── energy.py
-│   │   ├── cbra.py
-│   │   ├── paging.py
-│   │   ├── grouping.py
-│   │   ├── simulation.py
-│   │   └── ...
-│   │
-│   ├── aperiodic_simulator/                 # NEW scientific engine
-│   │   ├── __init__.py
-│   │   ├── config.py
-│   │   ├── device_types.py
-│   │   ├── layout.py
-│   │   ├── channel.py
-│   │   ├── harvesting.py
-│   │   ├── energy.py
-│   │   ├── states.py
-│   │   ├── timing.py
-│   │   ├── cbra.py
-│   │   ├── impairments.py
-│   │   ├── paging_periodic.py
-│   │   ├── paging_aperiodic.py
-│   │   ├── grouping.py
-│   │   ├── metrics.py
-│   │   ├── simulation.py
-│   │   ├── reference_targets.py
-│   │   ├── run_store.py                     # only if new trace model differs
-│   │   ├── controllers/
-│   │   │   ├── base.py
-│   │   │   ├── pfsa_pze.py
-│   │   │   ├── dfsa_schoute.py
-│   │   │   ├── cmebe.py
-│   │   │   └── recurrent_ppo.py
-│   │   └── rl/
-│   │       ├── env.py
-│   │       ├── policy.py                    # only if custom policy wrapper needed
-│   │       ├── train.py
-│   │       ├── evaluate.py
-│   │       ├── checkpoint.py
-│   │       └── checkpoints/
+│   ├── data/
+│   │   ├── periodic/                        # legacy digitized Fig. 5(a) CDF, Fig. 5(b) reference curves
+│   │   └── aperiodic/                       # new-paper digitized figures, tables, calibration
 │   │
 │   ├── scripts/
 │   │   ├── ...legacy scripts...
@@ -94,9 +84,9 @@ Implements/
 │   │   ├── train_aperiodic_ppo.py
 │   │   └── validate_aperiodic_paper.py
 │   └── tests/
-│       ├── ...existing legacy tests...
-│       └── aperiodic/
-│           └── ...new-paper tests...
+│       ├── periodic/                        # existing legacy tests
+│       ├── aperiodic/                       # new-paper tests
+│       └── common/                          # shared-utility regression tests
 │
 ├── frontend/
 │   └── src/
@@ -122,18 +112,21 @@ Implements/
 │       └── ...shared plot/theme/i18n utilities...
 │
 └── results/
-    ├── ...existing legacy files remain valid...
-    └── aperiodic_paging/
+    ├── periodic/                            # existing legacy outputs (Fig. 5(a)/5(b), validation)
+    └── aperiodic/
         ├── figure4/
         ├── figure5/
         ├── figure6/
         ├── figure7/
         ├── figure8/
         ├── tables/
-        └── validation/
+        ├── validation/
+        └── logs/
 ```
 
 The exact filenames can vary slightly if there is a strong implementation reason, but the **scientific engines, API namespaces, frontend routes, hooks, and types must remain clearly separated**.
+
+Routers in `app/routers/` must stay thin: request validation, delegation to `app/<engine>/runtime/` (or the engine's public functions), and HTTP error mapping. No scientific logic in routers. Engine code is imported as `app.simulator...` / `app.aperiodic_simulator...` / `app.common...`.
 
 ---
 
@@ -242,9 +235,9 @@ app.include_router(aperiodic_router, prefix="/api/aperiodic-simulator")
 
 Yes, there are real common functions in the current repository that should be shared.
 
-## 4.1 Backend functions that are good candidates for `backend/common/`
+## 4.1 Backend functions that are good candidates for `backend/app/common/`
 
-The existing legacy `simulator/channel.py` contains pure utilities whose mathematical meaning is the same in both papers:
+The existing legacy channel module (`app/simulator/physics/channel.py`) contains pure utilities whose mathematical meaning is the same in both papers:
 
 ```python
 dbm_to_watts(...)
@@ -256,7 +249,7 @@ harvest_power_w(...)
 Move or extract these into:
 
 ```text
-backend/common/rf.py
+backend/app/common/rf.py
 ```
 
 The new paper explicitly reuses the earlier paper's RF-to-DC harvesting model, so these functions are appropriate shared utilities.
@@ -264,7 +257,7 @@ The new paper explicitly reuses the earlier paper's RF-to-DC harvesting model, s
 To avoid breaking old imports/tests, either:
 
 1. update all legacy imports carefully, or
-2. preferably keep compatibility re-exports in `simulator/channel.py`, e.g. import these functions from `common.rf`.
+2. preferably keep compatibility re-exports in `app/simulator/physics/channel.py`, e.g. import these functions from `app.common.rf`.
 
 The existing generic inventory-curve functions are also suitable for sharing:
 
@@ -277,7 +270,7 @@ mae_rmse(...)
 Move/extract them into:
 
 ```text
-backend/common/metrics.py
+backend/app/common/metrics.py
 ```
 
 A generic seeded RNG/helper may also be shared if it contains no paper assumptions.
@@ -414,7 +407,7 @@ Never overload one value for both page duration and paging periodicity.
 
 # 8. New-paper system parameters — Table II
 
-Create a separate configuration model inside `aperiodic_simulator/config.py`. Do not mutate the legacy `SimConfig` or legacy `DeviceParams` to represent the new paper.
+Create a separate configuration model inside `app/aperiodic_simulator/core/config.py`. Do not mutate the legacy `SimConfig` or legacy `DeviceParams` to represent the new paper.
 
 ## Global/system values
 
@@ -539,7 +532,7 @@ These are mandatory unit tests and early implementation gates.
 
 For proposed aperiodic paging, Msg2 and Msg3 are provisioned dynamically based on the round's actual detected/resolved Msg1 successes. The next page begins when the current round actually ends. Therefore its page interval naturally changes from round to round.
 
-Keep all round timing in `aperiodic_simulator/timing.py` or equivalent and expose component durations in diagnostics.
+Keep all round timing in `app/aperiodic_simulator/core/timing.py` or equivalent and expose component durations in diagnostics.
 
 ---
 
@@ -713,7 +706,7 @@ Do not use the legacy digitized old-paper CDF as the primary new-paper channel g
 
 The new paper requires geometry, heterogeneous coverage, capture power, and two harvesting scenarios.
 
-Create a new geometry/channel implementation in `aperiodic_simulator/layout.py` and `aperiodic_simulator/channel.py`.
+Create a new geometry/channel implementation in `app/aperiodic_simulator/physics/layout.py` and `app/aperiodic_simulator/physics/channel.py`.
 
 Required flow:
 
@@ -736,7 +729,7 @@ Required flow:
 - sum received RF power in **linear watts**, then convert to the aggregate incident power used for harvesting;
 - the extra BSs are energy sources only, not extra readers and not signaling/interference nodes.
 
-Use the shared `common.rf.conversion_efficiency()` / harvesting utility if it is mathematically identical to the earlier published model.
+Use the shared `app.common.rf.conversion_efficiency()` / harvesting utility if it is mathematically identical to the earlier published model.
 
 Important average validation targets for `N_tot=15000`:
 
@@ -771,9 +764,9 @@ Requirements:
 - apply 0.1% false-alarm probability;
 - do not collapse actual occupancy and reader-observed status into one variable.
 
-Keep this in an isolated `impairments.py` or equivalent module with deterministic unit tests under fixed RNG seeds.
+Keep this in an isolated `app/aperiodic_simulator/physics/impairments.py` or equivalent module with deterministic unit tests under fixed RNG seeds.
 
-The paper cites external sources for some exact lower-level models. If an exact detail is not in the supplied paper, document the chosen standard interpretation explicitly instead of hiding it in `simulation.py`.
+The paper cites external sources for some exact lower-level models. If an exact detail is not in the supplied paper, document the chosen standard interpretation explicitly instead of hiding it in `core/simulation.py`.
 
 ---
 
@@ -788,7 +781,7 @@ The existing legacy `AccessProbabilityController` / Schoute-like logic is not th
 Implement a separate:
 
 ```text
-aperiodic_simulator/controllers/pfsa_pze.py
+app/aperiodic_simulator/controllers/pfsa_pze.py
 ```
 
 The PZE estimator must infer backlog from the fraction/count of empty AOs in the previous round using the standard formula from the cited PZE reference.
@@ -866,8 +859,9 @@ Support two runtime modes:
 
 ## `interactive`
 
-- smaller populations/time horizon;
-- enough state snapshots/events for the visual factory/playback page.
+- one episode, up to `N_tot = 15000` so the paper configurations can be run and animated directly;
+- enough state snapshots/events for the visual factory/playback page, taken from a fixed random sample of devices (a few hundred), not the full population;
+- per-round CBRA detail (time–frequency map data) for a bounded subset of rounds, each with its start/end time so the UI can show the round in progress at the playback time.
 
 Never serialize 15000-device arrays at high frequency for a 1200 s paper batch.
 
@@ -907,6 +901,8 @@ Enforce valid combinations:
 - PPO OFF defaults to PFSA/PZE for Figures 5/6;
 - controller-level baselines may select DFSA-Schoute or CMEBE;
 - `L_fixed <= 83`;
+- `10 <= num_devices <= 15000` in both runtime modes;
+- `runtime_mode="interactive"` implies `num_episodes == 1`;
 - paper-batch endpoints can use 100 episodes.
 
 Keep new response types separate from legacy responses.
@@ -1146,10 +1142,12 @@ Use deterministic master seeds and record:
 Training must save a checkpoint under a clear new-paper path, e.g.:
 
 ```text
-backend/aperiodic_simulator/rl/checkpoints/recurrent_ppo_alpha_0p5.zip
+backend/app/aperiodic_simulator/rl/checkpoints/recurrent_ppo_alpha_0p5.zip
 ```
 
-or a generated results/checkpoints directory.
+with one checkpoint per α of Table VI (`alpha_0p0`, `0p25`, `0p5`, `0p75`) and a JSON metadata file next to each.
+
+Approved deviation: the repository may ship short smoke checkpoints (e.g. 20,480 steps) instead of the paper's 1,000,000 steps. They must still be real trained `RecurrentPPO` policies with SHA-256-verified metadata, and the metadata, `/ppo/status`, the validation report and the UI must state the actual step count and that RL results from such a checkpoint are not a paper reproduction. The full-length command must remain documented and runnable.
 
 `recurrent_ppo.py` must provide a clean controller adapter that takes the paper observation and recurrent hidden state and returns physical `(L_next, p_next)` plus diagnostic `(m, q)`.
 
@@ -1219,7 +1217,22 @@ Physical layer / advanced
   EI enabled
 ```
 
-Add paper preset buttons:
+Add a **Paper configuration** section at the top of the setup panel:
+
+```text
+Paper figure:  Fig. 5(a) | Fig. 5(b) | Fig. 6(a) | Fig. 6(b) | Fig. 7
+Curve:         the curves of that figure, e.g.
+               Fig. 5/6: Aperiodic paging | Periodic, N_g = 1 | Periodic, N_g = 4
+               Fig. 7:   Recurrent PPO | DFSA-Schoute | CMEBE
+[ Apply ]  [ Apply & run ]
+```
+
+- *Apply* writes the paper's settings for that curve into the controls (N_tot = 15000, harvesting scenario, L, controller, paging mode, N_g, impairments, depletion, time horizon) without running; *Apply & run* also runs it in interactive mode.
+- Show a one-line summary of the applied paper setup under the selector.
+- The page header has a button "Run paper configuration · <figure>" that applies and runs the current selection in one click.
+- If the selected curve needs a PPO checkpoint that is missing, say so instead of silently substituting another controller.
+
+Separately, add paper reproduction presets (100-episode batch jobs with cached results), labelled with the paper figure/table:
 
 ```text
 Reproduce Figure 4
@@ -1241,6 +1254,36 @@ For expensive 100-episode presets, show clear progress/working state and avoid t
 # 24. New-page visualization requirements
 
 The new page should reuse the existing visual language where sensible, but it needs new-paper-specific inspectors.
+
+## Page layout — same shell as `/periodic-paging`
+
+```text
+┌──────────┬────────────── header card ──────────────┬──────────┐
+│  SETUP   │ title · t · % identified · state counts │ INSPECT  │
+│  (left   │ language/theme · Run paper configuration│ (right   │
+│   dock)  ├─────────────────────────────────────────┤  dock)   │
+│ paper    │                                         │ current  │
+│ config,  │   full-screen factory floor (Sec. V-A): │ round    │
+│ controls,│   BSs, reader, sampled devices coloured │ (T–F map)│
+│ PPO card │   by state, animated over time          │ CBRA     │
+│          │                                         │ inspector│
+│          │                                         │ device   │
+│          │                                         │ trace    │
+├──────────┴─────────────────────────────────────────┴──────────┤
+│ PLOTS (bottom dock): playback controls + episode metrics │     │
+│   tabs: Inventory progress | Rounds & controller | Paper reproduction │
+└────────────────────────────────────────────────────────────────┘
+```
+
+- Use the same HUD components as the legacy page (floating header card, resizable/collapsible left/right/bottom docks, the same `[` `]` `\` shortcuts). Do not build the factory view as a separate small card.
+- The page itself never scrolls (`h-dvh`, `overflow-hidden`); each dock scrolls independently, so scrolling the setup panel does not move the inspect panel or the floor.
+- Playback: play/pause, restart, frame slider, speed (1/2/4/8×); autoplay when a new interactive run arrives. The inventory plot shows a cursor at the playback time, and the inspect dock shows the CBRA round in progress at that time.
+- Devices with a recorded trace are visually marked; clicking one opens its trace in the inspect dock.
+- Paper-batch runs show aggregate results only; say so instead of animating.
+
+## Paper figure labelling
+
+Every plot, table and inspector card in the UI states which paper figure/table/section it corresponds to (badge such as "Paper Fig. 6(a)", "Paper Table IV", "Paper Fig. 1(b) / 2(b)", "Paper Eqs. (5)–(8)"), with the paper caption on hover or below. The reproduction panel uses the paper captions, not generic "Figure N" labels. Generated PNGs carry the paper figure and panel in their titles (e.g. "Paper Fig. 6(a): L = 16").
 
 ## Inventory plot
 
@@ -1271,6 +1314,13 @@ EI
 Msg2 count/resources
 Msg3 count/resources
 ```
+
+Draw each round as a **time–frequency map** in the style of paper Fig. 1(b) (periodic) and Fig. 2(b) (aperiodic):
+
+- vertical axis labelled as frequency, with rows f1…fF (F = 8);
+- horizontal axis labelled as time within one CBRA round;
+- blocks in order: Paging (all frequencies) → Msg1 (L time slots × F frequencies, one cell per AO, coloured by idle/single/captured/collision, with observed ≠ physical marked) → EI (all frequencies) → Msg2 (one frequency resource, sequential) → Msg3 (parallel over F);
+- each block shows its duration in ms; optionally widths to true time scale.
 
 For periodic runs, visually distinguish fixed downstream allocation and unused reserved resources.
 
@@ -1446,10 +1496,11 @@ Do not implement generic names that actually call PFSA underneath.
 
 Add new-paper reference-data support analogous in spirit to the legacy reference setup, but do not mix files.
 
-Suggested location:
+Location (data is split per paper):
 
 ```text
-backend/data/aperiodic_paper/
+backend/data/periodic/     # legacy Fig. 5(a) CDF and Fig. 5(b) reference curves
+backend/data/aperiodic/    # new-paper Figures 4–8, Tables IV–VI, calibration
 ```
 
 If Figures 4–8 are digitized, store:
@@ -1485,6 +1536,8 @@ type-specific completion metrics
 # 29. Required tests
 
 All existing legacy tests must remain passing.
+
+Test layout: `tests/periodic/` (legacy), `tests/aperiodic/` (new paper), `tests/common/` (shared utilities).
 
 Add new tests covering at minimum:
 
@@ -1613,16 +1666,16 @@ Do not hide failures by widening tolerances silently.
 
 # 31. Preserve legacy implementation behavior
 
-The old `/periodic-paging` page and `backend/simulator/` package are a completed reproduction baseline.
+The old `/periodic-paging` page and the legacy engine (now `backend/app/simulator/`) are a completed reproduction baseline.
 
 Requirements:
 
-- the existing 64 backend tests must continue to pass;
+- the existing 64 legacy backend tests (now under `tests/periodic/`) must continue to pass;
 - existing Figure 5(b) reproduction scripts must still run;
 - existing scientific assumptions must not change unless a separate bug is explicitly found and documented;
 - old UI defaults remain the same;
 - old results remain loadable/reproducible;
-- only its HTTP endpoint namespace and page route are intentionally reorganized.
+- only its HTTP endpoint namespace, page route, and file locations (package moved into `app/` and split into subpackages; data/results moved into `periodic/` subfolders) are intentionally reorganized.
 
 When extracting shared functions, use compatibility imports/re-exports to avoid unnecessary breakage.
 
@@ -1736,17 +1789,18 @@ For batch mode, sampled device traces are sufficient; do not send full 15000-dev
 
 Keep existing legacy result files valid.
 
-New-paper generated results must go under a clearly separate subtree such as:
+Results are split per paper:
 
 ```text
-results/aperiodic_paging/
+results/periodic/     # legacy outputs
+results/aperiodic/    # new-paper figures, tables, validation report, training logs
 ```
 
 Store machine-readable CSV/JSON plus plots.
 
 For PPO, store training/evaluation metadata next to checkpoints and result files.
 
-A new run store may be implemented inside `aperiodic_simulator/run_store.py` if the trace model differs from the legacy `DeviceTraceBank`. Do not contort the legacy trace bank to represent new scientific states unless a truly generic abstraction emerges naturally.
+A new run store may be implemented inside `app/aperiodic_simulator/runtime/run_store.py` if the trace model differs from the legacy `DeviceTraceBank`. Do not contort the legacy trace bank to represent new scientific states unless a truly generic abstraction emerges naturally.
 
 ---
 
@@ -1770,7 +1824,7 @@ Work in this exact order. Keep the repository runnable after each phase.
 
 ## Phase 2 — new config/layout/channel
 
-1. create `aperiodic_simulator/` package;
+1. create the `app/aperiodic_simulator/` package with its subpackages;
 2. implement three device types;
 3. implement 18-BS geometry/link budget;
 4. implement single/multi-source harvesting;
@@ -1828,7 +1882,7 @@ Work in this exact order. Keep the repository runnable after each phase.
 2. recurrent PPO policy config;
 3. exact observation/action/reward;
 4. training pipeline;
-5. 1,000,000-step checkpoint;
+5. 1,000,000-step checkpoint (or a clearly labelled smoke checkpoint, see §21.7);
 6. evaluation/inference adapter;
 7. PPO status API;
 8. frontend PPO ON/OFF wiring.
@@ -1880,9 +1934,9 @@ The task is complete only when all of the following are true:
 2. `/aperiodic-paging` runs the new-paper simulator.
 3. Legacy HTTP requests use `/api/simulator/...`.
 4. New HTTP requests use `/api/aperiodic-simulator/...`.
-5. `backend/simulator/` remains the legacy scientific engine.
-6. `backend/aperiodic_simulator/` contains the new scientific engine.
-7. only truly common pure utilities are shared through `backend/common/`.
+5. `backend/app/simulator/` remains the legacy scientific engine.
+6. `backend/app/aperiodic_simulator/` contains the new scientific engine, split into subpackages; routers contain no science.
+7. only truly common pure utilities are shared through `backend/app/common/`.
 8. Figure 4 channel/CDF validation exists.
 9. Figures 5 and 6 and Table IV can be reproduced by scripts/API presets.
 10. PFSA/PZE is implemented for protocol-level comparisons.
@@ -1896,6 +1950,11 @@ The task is complete only when all of the following are true:
 18. frontend typecheck/build passes.
 19. validation output reports discrepancies instead of hiding them.
 20. final README/reproduction notes clearly explain how to run both simulators and train/evaluate PPO.
+21. data, tests and results are split per paper (`periodic/`, `aperiodic/`, plus `tests/common/`).
+22. `/aperiodic-paging` uses the same HUD page shell as `/periodic-paging`; the page does not scroll, each dock does.
+23. the Paper configuration selector and the header "Run paper configuration" button apply and run the paper settings for each curve of Figs. 5–7.
+24. every figure/table in the UI and in generated PNGs names the corresponding paper figure/table.
+25. the CBRA round view is a time–frequency map with labelled frequency and time axes.
 
 ---
 
