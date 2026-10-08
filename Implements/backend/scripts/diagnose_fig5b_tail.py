@@ -19,11 +19,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from simulator.config import STATE_NAME, paper_device1_config, results_dir
-from simulator.fig5b_validation import evaluate_fig5b
-from simulator.scenario import Scenario
-from simulator.simulation import run_paper_comparison
-from simulator.tail_diagnosis import classify_delay, reconstruct_transitions, remaining_census_at
+from app.simulator.core.config import STATE_NAME, paper_device1_config, results_dir
+from app.simulator.analysis.fig5b_validation import evaluate_fig5b
+from app.simulator.core.scenario import Scenario
+from app.simulator.core.simulation import run_paper_comparison
+from app.simulator.analysis.tail_diagnosis import classify_delay, reconstruct_transitions, remaining_census_at
 
 
 def _percentile_ids(completion: np.ndarray, lo_pct: float, hi_pct: float) -> list[int]:

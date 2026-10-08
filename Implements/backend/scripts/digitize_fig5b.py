@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from simulator.config import data_dir
+from app.simulator.core.config import data_dir
 
 PAGE_INDEX = 6  # IEEE page 7
 PANEL_B_ROW0 = 888

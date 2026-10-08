@@ -1,0 +1,7 @@
+figure7 recurrent_ppo: 100 episodes in 9.0s, T_total=156.8
+figure7 dfsa_schoute: 100 episodes in 5.4s, T_total=171.5
+figure7 cmebe: 100 episodes in 4.9s, T_total=175.4
+note: RL alpha=0.5 checkpoint has 20480 of 1,000,000 paper steps; RL numbers are not a paper reproduction
+validation: {'best_dfsa_baseline': 'dfsa_schoute', 'paper_best_dfsa_baseline': 'cmebe', 'rl_total_time_reduction_vs_best_dfsa_pct': 8.551381792293855, 'rl_mean_id_time_reduction_vs_best_dfsa_pct': 9.428497794763956, 'paper_rl_reduction_vs_cmebe_pct': 16}
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure7/figure7.json
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure7/figure7.png

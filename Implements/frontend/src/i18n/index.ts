@@ -16,6 +16,9 @@ import explainZh from '@/i18n/locales/explain-zh.json'
 import glossaryEn from '@/i18n/locales/glossary-en.json'
 import glossaryFr from '@/i18n/locales/glossary-fr.json'
 import glossaryZh from '@/i18n/locales/glossary-zh.json'
+import aperiodicEn from '@/i18n/locales/aperiodic-en.json'
+import aperiodicFr from '@/i18n/locales/aperiodic-fr.json'
+import aperiodicZh from '@/i18n/locales/aperiodic-zh.json'
 
 function mergeExplain(
   base: Record<string, unknown>,
@@ -88,25 +91,48 @@ function mergeGlossary(primary: Record<string, unknown>, overlay: Record<string,
   }
 }
 
+type Dict = Record<string, unknown>
+
+function deepMerge(base: Dict, overlay: Dict): Dict {
+  const out: Dict = { ...base }
+  for (const [key, value] of Object.entries(overlay)) {
+    const prev = out[key]
+    out[key] =
+      value && typeof value === 'object' && !Array.isArray(value) && prev && typeof prev === 'object'
+        ? deepMerge(prev as Dict, value as Dict)
+        : value
+  }
+  return out
+}
+
 const resources = {
   [AppLocale.En]: {
-    translation: mergeExplain(en as Record<string, unknown>, {
-      ...(explainEn as Record<string, unknown>),
-      glossary: glossaryEn,
-    }),
+    translation: {
+      ...mergeExplain(en as Dict, {
+        ...(explainEn as Dict),
+        glossary: glossaryEn,
+      }),
+      ...(aperiodicEn as Dict),
+    },
   },
   [AppLocale.Zh]: {
-    translation: mergeExplain(zh as Record<string, unknown>, {
-      ...(explainZh as Record<string, unknown>),
-      glossary: glossaryZh,
-    }),
+    translation: {
+      ...mergeExplain(zh as Dict, {
+        ...(explainZh as Dict),
+        glossary: glossaryZh,
+      }),
+      ...deepMerge(aperiodicEn as Dict, aperiodicZh as Dict),
+    },
   },
   [AppLocale.Fr]: {
-    translation: mergeExplain(
-      fr as Record<string, unknown>,
-      { ...(explainEn as Record<string, unknown>), glossary: glossaryEn },
-      { ...(explainFr as Record<string, unknown>), glossary: glossaryFr },
-    ),
+    translation: {
+      ...mergeExplain(
+        fr as Dict,
+        { ...(explainEn as Dict), glossary: glossaryEn },
+        { ...(explainFr as Dict), glossary: glossaryFr },
+      ),
+      ...deepMerge(aperiodicEn as Dict, aperiodicFr as Dict),
+    },
   },
 }
 

@@ -1,0 +1,37 @@
+figure5 a_L16 aperiodic: 100 episodes in 17.3s, T99=270.6
+figure5 a_L16 periodic_Ng1: 100 episodes in 9.0s, T99=1084.3
+figure5 a_L16 periodic_Ng1_wo_depletion: 100 episodes in 8.8s, T99=1094.6
+figure5 a_L16 periodic_Ng4: 100 episodes in 10.2s, T99=1105.2
+figure5 a_L16 periodic_Ng4_wo_depletion: 100 episodes in 8.9s, T99=1105.6
+figure5 b_L1 aperiodic: 100 episodes in 73.8s, T99=263.1
+figure5 b_L1 periodic_Ng1: 100 episodes in 82.6s, T99=966.0
+figure5 b_L1 periodic_Ng1_wo_depletion: 100 episodes in 86.1s, T99=987.2
+figure5 b_L1 periodic_Ng4: 100 episodes in 86.5s, T99=970.4
+figure5 b_L1 periodic_Ng4_wo_depletion: 100 episodes in 91.2s, T99=982.1
+
+figure5 a_L16 (L=16), 100 episodes
+  aperiodic                   sim T50=55.8 T90=142.4 T99=270.6 | paper T50=57.7 T90=140.6 T99=257.9 | MAE=0.43 RMSE=0.66
+  periodic_Ng1                sim T50=106.2 T90=616.9 T99=1084.3 | paper T50=72.4 T90=580.2 T99=1158.1 | MAE=2.28 RMSE=3.38
+  periodic_Ng1_wo_depletion   sim T50=58.6 T90=527.8 T99=1094.6 | paper T50=57.4 T90=534.0 T99=1151.3 | MAE=0.27 RMSE=0.33
+  periodic_Ng4                sim T50=86.9 T90=637.1 T99=1105.2 | paper T50=61.6 T90=549.4 T99=1156.9 | MAE=4.03 RMSE=5.79
+  periodic_Ng4_wo_depletion   sim T50=59.5 T90=455.1 T99=1105.6 | paper T50=57.7 T90=448.4 T99=1136.3 | MAE=0.30 RMSE=0.50
+  validation: {'t99_reduction_vs_periodic_Ng4_pct': 75.51383865895389, 'paper_t99_reduction_pct': 78, 'aperiodic_midround_depletion_mean': 0.0, 't99_order': ['aperiodic', 'periodic_Ng1', 'periodic_Ng1_wo_depletion', 'periodic_Ng4', 'periodic_Ng4_wo_depletion']}
+
+figure5 b_L1 (L=1), 100 episodes
+  aperiodic                   sim T50=75.4 T90=174.8 T99=263.1 | paper T50=90.6 T90=186.5 T99=255.2 | MAE=2.83 RMSE=4.40
+  periodic_Ng1                sim T50=177.5 T90=703.7 T99=966.0 | paper T50=181.2 T90=727.2 T99=1005.3 | MAE=0.88 RMSE=0.99
+  periodic_Ng1_wo_depletion   sim T50=174.1 T90=714.2 T99=987.2 | paper T50=180.3 T90=730.1 T99=1012.4 | MAE=0.88 RMSE=1.15
+  periodic_Ng4                sim T50=182.1 T90=707.6 T99=970.4 | paper T50=180.7 T90=721.1 T99=1002.3 | MAE=0.52 RMSE=0.67
+  periodic_Ng4_wo_depletion   sim T50=170.6 T90=702.2 T99=982.1 | paper T50=177.6 T90=721.9 T99=1009.2 | MAE=0.77 RMSE=0.93
+  validation: {'t99_reduction_vs_periodic_Ng4_pct': 72.89067281239629, 'paper_t99_reduction_pct': 75, 'aperiodic_midround_depletion_mean': 0.0, 't99_order': ['aperiodic', 'periodic_Ng1', 'periodic_Ng4', 'periodic_Ng4_wo_depletion', 'periodic_Ng1_wo_depletion']}
+  Table IV periodic L=16 N_g=1: sim 1823/294/314/114/647/3192 | paper 1817/299/328/91/633/3168
+  Table IV periodic L=16 N_g=4: sim 577/342/375/157/889/2341 | paper 535/342/409/111/861/2258
+  Table IV periodic L=1 N_g=1: sim 5809/192/31/33/232/6296 | paper 5628/673/103/32/233/6669
+  Table IV periodic L=1 N_g=4: sim 4930/255/71/55/333/5643 | paper 4553/620/118/36/234/5561
+  Table IV aperiodic L=16 N_g=None: sim 0/0/0/0/0/0 | paper 0/0/0/0/0/0
+  Table IV aperiodic L=1 N_g=None: sim 0/0/0/0/0/0 | paper 0/0/0/0/0/0
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure5/figure5.json
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure5/figure5_a_L16.csv
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure5/figure5_b_L1.csv
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure5/figure5.png
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/tables/table_iv.json

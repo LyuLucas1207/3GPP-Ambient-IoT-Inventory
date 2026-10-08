@@ -29,8 +29,6 @@ services:
       - --reload-dir
       - /app/app
       - --reload-dir
-      - /app/simulator
-      - --reload-dir
       - /app/scripts
       - --reload-dir
       - /app/tests

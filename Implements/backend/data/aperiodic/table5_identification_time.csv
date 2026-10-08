@@ -1,0 +1,7 @@
+scenario,n_tot,recurrent_ppo,pfsa_L1,pfsa_L8,pfsa_L32
+multi_source,1000,12.7,19.3,12.9,14.5
+multi_source,7500,80.1,140.4,85.0,82.9
+multi_source,15000,158.7,283.8,167.7,166.2
+single_source,1000,172.4,175.2,184.2,283.1
+single_source,7500,315.2,313.7,326.0,448.2
+single_source,15000,387.0,402.6,407.5,590.0

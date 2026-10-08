@@ -7,7 +7,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label'
 import { usePlotTheme } from '@/hooks/usePlotTheme'
 import Plot from '@/lib/Plot'
-import { fetchDeviceTrace } from '@/api/simulation'
+import { fetchDeviceTrace } from '@/api/simulator'
 import { TermId, ViewId } from '@/explain/ids'
 import type { DeviceScientificTrace, SimulationResult, StrategyKey } from '@/types/simulation'
 import { useEffect, useMemo, useState } from 'react'

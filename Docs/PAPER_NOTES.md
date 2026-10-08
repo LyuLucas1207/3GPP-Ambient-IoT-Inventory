@@ -33,7 +33,7 @@ This implementation follows the **published** Device-1 comparison: EM aperiodic,
 
 CDF of \(p_{in}\) for D1T1 120 m × 60 m factory, one of 18 BSs at 33 dBm, devices below −36 dBm excluded.
 
-Re-digitized from the published IEEE Figure 5(a) (page 7). Median \(p_{in}\approx -30\,\mathrm{dBm}\), \(F(-35\,\mathrm{dBm})\approx 0.10\). Method: `Implements/backend/data/FIG5A_DIGITIZATION.md`. Do not fit this CDF to Figure 5(b).
+Re-digitized from the published IEEE Figure 5(a) (page 7). Median \(p_{in}\approx -30\,\mathrm{dBm}\), \(F(-35\,\mathrm{dBm})\approx 0.10\). Method: `Implements/backend/data/periodic/FIG5A_DIGITIZATION.md`. Do not fit this CDF to Figure 5(b).
 
 ## Grouping
 

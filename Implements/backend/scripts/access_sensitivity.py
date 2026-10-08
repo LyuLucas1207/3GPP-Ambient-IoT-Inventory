@@ -18,9 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from simulator.config import paper_device1_config, results_dir
-from simulator.scenario import Scenario
-from simulator.simulation import run_strategy
+from app.simulator.core.config import paper_device1_config, results_dir
+from app.simulator.core.scenario import Scenario
+from app.simulator.core.simulation import run_strategy
 
 MODES = ("occupancy_counts", "poisson_idle", "poisson_idle_ungated", "fixed")
 

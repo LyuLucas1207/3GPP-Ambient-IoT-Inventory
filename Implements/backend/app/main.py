@@ -1,12 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.simulation import router as simulation_router
+from app.routers.aperiodic_simulator import router as aperiodic_router
+from app.routers.simulator import router as simulator_router
 
 app = FastAPI(
-    title="3GPP Ambient IoT Inventory Simulator",
-    description="Python simulation engine for reproducing Figure 5(b).",
-    version="1.0.0",
+    title="3GPP Ambient IoT Inventory Simulators",
+    description=(
+        "Two separate paper simulators: the legacy periodic-paging paper "
+        "(/api/simulator) and the aperiodic-paging paper (/api/aperiodic-simulator)."
+    ),
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -17,7 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(simulation_router, prefix="/api")
+app.include_router(simulator_router, prefix="/api/simulator")
+app.include_router(aperiodic_router, prefix="/api/aperiodic-simulator")
 
 
 @app.get("/api/health")

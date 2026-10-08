@@ -12,4 +12,4 @@ EXPOSE 8000
 
 ENTRYPOINT ["/docker-entrypoint.dev.sh"]
 # Source is bind-mounted in docker-compose.yml. --reload watches Python files.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/app", "--reload-dir", "/app/simulator"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/app"]

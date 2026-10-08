@@ -19,9 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from simulator.config import paper_device1_config, results_dir
-from simulator.fig5b_validation import evaluate_fig5b
-from simulator.simulation import run_paper_comparison
+from app.simulator.core.config import paper_device1_config, results_dir
+from app.simulator.analysis.fig5b_validation import evaluate_fig5b
+from app.simulator.core.simulation import run_paper_comparison
 
 
 def _mean_ci(xs: np.ndarray) -> dict:

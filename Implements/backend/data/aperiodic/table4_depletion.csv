@@ -1,0 +1,7 @@
+protocol,L,N_g,paging,msg1,EI,msg2,msg3,total
+periodic,16,1,1817,299,328,91,633,3168
+periodic,16,4,535,342,409,111,861,2258
+periodic,1,1,5628,673,103,32,233,6669
+periodic,1,4,4553,620,118,36,234,5561
+aperiodic,16,,0,0,0,0,0,0
+aperiodic,1,,0,0,0,0,0,0

@@ -1,0 +1,12 @@
+step 2048/20480  episodes 9  mean_return(last20) 22.484  3s
+step 4096/20480  episodes 27  mean_return(last20) 16.986  18s
+step 6144/20480  episodes 55  mean_return(last20) 12.594  30s
+step 8192/20480  episodes 86  mean_return(last20) 14.886  44s
+step 10240/20480  episodes 116  mean_return(last20) 14.835  61s
+step 12288/20480  episodes 145  mean_return(last20) 14.099  77s
+step 14336/20480  episodes 175  mean_return(last20) 13.961  85s
+step 16384/20480  episodes 201  mean_return(last20) 10.919  100s
+step 18432/20480  episodes 223  mean_return(last20) 15.376  109s
+step 20480/20480  episodes 244  mean_return(last20) 20.277  119s
+saved /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/backend/aperiodic_simulator/rl/checkpoints/recurrent_ppo_alpha_0p5.zip (20480 steps, sha256 4cda48fa0bddb57e…)
+note: 20480 steps < paper's 1000000; results are not the paper's trained policy

@@ -1,0 +1,168 @@
+{
+  "alpha": 0.0,
+  "seed": 42,
+  "training_steps": 20480,
+  "requested_steps": 20480,
+  "paper_training_steps": 1000000,
+  "fully_trained": false,
+  "architecture": "actor: LSTM(1x128) -> MLP(128,128,ReLU) -> Gaussian(2); critic: LSTM(1x128) -> MLP(128,128,ReLU) -> value",
+  "trained_scenario": "multi_source",
+  "config_hash": "0e17ed4edcd39e6aac906948515f4ab39e45ea5cd26c76dfe9de9a986e8b1231",
+  "training_config": {
+    "algorithm": "sb3_contrib.RecurrentPPO / MlpLstmPolicy",
+    "alpha": 0.0,
+    "seed": 42,
+    "total_timesteps": 20480,
+    "hyperparameters": {
+      "learning_rate": 0.0003,
+      "gamma": 0.9,
+      "gae_lambda": 0.95,
+      "clip_range": 0.2,
+      "ent_coef": 0.01,
+      "vf_coef": 0.02,
+      "max_grad_norm": 0.5,
+      "n_steps": 2048,
+      "batch_size": 256,
+      "n_epochs": 10
+    },
+    "architecture": "actor: LSTM(1x128) -> MLP(128,128,ReLU) -> Gaussian(2); critic: LSTM(1x128) -> MLP(128,128,ReLU) -> value",
+    "training_distribution": {
+      "n_tot": [
+        100,
+        15000
+      ],
+      "homogeneous_probability": 0.5,
+      "homogeneous_type": "uniform over {1, 2a, 2b}",
+      "L_initial": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "p_initial": "U(0, 1]",
+      "harvesting_scenario": "multi_source",
+      "population_seed": "fresh per episode from the env RNG"
+    },
+    "reward": "((1-alpha)*(S1+S2a+S2b)*t_S - alpha*C2*t_C)/T_round; t_S=t_msg1/F+t_msg2+t_msg3/F, t_C=t_msg1/F",
+    "value_normalization": "VecNormalize(norm_obs=False, norm_reward=True, gamma=0.9)",
+    "action_transform": {
+      "policy_action_space": "Box([-1, -1], [1, 1])",
+      "m": "exp(ln(0.25) + (a0 + 1) / 2 * (ln(10) - ln(0.25)))",
+      "q": "exp(ln(0.1) + (a1 + 1) / 2 * (ln(10) - ln(0.1)))",
+      "L": "max(1, min(ceil(m * L_prev), L_max))",
+      "p": "clip(q * p_prev, p_floor, 1)",
+      "m_range": [
+        0.25,
+        10.0
+      ],
+      "q_range": [
+        0.1,
+        10.0
+      ]
+    },
+    "observation_normalization": {
+      "vector": [
+        "S1",
+        "S2a",
+        "S2b",
+        "I",
+        "C",
+        "L_prev",
+        "p_prev"
+      ],
+      "counts": "divided by L_prev * F (fraction of offered AOs)",
+      "L_prev": "divided by L_max",
+      "p_prev": "unchanged",
+      "excluded": [
+        "C2",
+        "backlog",
+        "energies",
+        "wake times",
+        "availability"
+      ]
+    },
+    "L_max": 83,
+    "system": {
+      "factory_length_m": 120.0,
+      "factory_width_m": 60.0,
+      "n_bs": 18,
+      "bs_spacing_m": 20.0,
+      "bs_height_m": 8.0,
+      "device_height_m": 1.5,
+      "carrier_ghz": 0.9,
+      "polarization_loss_db": 3.0,
+      "shadow_fading_margin_db": 4.0,
+      "on_object_penalty_db": 0.9,
+      "bs_rx_sensitivity_dbm": -106.0,
+      "bs_tx_power_dbm": 33.0,
+      "bs_tx_antenna_gain_dbi": 6.0,
+      "F": 8,
+      "data_rate_bps": 7000.0,
+      "paging_bits": 80,
+      "msg1_bits": 38,
+      "msg2_bits": 88,
+      "msg3_bits": 144,
+      "ei_overhead_bits": 24,
+      "false_alarm_rate": 0.001,
+      "missed_detection_rate": 0.01,
+      "capture_ratio_db": 6.0,
+      "t_mon_s": 0.1,
+      "p_sl_w": 1e-07,
+      "p_wurx_w": 1e-06,
+      "single_source_min_pin_dbm": -36.0,
+      "n_tot_default": 15000
+    }
+  },
+  "action_transform": {
+    "policy_action_space": "Box([-1, -1], [1, 1])",
+    "m": "exp(ln(0.25) + (a0 + 1) / 2 * (ln(10) - ln(0.25)))",
+    "q": "exp(ln(0.1) + (a1 + 1) / 2 * (ln(10) - ln(0.1)))",
+    "L": "max(1, min(ceil(m * L_prev), L_max))",
+    "p": "clip(q * p_prev, p_floor, 1)",
+    "m_range": [
+      0.25,
+      10.0
+    ],
+    "q_range": [
+      0.1,
+      10.0
+    ]
+  },
+  "observation_normalization": {
+    "vector": [
+      "S1",
+      "S2a",
+      "S2b",
+      "I",
+      "C",
+      "L_prev",
+      "p_prev"
+    ],
+    "counts": "divided by L_prev * F (fraction of offered AOs)",
+    "L_prev": "divided by L_max",
+    "p_prev": "unchanged",
+    "excluded": [
+      "C2",
+      "backlog",
+      "energies",
+      "wake times",
+      "availability"
+    ]
+  },
+  "package_versions": {
+    "python": "3.14.7",
+    "numpy": "2.5.3",
+    "torch": "2.14.1+cpu",
+    "stable_baselines3": "2.9.0",
+    "sb3_contrib": "2.9.0",
+    "gymnasium": "1.4.0"
+  },
+  "git_commit": "bc26837aa83d99bd22013d766b104c667ddfe66f",
+  "created_at": "2026-10-07T14:55:34-0700",
+  "wall_time_s": 133.2,
+  "training_episodes": 235,
+  "mean_return_last20": 41.059372700000004,
+  "sha256": "2165838cc29457512e05657fc0d6ddadf329b2f4b97368e301dadb03169e8f6f"
+}

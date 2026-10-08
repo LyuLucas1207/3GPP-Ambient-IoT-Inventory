@@ -1,0 +1,20 @@
+{
+  "_source": "3GPP Ambient IoT Inventory with Aperiodic Paging (Papers/), Sections IV-V and Appendix A",
+  "periodic_interval_ms": {"L1": 82.0, "L16": 1089.14},
+  "lmax": {"global": 83, "type1": 170},
+  "single_source": {
+    "n_eff": 6440,
+    "type_shares_pct": {"1": 17.3, "2a": 41.3, "2b": 41.3},
+    "harvest_below_sleep_pct": 61.9,
+    "harvest_below_sleep_type2_pct": 92.5,
+    "t99_reduction_vs_periodic_ng4_pct": {"L16": 78, "L1": 75},
+    "msg1_success_lost_to_depletion_pct_L16_ng4": 19.1
+  },
+  "multi_source": {
+    "n_eff": 9035,
+    "type_shares_pct": {"1": 12.3, "2a": 32.3, "2b": 55.3},
+    "ng4_group_population_pct": [69.5, 23.9, 4.7, 1.9]
+  },
+  "figure7": {"rl_vs_cmebe_mean_time_reduction_pct": 16},
+  "ppo": {"total_training_steps": 1000000, "alpha": 0.5}
+}

@@ -1,0 +1,7 @@
+figure8 recurrent_ppo: RE 1k=30.8 2k=34.2 3k=37.1 4k=39.1 5k=39.9 6k=41.2 7k=41.9 8k=42.5 9k=43.1 10k=43.4 11k=43.7 12k=43.9 13k=44.0 14k=44.3 15k=44.5
+figure8 pfsa_L1: RE 1k=30.4 2k=34.6 3k=35.6 4k=36.2 5k=37.0 6k=37.3 7k=37.4 8k=37.3 9k=37.2 10k=37.5 11k=37.2 12k=37.3 13k=37.4 14k=37.4 15k=37.3
+figure8 pfsa_L8: RE 1k=20.7 2k=28.4 3k=31.2 4k=33.6 5k=35.1 6k=36.2 7k=37.6 8k=37.7 9k=38.2 10k=39.1 11k=39.8 12k=39.9 13k=40.1 14k=40.5 15k=41.1
+figure8 pfsa_L32: RE 1k=12.3 2k=18.4 3k=22.3 4k=24.7 5k=26.4 6k=29.9 7k=31.4 8k=31.7 9k=33.1 10k=33.1 11k=34.3 12k=34.8 13k=35.3 14k=36.0 15k=36.8
+note: RL alpha=0.5 checkpoint has 20480 of 1,000,000 paper steps; RL numbers are not a paper reproduction
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure8/figure8.json
+wrote /home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/results/aperiodic_paging/figure8/figure8.png

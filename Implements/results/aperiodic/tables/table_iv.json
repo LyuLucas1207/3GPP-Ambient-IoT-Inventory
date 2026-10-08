@@ -1,0 +1,149 @@
+{
+ "episodes": 100,
+ "rows": [
+  {
+   "protocol": "periodic",
+   "L": 16,
+   "N_g": 1,
+   "simulated": {
+    "paging": 1823.26,
+    "msg1": 294.48,
+    "EI": 314.32,
+    "msg2": 113.71,
+    "msg3": 646.66,
+    "total": 3192.43
+   },
+   "paper": {
+    "protocol": "periodic",
+    "L": 16,
+    "N_g": 1,
+    "paging": 1817.0,
+    "msg1": 299.0,
+    "EI": 328.0,
+    "msg2": 91.0,
+    "msg3": 633.0,
+    "total": 3168.0
+   }
+  },
+  {
+   "protocol": "periodic",
+   "L": 16,
+   "N_g": 4,
+   "simulated": {
+    "paging": 576.87,
+    "msg1": 342.48,
+    "EI": 375.42,
+    "msg2": 157.48,
+    "msg3": 888.52,
+    "total": 2340.77
+   },
+   "paper": {
+    "protocol": "periodic",
+    "L": 16,
+    "N_g": 4,
+    "paging": 535.0,
+    "msg1": 342.0,
+    "EI": 409.0,
+    "msg2": 111.0,
+    "msg3": 861.0,
+    "total": 2258.0
+   }
+  },
+  {
+   "protocol": "periodic",
+   "L": 1,
+   "N_g": 1,
+   "simulated": {
+    "paging": 5808.52,
+    "msg1": 191.69,
+    "EI": 31.02,
+    "msg2": 33.09,
+    "msg3": 232.18,
+    "total": 6296.5
+   },
+   "paper": {
+    "protocol": "periodic",
+    "L": 1,
+    "N_g": 1,
+    "paging": 5628.0,
+    "msg1": 673.0,
+    "EI": 103.0,
+    "msg2": 32.0,
+    "msg3": 233.0,
+    "total": 6669.0
+   }
+  },
+  {
+   "protocol": "periodic",
+   "L": 1,
+   "N_g": 4,
+   "simulated": {
+    "paging": 4929.74,
+    "msg1": 255.19,
+    "EI": 70.88,
+    "msg2": 54.52,
+    "msg3": 332.83,
+    "total": 5643.16
+   },
+   "paper": {
+    "protocol": "periodic",
+    "L": 1,
+    "N_g": 4,
+    "paging": 4553.0,
+    "msg1": 620.0,
+    "EI": 118.0,
+    "msg2": 36.0,
+    "msg3": 234.0,
+    "total": 5561.0
+   }
+  },
+  {
+   "protocol": "aperiodic",
+   "L": 16,
+   "N_g": null,
+   "simulated": {
+    "paging": 0.0,
+    "msg1": 0.0,
+    "EI": 0.0,
+    "msg2": 0.0,
+    "msg3": 0.0,
+    "total": 0.0
+   },
+   "paper": {
+    "protocol": "aperiodic",
+    "L": 16,
+    "N_g": null,
+    "paging": 0.0,
+    "msg1": 0.0,
+    "EI": 0.0,
+    "msg2": 0.0,
+    "msg3": 0.0,
+    "total": 0.0
+   }
+  },
+  {
+   "protocol": "aperiodic",
+   "L": 1,
+   "N_g": null,
+   "simulated": {
+    "paging": 0.0,
+    "msg1": 0.0,
+    "EI": 0.0,
+    "msg2": 0.0,
+    "msg3": 0.0,
+    "total": 0.0
+   },
+   "paper": {
+    "protocol": "aperiodic",
+    "L": 1,
+    "N_g": null,
+    "paging": 0.0,
+    "msg1": 0.0,
+    "EI": 0.0,
+    "msg2": 0.0,
+    "msg3": 0.0,
+    "total": 0.0
+   }
+  }
+ ]
+}

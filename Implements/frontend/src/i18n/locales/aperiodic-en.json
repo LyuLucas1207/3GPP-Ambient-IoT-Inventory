@@ -1,0 +1,372 @@
+{
+  "nav": {
+    "label": "Paper simulators",
+    "periodicPaper": "Periodic Paging Paper",
+    "aperiodicPaper": "Aperiodic Paging Paper"
+  },
+  "aperiodic": {
+    "title": "3GPP Ambient IoT Inventory with Aperiodic Paging",
+    "documentTitle": "Aperiodic Paging Simulator",
+    "kicker": "Aperiodic paper · Kota et al."
+  },
+  "ap": {
+    "header": {
+      "protocol": "Protocol"
+    },
+    "common": {
+      "checking": "Checking API…",
+      "apiUp": "API up",
+      "apiDown": "API down",
+      "running": "Running…"
+    },
+    "terms": {
+      "aperiodic": "Aperiodic paging",
+      "periodicBaseline": "Periodic baseline",
+      "recurrentPpo": "Recurrent PPO",
+      "pfsaPze": "PFSA/PZE",
+      "dfsaSchoute": "DFSA-Schoute",
+      "cmebe": "CMEBE",
+      "ei": "EI",
+      "type1": "Type 1",
+      "type2a": "Type 2a",
+      "type2b": "Type 2b",
+      "singleSource": "Single-source harvesting",
+      "multiSource": "Multi-source harvesting",
+      "adaptiveL": "Adaptive L",
+      "adaptiveP": "Adaptive p",
+      "checkpoint": "Checkpoint",
+      "resourceEfficiency": "Resource efficiency"
+    },
+    "controllers": {
+      "pfsa_pze": "PFSA/PZE",
+      "dfsa_schoute": "DFSA-Schoute",
+      "cmebe": "CMEBE",
+      "recurrent_ppo": "Recurrent PPO"
+    },
+    "controls": {
+      "title": "Scenario",
+      "description": "Continuous-time CBRA rounds; one aperiodic page per round.",
+      "scenario": "Population",
+      "nTot": "N_tot",
+      "seed": "Seed",
+      "reshuffle": "Random seed",
+      "runtime": "Runtime mode",
+      "interactive": "Interactive",
+      "paperBatch": "Paper batch",
+      "episodes": "Episodes",
+      "harvesting": "Harvesting",
+      "typeMix": "Device types",
+      "mixed": "Mixed",
+      "protocol": "Paging protocol",
+      "ng": "Paging groups N_g",
+      "depletion": "Mid-round depletion",
+      "resources": "Resource controller",
+      "on": "ON",
+      "off": "OFF",
+      "lAdaptivePpo": "Adaptive L: L = min(⌈m·L_prev⌉, L_max)",
+      "pAdaptivePpo": "Adaptive p: p = clip(q·p_prev)",
+      "lInitial": "Initial L",
+      "controller": "Controller",
+      "lFixed": "Fixed L",
+      "custom": "Custom",
+      "alpha": "α (reward weight)",
+      "advanced": "Advanced / ablations",
+      "physical": "PHY and impairments",
+      "F": "F (occasions per slot)",
+      "capture_ratio_db": "Capture ratio (dB)",
+      "missed_detection_rate": "Msg1 missed detection",
+      "false_alarm_rate": "Msg1 false alarm",
+      "max_time_s": "Max time (s)",
+      "impairments": "Capture / MD / FA",
+      "eiAlways": "The EI stage is always included in the round timing.",
+      "run": "Run simulation"
+    },
+    "hints": {
+      "nTot": "Number of deployed devices before the sensitivity filter. The paper uses 15000.",
+      "seed": "Root seed. All random streams (population, access, impairments) are derived from it, so the same seed reproduces the run exactly.",
+      "runtime": "Interactive runs one episode with full traces. Paper batch runs several seeds and returns mean and 5–95 % bands.",
+      "episodes": "Number of independent seeds (base seed + i). The paper averages 100 episodes.",
+      "harvesting": "Single-source: only the reader's RF field. Multi-source: the reader plus every base station contributes harvested power.",
+      "typeMix": "Mixed keeps the paper's sensitivity-based Type 1 / 2a / 2b mix; the other options force one type.",
+      "ng": "Number of periodic paging groups. Each group is paged in turn; the aperiodic protocol has no groups.",
+      "depletion": "When ON, a device whose storage reaches E_low during a round turns off (paper behaviour). OFF reproduces the 'w/o depletion' ablation curves.",
+      "ppo": "Recurrent PPO adapts both L and p each round from the observed S1/S2a/S2b/I/C counts. It requires a trained checkpoint.",
+      "lInitial": "L for the first round; adaptive controllers change it afterwards.",
+      "controller": "PFSA/PZE keeps L fixed and adapts p from the idle count (Kodialam & Nandagopal). DFSA-Schoute and CMEBE adapt the frame length.",
+      "lFixed": "Number of Msg1 slots per round (1 … {{lmax}}). L_max comes from the energy budget of the weakest device type.",
+      "alpha": "Reward weight between successes and Msg2/Msg3 collisions: r = ((1−α)·S·t_S − α·C2·t_C)/T_round.",
+      "F": "Number of frequency-domain access occasions per Msg1 slot.",
+      "capture_ratio_db": "A collided occasion is decoded if the strongest device exceeds the others by this ratio.",
+      "missed_detection_rate": "Probability that the reader misses a transmitted Msg1.",
+      "false_alarm_rate": "Probability that the reader detects a Msg1 on an idle occasion.",
+      "max_time_s": "The episode stops at this time even if devices remain unidentified.",
+      "impairments": "Enable capture, missed detection and false alarm in Msg1 decoding."
+    },
+    "ppo": {
+      "title": "Recurrent PPO checkpoint",
+      "missing": "No trained Recurrent PPO checkpoint is available. Train one with:",
+      "smoke": "Smoke checkpoint",
+      "ready": "Trained",
+      "unavailable": "Unavailable",
+      "steps": "Training steps",
+      "arch": "Architecture",
+      "scenario": "Trained scenario",
+      "smokeNote": "This checkpoint was trained for far fewer steps than the paper. Its results are not a reproduction of the paper's PPO curves.",
+      "trainWith": "Full training:"
+    },
+    "plots": {
+      "band": "5–95 % band",
+      "inventoryTitle": "Inventory progress",
+      "inventorySubtitle": "Identified share of N_eff = {{n}} ({{episodes}} episode(s))",
+      "time": "Time (s)",
+      "ratio": "Identified (%)",
+      "idle": "Idle",
+      "collision": "Collision",
+      "re": "Resource efficiency (%)",
+      "reward": "Reward",
+      "roundTitle": "Rounds and controller",
+      "roundSubtitle": "{{n}} CBRA rounds",
+      "viewAction": "L / p",
+      "viewOutcome": "AO outcomes",
+      "viewReward": "Reward",
+      "round": "Round",
+      "aoCount": "Access occasions"
+    },
+    "stages": {
+      "paging": "Paging",
+      "msg1": "Msg1",
+      "EI": "EI",
+      "msg2": "Msg2",
+      "msg3": "Msg3"
+    },
+    "states": {
+      "OFF": "Off",
+      "MONITOR": "Monitoring",
+      "RX": "Receiving",
+      "TX": "Transmitting",
+      "INTRA_ROUND_SLEEP": "Intra-round sleep",
+      "INTERROUND_SYNC_SLEEP": "Inter-round sync sleep",
+      "DONE": "Identified"
+    },
+    "cbra": {
+      "title": "CBRA round inspector",
+      "subtitle": "Round {{round}} · L = {{L}} · F = {{F}} · {{mode}}",
+      "round": "Round",
+      "paging": "Paging",
+      "paged": "{{n}} devices paged",
+      "rejected": "{{n}} not woken / rejected",
+      "participants": "{{n}} participants",
+      "phys": {
+        "idle": "Idle",
+        "single": "Single",
+        "captured": "Captured",
+        "collision": "Collision"
+      },
+      "obs": {
+        "idle": "observed idle",
+        "success": "observed success",
+        "collision": "observed collision"
+      },
+      "ei": "EI",
+      "eiFlags": "{{n}} Msg2 grants signalled",
+      "eiNote": "Early indication of how many Msg2 grants follow.",
+      "msg2": "Msg2",
+      "msg2Slots": "{{used}} used / {{alloc}} allocated ({{decoded}} decoded)",
+      "msg3": "Msg3",
+      "identified": "{{n}} identified",
+      "msg3Slots": "{{n}} Msg3 slots",
+      "periodicNote": "Periodic baseline: Msg2/Msg3 resources are dimensioned in advance, so {{wasted}} slots are wasted this round.",
+      "aperiodicNote": "Aperiodic paging: Msg2/Msg3 are sized dynamically from the decoded Msg1 count, so no slots are wasted.",
+      "mismatch": "Observed ≠ physical",
+      "wasted": "Wasted slot",
+      "identifiedOne": "identified"
+    },
+    "trace": {
+      "title": "Device trace",
+      "subtitle": "Device #{{id}} · Type {{type}} · P_harv {{p}} µW · identified at {{done}}",
+      "notDone": "not identified",
+      "energy": "Stored energy",
+      "energyAxis": "Energy (µJ)",
+      "compressed": "Long duty-cycle gaps are compressed in the trace; energy stays exact at segment boundaries."
+    },
+    "metrics": {
+      "title": "Episode metrics",
+      "final": "Final identified",
+      "meanIdTime": "Mean ID time (s)",
+      "rounds": "Rounds",
+      "neff": "N_eff / N_tot",
+      "re": "Resource efficiency",
+      "msg2Wasted": "Msg2 wasted",
+      "alloc": "alloc",
+      "aoObs": "AO observed",
+      "reward": "Mean reward",
+      "interround": "Inter-round depletions",
+      "lostSuccess": "Msg1 successes lost",
+      "depletionStage": "Mid-round depletion",
+      "total": "Total",
+      "enforced": "Enforced",
+      "wouldDeplete": "Would deplete (diagnostic)",
+      "type": "Type",
+      "identified": "Identified",
+      "groups": "Group populations",
+      "totalTime": "Total ID time (s)"
+    },
+    "factory": {
+      "bs": "Base station",
+      "reader": "Reader",
+      "xAxis": "x (m)",
+      "yAxis": "y (m)",
+      "deviceHover": "%{customdata[1]}<br>#%{customdata[0]} · type %{customdata[2]}<br>P_harv = %{customdata[3]:.2f} µW<extra></extra>",
+      "tracedHint": "Outlined devices have a recorded state/energy trace: click one to open it under Inspect."
+    },
+    "repro": {
+      "title": "Paper reproduction",
+      "subtitle": "Cached results come from the reproduction scripts; recomputing runs the same engine on the server.",
+      "paper": "paper",
+      "panelMissing": "Panel {{panel}} is not in this result.",
+      "curve": "Curve",
+      "simVsPaper": "sim / paper",
+      "pin": "Incident power (dBm)",
+      "useCached": "Use cached",
+      "run": "Load / run",
+      "status": {
+        "queued": "queued",
+        "running": "running",
+        "done": "done",
+        "error": "error"
+      },
+      "sourceComputed": "Computed now ({{n}} episodes)",
+      "sourceCached": "Cached script output: {{path}}",
+      "slowNote": "Recomputing a 100-episode figure takes several minutes; the job runs in the background.",
+      "otherTarget": "The last job was for another target; press Load / run.",
+      "underTrained": "RL (α = {{alpha}}) uses a checkpoint trained for {{steps}} of the paper's 1,000,000 steps; its numbers are not a reproduction of the paper's policy.",
+      "ckMissing": "No RL checkpoint for α = {{alpha}}; those rows are reported as unavailable.",
+      "methodMissing": "{{method}} is unavailable in this result (no checkpoint)."
+    },
+    "paperRef": {
+      "prefix": "Paper",
+      "fig4": {
+        "label": "Fig. 4",
+        "caption": "CDF of P_in (dBm) in the inventory layout for the two harvesting scenarios. For the single-source scenario, devices with incident power below −36 dBm are excluded."
+      },
+      "fig5a": {
+        "label": "Fig. 5(a)",
+        "caption": "Ratio of A-IoT devices successfully inventoried vs. time, single-source harvesting, N_tot = 15000. Aperiodic paging vs. periodic paging with N_g groups (with and w/o depletion). (a) L_s = 16."
+      },
+      "fig5b": {
+        "label": "Fig. 5(b)",
+        "caption": "Ratio of A-IoT devices successfully inventoried vs. time, single-source harvesting, N_tot = 15000. Aperiodic paging vs. periodic paging with N_g groups (with and w/o depletion). (b) L_s = 1."
+      },
+      "fig6a": {
+        "label": "Fig. 6(a)",
+        "caption": "Ratio of A-IoT devices successfully inventoried vs. time, multi-source harvesting, N_tot = 15000. Aperiodic paging vs. periodic paging, N_g = 1 and 4. (a) L_s = 16."
+      },
+      "fig6b": {
+        "label": "Fig. 6(b)",
+        "caption": "Ratio of A-IoT devices successfully inventoried vs. time, multi-source harvesting, N_tot = 15000. Aperiodic paging vs. periodic paging, N_g = 1 and 4. (b) L_s = 1."
+      },
+      "fig7": {
+        "label": "Fig. 7",
+        "caption": "Ratio of A-IoT devices successfully inventoried vs. time for aperiodic paging with the RL controller and the DFSA baselines (DFSA-Schoute, CMEBE). Multi-source harvesting, N_tot = 15000, L_1 = 1."
+      },
+      "fig8": {
+        "label": "Fig. 8",
+        "caption": "Average resource efficiency vs. total number of devices N_tot, multi-source harvesting. RL controller and PFSA with L_s = 1, 8, 32."
+      },
+      "tab4": {
+        "label": "Table IV",
+        "caption": "Average number of mid-round energy-depletion events per episode for the single-source harvesting scenario, by CBRA stage."
+      },
+      "tab5": {
+        "label": "Table V",
+        "caption": "Average total identification time (s) for aperiodic paging with the RL controller and PFSA (L_s = 1, 8, 32); N_tot = 1000, 7500, 15000; multi- and single-source harvesting."
+      },
+      "tab6": {
+        "label": "Table VI",
+        "caption": "Average total identification time and resource efficiency (RE) for aperiodic paging with the RL controller for different α; N_tot = 15000."
+      },
+      "tf": {
+        "label": "Fig. 1(b) / 2(b)",
+        "caption": "Message sequence within one CBRA round: Paging, Msg1 on L time × F frequency access occasions, EI, Msg2 (one frequency resource, sequential), Msg3 (parallel over F). Periodic paging (Fig. 1b) reserves Msg2/Msg3 in advance; aperiodic paging (Fig. 2b) provisions only what the EI announces."
+      },
+      "inventory": {
+        "label": "Figs. 5–7 (y-axis)",
+        "caption": "Same quantity as the paper's Figs. 5–7: share of N_eff successfully inventoried vs. time. T50/T90/T99 as in Section V-B."
+      },
+      "controller": {
+        "label": "Eqs. (5)–(8)",
+        "caption": "Per-round controller trace: state x_s = [S1, S2a, S2b, I, C, L, p] (Eq. 5); L_s = min(⌈m_s·L_{s−1}⌉, L_max) and p_s = clip(q_s·p_{s−1}) (Eqs. 6–7); reward r_s (Eq. 8)."
+      },
+      "trace": {
+        "label": "Figs. 1(a), 2(a), 3",
+        "caption": "Energy level and state of one device over time, as sketched in the paper's Fig. 1(a)/2(a) (charging and inventory stages) and Fig. 3 (state evolution within a CBRA round)."
+      },
+      "factory": {
+        "label": "Sec. V-A, D1T1 layout",
+        "caption": "Indoor factory D1T1 deployment: 120 m × 60 m, 18 BSs on a square lattice, one central BS acts as the reader. Dots are a 400-device sample coloured by state."
+      },
+      "metrics": {
+        "label": "Sec. V-B, Table IV",
+        "caption": "Episode metrics: T50/T90/T99, total identification time (Eq. 4), resource efficiency (Fig. 8 definition) and mid-round depletion by stage (Table IV)."
+      }
+    },
+    "tf": {
+      "aria": "Time–frequency resource map",
+      "freqAxis": "Frequency (F = {{F}})",
+      "timeAxis": "Time (one CBRA round)",
+      "msg2Freq": "1 frequency, sequential",
+      "msg3Freq": "parallel over F",
+      "msg3Lost": "Msg3 lost (depleted)",
+      "used": "Used",
+      "toScale": "Widths to time scale",
+      "msg1Grid": "L × F = {{L}} × {{F}} = {{n}} AOs"
+    },
+    "stage": {
+      "title": "Inventory run",
+      "subtitle": "Playback of {{n}} sampled devices on the factory floor (N_eff = {{neff}}).",
+      "empty": "Press Run simulation, or pick a figure under Paper configuration and press Apply & run.",
+      "batchNote": "Paper-batch runs return aggregated curves only; switch to Interactive for the animation.",
+      "identified": "{{pct}} % identified",
+      "play": "Play",
+      "pause": "Pause",
+      "restart": "Restart",
+      "round": "Round {{r}}",
+      "roundLen": "{{ms}} ms",
+      "mapNow": "Time–frequency map of this round:",
+      "mapNearest": "Time–frequency map of the nearest recorded round ({{r}}):",
+      "noRoundYet": "Waiting for the first paging message…",
+      "currentRound": "Current CBRA round",
+      "currentRoundHint": "Round in progress at t = {{t}} s of the playback."
+    },
+    "paperConfig": {
+      "title": "Paper configuration",
+      "figure": "Paper figure",
+      "curve": "Curve",
+      "hint": "Loads the paper's Section V setting (Table II) for the selected figure and curve. Interactive mode runs one seeded episode; the paper averages 100 (see Paper reproduction).",
+      "curves": {
+        "aperiodic": "Aperiodic paging",
+        "periodic_Ng1": "Periodic, N_g = 1",
+        "periodic_Ng4": "Periodic, N_g = 4",
+        "recurrent_ppo": "RL (Recurrent PPO)",
+        "dfsa_schoute": "DFSA-Schoute",
+        "cmebe": "CMEBE"
+      },
+      "setup": {
+        "fig5a": "Single-source harvesting · N_tot = 15000, all three types · L_s = 16 fixed · PFSA/PZE · F = 8 · FA 0.1 %, MD 1 %, capture 6 dB.",
+        "fig5b": "Single-source harvesting · N_tot = 15000, all three types · L_s = 1 fixed · PFSA/PZE · F = 8 · FA 0.1 %, MD 1 %, capture 6 dB.",
+        "fig6a": "Multi-source harvesting · N_tot = 15000, all three types · L_s = 16 fixed · PFSA/PZE · F = 8 · FA 0.1 %, MD 1 %, capture 6 dB.",
+        "fig6b": "Multi-source harvesting · N_tot = 15000, all three types · L_s = 1 fixed · PFSA/PZE · F = 8 · FA 0.1 %, MD 1 %, capture 6 dB.",
+        "fig7": "Multi-source harvesting · N_tot = 15000, all three types · L_1 = 1, adaptive L · α = 0.5 · F = 8 · FA 0.1 %, MD 1 %, capture 6 dB."
+      },
+      "apply": "Apply",
+      "applyRun": "Apply & run",
+      "runPaper": "Run paper configuration · {{fig}}",
+      "curveHint": "Each curve of the selected paper figure is one run: switch the curve to compare protocols or controllers under the same seed."
+    },
+    "dock": {
+      "inventory": "Inventory progress",
+      "rounds": "Rounds & controller",
+      "repro": "Paper reproduction"
+    }
+  }
+}

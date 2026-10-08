@@ -1,0 +1,169 @@
+{
+  "seed": 42,
+  "num_devices": 600,
+  "device_type": 1,
+  "strategies": {
+    "em": {
+      "label": "EM, aperiodic paging",
+      "t50_s": 1.1,
+      "t90_s": 6.65,
+      "t95_s": 9.850000000000001,
+      "t99_s": 14.65,
+      "final_ratio_pct": 100.0,
+      "n_paging": 4944,
+      "n_msg1_attempts": 1107,
+      "n_collisions": 506,
+      "collision_rate": 0.45709123757904246
+    },
+    "dcm_1_group": {
+      "label": "DCM, periodic paging, 1 group",
+      "t50_s": 1.2000000000000002,
+      "t90_s": 8.9,
+      "t95_s": 12.5,
+      "t99_s": 17.6,
+      "final_ratio_pct": 100.0,
+      "n_paging": 1618,
+      "n_msg1_attempts": 1331,
+      "n_collisions": 727,
+      "collision_rate": 0.546205860255447
+    },
+    "dcm_4_group": {
+      "label": "DCM, periodic paging, 4 groups",
+      "t50_s": 1.25,
+      "t90_s": 2.35,
+      "t95_s": 9.0,
+      "t99_s": 16.150000000000002,
+      "final_ratio_pct": 100.0,
+      "n_paging": 1503,
+      "n_msg1_attempts": 1706,
+      "n_collisions": 1101,
+      "collision_rate": 0.645369284876905
+    }
+  },
+  "warnings": [],
+  "fig5b_validation": {
+    "pass": false,
+    "status": "FAIL",
+    "checks": [
+      {
+        "id": "t99_4_faster_than_em",
+        "ok": false,
+        "detail": {
+          "t99_em_s": 14.65,
+          "t99_4_s": 16.150000000000002
+        }
+      },
+      {
+        "id": "t99_4_reduction_near_50pct",
+        "ok": false,
+        "detail": {
+          "reduction": -0.1023890784982937,
+          "band": [
+            0.3,
+            0.7
+          ],
+          "paper": 0.5
+        }
+      },
+      {
+        "id": "dcm1_not_clearly_better_than_em",
+        "ok": true,
+        "detail": {
+          "t99_1_over_em": 1.2013651877133107
+        }
+      },
+      {
+        "id": "weakest_harvester_charge_near_20s",
+        "ok": true,
+        "detail": {
+          "pin_min_dbm": -35.97850122087345,
+          "peh_min_nw": 12.67602944542354,
+          "elow_to_eup_s_max": 19.72226406355171,
+          "elow_to_eup_s_p99": 18.37449277230954,
+          "paper_example_s": 20.0,
+          "close_to_20s": true
+        }
+      },
+      {
+        "id": "t99_4_near_paper_10s",
+        "ok": false,
+        "detail": {
+          "t99_4_s": 16.150000000000002,
+          "paper_s": 10.0,
+          "band_s": [
+            6.0,
+            16.0
+          ]
+        }
+      },
+      {
+        "id": "t99_em_near_paper_20s",
+        "ok": true,
+        "detail": {
+          "t99_em_s": 14.65,
+          "paper_s": 20.0,
+          "band_s": [
+            12.0,
+            28.0
+          ]
+        }
+      },
+      {
+        "id": "digitized_mae_not_pathological",
+        "ok": true,
+        "detail": {
+          "mae_mean": 3.9631026835218446,
+          "per_strategy": {
+            "em": {
+              "mae": 3.897653359946772,
+              "rmse": 4.3328374026184475,
+              "t99_error_s": -5.35
+            },
+            "dcm_1_group": {
+              "mae": 5.3234131736526935,
+              "rmse": 7.328765630649907,
+              "t99_error_s": null
+            },
+            "dcm_4_group": {
+              "mae": 2.6682415169660683,
+              "rmse": 3.7923417289584256,
+              "t99_error_s": 6.150000000000002
+            }
+          }
+        }
+      },
+      {
+        "id": "t99_4_digitized_or_stated_error",
+        "ok": false,
+        "detail": {
+          "t99_error_s": 6.150000000000002,
+          "max_abs_s": 6.0
+        }
+      }
+    ],
+    "t99_s": {
+      "em": 14.65,
+      "dcm_1_group": 17.6,
+      "dcm_4_group": 16.150000000000002
+    },
+    "reduction_4_vs_em": -0.1023890784982937,
+    "curve_error": {
+      "em": {
+        "mae": 3.897653359946772,
+        "rmse": 4.3328374026184475,
+        "t99_error_s": -5.35
+      },
+      "dcm_1_group": {
+        "mae": 5.3234131736526935,
+        "rmse": 7.328765630649907,
+        "t99_error_s": null
+      },
+      "dcm_4_group": {
+        "mae": 2.6682415169660683,
+        "rmse": 3.7923417289584256,
+        "t99_error_s": 6.150000000000002
+      }
+    },
+    "note": "PASS requires the published qualitative order, not a single-seed T99 match. Reduction band is 30\u201370% around the paper's ~50%. 4-group T99 must lie in [6, 16] s (paper \u2248 10 s); EM T99 in [12, 28] s (paper \u2248 20 s)."
+  }
+}

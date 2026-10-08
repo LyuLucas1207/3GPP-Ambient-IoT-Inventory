@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from simulator.channel import load_pin_cdf
-from simulator.config import results_dir
+from app.simulator.physics.channel import load_pin_cdf
+from app.simulator.core.config import results_dir
 
 
 def main():

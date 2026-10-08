@@ -6,3 +6,9 @@ fastapi>=0.115
 uvicorn[standard]>=0.30
 pydantic>=2.7
 pytest>=8.0
+httpx>=0.28
+# Recurrent PPO for the aperiodic-paging paper (CPU wheels are sufficient).
+torch>=2.9
+stable-baselines3>=2.7
+sb3-contrib>=2.7
+gymnasium>=1.2

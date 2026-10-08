@@ -1,8 +1,17 @@
 # 3GPP-Ambient-IoT-Inventory
 
-A **system-level simulator** for 3GPP Ambient IoT inventory: batteryless tags harvest RF energy, and a reader identifies them with paging and CBRA (Msg1–Msg3). This repo **implements the simulation environment** and provides a **preliminary reproduction** of the paper’s Device-1 Figure 5(b) comparison (EM, DCM 1-group, DCM 4-group). It does not claim a finished curve-for-curve reproduction until `python scripts/validate_fig5b.py` reports PASS on the scientific checks.
+**System-level simulators** for 3GPP Ambient IoT inventory: batteryless devices harvest RF energy, and a reader identifies them with paging and CBRA (Msg1–Msg3). The repo holds two separate engines, one per paper:
 
-Canonical source: the **published IEEE** paper (arXiv `2501.15020v1` is for discrepancy notes only):
+| Paper | Engine | API | Page |
+| --- | --- | --- | --- |
+| *Fast Inventory … Device Unavailability Due to Energy Harvesting* (periodic paging, EM/DCM) | `Implements/backend/app/simulator/` | `/api/simulator/...` | `/periodic-paging` |
+| *3GPP Ambient IoT Inventory with Aperiodic Paging* (Kota et al.) | `Implements/backend/app/aperiodic_simulator/` | `/api/aperiodic-simulator/...` | `/aperiodic-paging` |
+
+`/api/health` is the only shared endpoint. `Implements/backend/app/common/` holds only pure utilities (RF unit conversion, harvester efficiency, inventory-curve metrics). The legacy "EM" strategy is **not** the aperiodic-paging paper's protocol. For the aperiodic paper see [Aperiodic-paging paper](#aperiodic-paging-paper) and [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md).
+
+The first engine provides a **preliminary reproduction** of the periodic-paging paper's Device-1 Figure 5(b) comparison (EM, DCM 1-group, DCM 4-group). It does not claim a finished curve-for-curve reproduction until `python scripts/validate_fig5b.py` reports PASS on the scientific checks.
+
+Canonical source for the periodic-paging paper: the **published IEEE** version (arXiv `2501.15020v1` is for discrepancy notes only):
 
 > Fast Inventory for 3GPP Ambient IoT Considering Device Unavailability Due to Energy Harvesting
 
@@ -17,10 +26,22 @@ The scientific core is the Python Monte Carlo engine under `Implements/`. The Re
 ├── Docs/                  ← walkthrough notes (en / zh) + reproduction notes
 ├── Papers/                ← paper PDFs
 ├── Files/
-└── Implements/            ← simulator (Python engine + React dashboard)
+└── Implements/            ← simulators (Python engines + React dashboard)
     ├── backend/
+    │   ├── app/
+    │   │   ├── main.py               ← FastAPI app, /api/health
+    │   │   ├── routers/              ← thin HTTP layer per paper (no science)
+    │   │   ├── schemas/              ← request/response models per paper
+    │   │   ├── simulator/            ← periodic-paging paper engine (legacy)
+    │   │   │   └── core/ physics/ protocol/ strategies/ analysis/ runtime/
+    │   │   ├── aperiodic_simulator/  ← aperiodic-paging paper engine
+    │   │   │   └── core/ physics/ protocol/ controllers/ rl/ analysis/ reproduction/ runtime/
+    │   │   └── common/               ← pure shared utilities (rf.py, metrics.py)
+    │   ├── data/                 ← reference data: data/periodic/ and data/aperiodic/
+    │   ├── scripts/              ← reproduction / validation / PPO training CLIs
+    │   └── tests/                ← tests/periodic/, tests/aperiodic/, tests/common/
     ├── frontend/
-    └── results/
+    └── results/               ← results/periodic/ and results/aperiodic/
 ```
 
 ## Quick start — development (hot reload)
@@ -54,6 +75,34 @@ docker compose -f docker-compose.prod.yml up --build
 
 Open http://localhost:3000. Do not run both compose files at once; they share ports 3000 and 8000.
 
+## Aperiodic-paging paper
+
+Engine `app/aperiodic_simulator/`, page http://localhost:3000/aperiodic-paging. On the page, **Paper configuration** (or the header button *Run paper configuration*) applies the settings of one curve of Fig. 5(a)/(b), 6(a)/(b) or 7 and runs it. The run stage at the top right animates the factory, the inventory curve and the time–frequency map of the current CBRA round. Paper Figures 4–8 and Tables IV–VI from the command line:
+
+```bash
+cd Implements/backend
+source .venv/bin/activate
+python scripts/reproduce_aperiodic_fig4.py
+python scripts/reproduce_aperiodic_fig5.py --episodes 100      # Figure 5 + Table IV
+python scripts/reproduce_aperiodic_fig6.py --episodes 100
+python scripts/reproduce_aperiodic_fig7.py --episodes 100
+python scripts/reproduce_aperiodic_fig8.py --episodes 100
+python scripts/reproduce_aperiodic_tables.py --episodes 100    # Tables V, VI
+python scripts/validate_aperiodic_paper.py                     # validation report, likely layer per miss
+```
+
+Outputs go to `Implements/results/aperiodic/`.
+
+Recurrent PPO (sb3-contrib RecurrentPPO, Table III settings):
+
+```bash
+python backend/scripts/train_aperiodic_ppo.py --steps 1000000 --seed 42   # run from Implements/
+```
+
+The repository ships **20,480-step smoke checkpoints** for α ∈ {0, 0.25, 0.5, 0.75}. They are real trained policies with SHA-256-verified metadata, but they fall far short of the paper's 1,000,000 steps, and the API and page say so. Run the command above to replace them.
+
+Equations, named assumptions and module map: [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md). Controller sources: `app/aperiodic_simulator/controllers/README.md`. PPO details: `app/aperiodic_simulator/rl/README.md`.
+
 ## Figure 5(b) simulation (preliminary reproduction)
 
 ```bash
@@ -76,11 +125,11 @@ docker compose run --rm backend python scripts/reproduce_fig5b.py
 
 Outputs:
 
-- `Implements/results/fig5b_reproduced.png`
-- `Implements/results/fig5b_reproduced.csv`
-- `Implements/results/fig5b_metrics.json`
-- `Implements/results/fig5b_tail_diagnosis.json`
-- `Implements/results/fig5b_validation.json`
+- `Implements/results/periodic/fig5b_reproduced.png`
+- `Implements/results/periodic/fig5b_reproduced.csv`
+- `Implements/results/periodic/fig5b_metrics.json`
+- `Implements/results/periodic/fig5b_tail_diagnosis.json`
+- `Implements/results/periodic/fig5b_validation.json`
 
 Call this a Figure 5(b) **reproduction** only when validation PASS includes: 4-group T99 faster than EM, reduction in a **30–70%** band around the paper’s ~50% (an ~80% cut is not “near 50%”), 4-group T99 in [6, 16] s (paper ≈ 10 s), EM T99 in [12, 28] s (paper ≈ 20 s), DCM 1-group not a clear win vs EM, digitized-curve error reported, and multi-seed direction stable. Paper configuration uses a **fixed 3 ms** DCM ON window; experimental early-sleep is a separate checkbox, default off.
 
@@ -153,8 +202,8 @@ Noise, interference, and channel decoding failures are **not** modelled. Msg1 fa
 
 ### B. Digitized from a figure
 
-- `Implements/backend/data/fig5a_pin_cdf.csv` — Figure 5(a) $p_{\mathrm{in}}$ CDF.
-- `Implements/backend/data/reference_fig5b/*.csv` — Figure 5(b) Device-1 curves (IEEE page 7). See `reference_fig5b/DIGITIZATION.md`.
+- `Implements/backend/data/periodic/fig5a_pin_cdf.csv` — Figure 5(a) $p_{\mathrm{in}}$ CDF.
+- `Implements/backend/data/periodic/reference_fig5b/*.csv` — Figure 5(b) Device-1 curves (IEEE page 7). See `reference_fig5b/DIGITIZATION.md`.
 
 ### C. Reproduction assumptions (not fully specified by the paper)
 
@@ -180,6 +229,7 @@ English notes are under `Docs/en/`; Chinese notes are under `Docs/zh/`. Both tra
 | [Docs/PAPER_NOTES.md](./Docs/PAPER_NOTES.md) | arXiv vs published IEEE discrepancies |
 | [Docs/SIMULATION_MODEL.md](./Docs/SIMULATION_MODEL.md) | Energy, EM/DCM, and CBRA model |
 | [Docs/REPRODUCTION_ASSUMPTIONS.md](./Docs/REPRODUCTION_ASSUMPTIONS.md) | Assumptions the paper does not specify |
+| [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md) | Aperiodic-paging paper: model, assumptions, reproduction, PPO |
 | `Papers/` | Paper PDFs |
 | `Files/` | Supporting files |
 

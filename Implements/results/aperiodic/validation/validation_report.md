@@ -1,0 +1,24 @@
+# Aperiodic-paging validation report
+
+| Check | Status | Detail | Likely layer if off |
+|---|---|---|---|
+| Shared RF utility regression | PASS | dBm<->W round-trip err 0.0e+00; legacy re-exports identical: True |  |
+| Figure 4 CDF/channel checks | PASS | mean |ΔP_in| at equal CDF: single_source 0.58 dB, multi_source 0.19 dB (≤1.0) |  |
+| Single-source N_eff/type shares | PASS | N_eff 6511 vs 6440 (+1.1%), shares 17.9/41.1/41.1 vs 17.3/41.3/41.3 % (max 0.6 pp) |  |
+| Multi-source N_eff/type shares | PASS | N_eff 9085 vs 9035 (+0.6%), shares 12.8/32.2/55.0 vs 12.3/32.3/55.3 % (max 0.5 pp) |  |
+| Single-source P_harv < P_sl share | OK | 61.2% (type 2: 93.1%) vs 61.9% (92.5%) |  |
+| L=1 periodic interval | PASS | 82.00 ms vs 82.0 ms (±0.5) |  |
+| L=16 periodic interval | PASS | 1089.14 ms vs 1089.14 ms (±1.0) |  |
+| Lmax = 83 | PASS | Lmax = 83 |  |
+| N_g=4 group distribution | OK | Fig. 6(a): 69.5/23.9/4.8/1.8 vs 69.5/23.9/4.7/1.9 % (max 0.1 pp) |  |
+| Figure 6 qualitative ordering | OK | T99 order aperiodic < Ng1 < Ng4 in both panels: True; T99 {'a_L16': {'aperiodic': 155.4, 'periodic_Ng1': 168.0, 'periodic_Ng4': 462.8}, 'b_L1': {'aperiodic': 230.2, 'periodic_Ng1': 419.4, 'periodic_Ng4': 749.2}}; MAE pp {'a_L16': {'aperiodic': 0.71, 'periodic_Ng1': 0.19, 'periodic_Ng4': 0.31}, 'b_L1': {'aperiodic': 8.13, 'periodic_Ng1': 3.25, 'periodic_Ng4': 3.95}}; 100 episodes |  |
+| Figure 5 T99 reductions | OK | a_L16: 75.5% vs 78%; b_L1: 72.9% vs 75% (±5.0 pp, 100 episodes) |  |
+| Table IV depletion counts | OK | periodic L=16 Ng=1: total 3192 vs 3168 (+0.8%), largest stage gap msg2 114 vs 91; periodic L=16 Ng=4: total 2341 vs 2258 (+3.7%), largest stage gap msg2 157 vs 111; periodic L=1 Ng=1: total 6296 vs 6669 (-5.6%), largest stage gap msg1 192 vs 673; periodic L=1 Ng=4: total 5643 vs 5561 (+1.5%), largest stage gap paging 4930 vs 4553; aperiodic L=16: 0 vs 0; aperiodic L=1: 0 vs 0 (total ±15.0%) |  |
+| PPO checkpoint integrity | PASS | α=0.5: sha256 ok, 20,480 steps (under-trained); α=0.0: sha256 ok, 20,480 steps (under-trained); α=0.25: sha256 ok, 20,480 steps (under-trained); α=0.75: sha256 ok, 20,480 steps (under-trained) |  |
+| Figure 7 RL vs CMEBE gain | OK | RL total-time reduction vs best DFSA (dfsa_schoute) 8.6% vs paper 16% (±8.0 pp); T_total {'recurrent_ppo': 156.8, 'dfsa_schoute': 171.5, 'cmebe': 175.4}; curve MAE pp {'recurrent_ppo': 0.87, 'dfsa_schoute': 0.58, 'cmebe': 0.22}; 100 episodes; RL checkpoint has 20480 of 1,000,000 steps |  |
+| Figure 8 resource efficiency | OK | RE MAE vs paper (pp) {'recurrent_ppo': 0.5, 'pfsa_L1': 10.32, 'pfsa_L8': 0.61, 'pfsa_L32': 0.42}; RL ≥ every PFSA variant at 93% of N points (paper: all); 100 episodes |  |
+| Table V values (PFSA) | OFF | 15/18 within ±15.0%: multi N=1000 pfsa_L1: 16.8 vs 19.3 (-13%); multi N=1000 pfsa_L8: 12.7 vs 12.9 (-2%); multi N=1000 pfsa_L32: 14.0 vs 14.5 (-3%); multi N=7500 pfsa_L1: 117.5 vs 140.4 (-16%); multi N=7500 pfsa_L8: 82.7 vs 85.0 (-3%); multi N=7500 pfsa_L32: 81.8 vs 82.9 (-1%); multi N=15000 pfsa_L1: 234.6 vs 283.8 (-17%); multi N=15000 pfsa_L8: 162.9 vs 167.7 (-3%); multi N=15000 pfsa_L32: 159.4 vs 166.2 (-4%); singl N=1000 pfsa_L1: 205.7 vs 175.2 (+17%); singl N=1000 pfsa_L8: 210.5 vs 184.2 (+14%); singl N=1000 pfsa_L32: 278.2 vs 283.1 (-2%); singl N=7500 pfsa_L1: 320.8 vs 313.7 (+2%); singl N=7500 pfsa_L8: 333.6 vs 326.0 (+2%); singl N=7500 pfsa_L32: 455.9 vs 448.2 (+2%); singl N=15000 pfsa_L1: 411.6 vs 402.6 (+2%); singl N=15000 pfsa_L8: 412.6 vs 407.5 (+1%); singl N=15000 pfsa_L32: 596.1 vs 590.0 (+1%) | PFSA/PZE; round timing; initial availability |
+| Table V values (RL) | OFF | 4/6 within ±15.0%: multi N=1000 recurrent_ppo: 13.2 vs 12.7 (+4%); multi N=7500 recurrent_ppo: 80.1 vs 80.1 (+0%); multi N=15000 recurrent_ppo: 156.8 vs 158.7 (-1%); singl N=1000 recurrent_ppo: 209.5 vs 172.4 (+22%); singl N=7500 recurrent_ppo: 355.6 vs 315.2 (+13%); singl N=15000 recurrent_ppo: 560.4 vs 387.0 (+45%) | PPO action transform/training |
+| Table VI alpha trends | OFF | multi_source: best α 0.5 (paper 0.5); α=0.0: 169s/26.3% vs 159.3s/41.4%, α=0.25: 158s/41.1% vs 159.0s/44.1%, α=0.5: 157s/44.5% vs 158.7s/44.3%, α=0.75: 162s/33.9% vs 160.4s/36.1%; single_source: best α 0.5 (paper 0.5); α=0.0: 570s/3.9% vs 918.8s/0.7%, α=0.25: 583s/2.5% vs 395.7s/3.8%, α=0.5: 560s/4.0% vs 387.0s/5.4%, α=0.75: 581s/3.7% vs 1058.3s/0.7%; under-trained checkpoints: α=0.0, 0.25, 0.5, 0.75 | PPO action transform/training |
+
+Tolerances: cdf_gap_mean_db=1.0, n_eff_rel_pct=3.0, type_share_pp=2.0, below_sleep_pp=3.0, interval_L1_ms=0.5, interval_L16_ms=1.0, ng4_group_pp=2.0, t99_reduction_pp=5.0, table4_total_rel_pct=15.0, fig7_gain_pp=8.0, table5_rel_pct=15.0, table6_rel_pct=15.0

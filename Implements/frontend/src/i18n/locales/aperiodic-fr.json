@@ -1,0 +1,372 @@
+{
+  "nav": {
+    "label": "Simulateurs d'articles",
+    "periodicPaper": "Article radiomessagerie périodique",
+    "aperiodicPaper": "Article radiomessagerie apériodique"
+  },
+  "aperiodic": {
+    "title": "Inventaire 3GPP Ambient IoT avec radiomessagerie apériodique",
+    "documentTitle": "Simulateur de radiomessagerie apériodique",
+    "kicker": "Article apériodique · Kota et al."
+  },
+  "ap": {
+    "header": {
+      "protocol": "Protocole"
+    },
+    "common": {
+      "checking": "Vérification de l'API…",
+      "apiUp": "API active",
+      "apiDown": "API inactive",
+      "running": "En cours…"
+    },
+    "terms": {
+      "aperiodic": "Radiomessagerie apériodique",
+      "periodicBaseline": "Référence périodique",
+      "recurrentPpo": "PPO récurrent",
+      "pfsaPze": "PFSA/PZE",
+      "dfsaSchoute": "DFSA-Schoute",
+      "cmebe": "CMEBE",
+      "ei": "EI",
+      "type1": "Type 1",
+      "type2a": "Type 2a",
+      "type2b": "Type 2b",
+      "singleSource": "Récupération mono-source",
+      "multiSource": "Récupération multi-source",
+      "adaptiveL": "L adaptatif",
+      "adaptiveP": "p adaptatif",
+      "checkpoint": "Point de contrôle",
+      "resourceEfficiency": "Efficacité des ressources"
+    },
+    "controls": {
+      "title": "Scénario",
+      "description": "Tours CBRA en temps continu ; une radiomessagerie apériodique par tour.",
+      "scenario": "Population",
+      "seed": "Graine",
+      "reshuffle": "Graine aléatoire",
+      "runtime": "Mode d'exécution",
+      "interactive": "Interactif",
+      "paperBatch": "Lot article",
+      "episodes": "Épisodes",
+      "harvesting": "Récupération d'énergie",
+      "typeMix": "Types d'appareils",
+      "mixed": "Mixte",
+      "protocol": "Protocole de radiomessagerie",
+      "ng": "Groupes de radiomessagerie N_g",
+      "depletion": "Épuisement en cours de tour",
+      "resources": "Contrôleur de ressources",
+      "on": "ON",
+      "off": "OFF",
+      "lAdaptivePpo": "L adaptatif : L = min(⌈m·L_prev⌉, L_max)",
+      "pAdaptivePpo": "p adaptatif : p = clip(q·p_prev)",
+      "lInitial": "L initial",
+      "controller": "Contrôleur",
+      "lFixed": "L fixe",
+      "custom": "Autre",
+      "alpha": "α (poids de récompense)",
+      "advanced": "Avancé / ablations",
+      "physical": "PHY et imperfections",
+      "F": "F (occasions par créneau)",
+      "capture_ratio_db": "Seuil de capture (dB)",
+      "missed_detection_rate": "Non-détection Msg1",
+      "false_alarm_rate": "Fausse alarme Msg1",
+      "max_time_s": "Durée max (s)",
+      "impairments": "Capture / ND / FA",
+      "eiAlways": "L'étape EI est toujours incluse dans la durée du tour.",
+      "run": "Lancer la simulation",
+      "nTot": "N_tot"
+    },
+    "hints": {
+      "nTot": "Nombre d'appareils déployés avant le filtre de sensibilité. L'article utilise 15000.",
+      "seed": "Graine racine. Tous les flux aléatoires (population, accès, imperfections) en dérivent ; la même graine reproduit exactement l'exécution.",
+      "runtime": "Interactif exécute un épisode avec traces complètes. Lot article exécute plusieurs graines et renvoie la moyenne et la bande 5–95 %.",
+      "episodes": "Nombre de graines indépendantes (graine de base + i). L'article moyenne 100 épisodes.",
+      "harvesting": "Mono-source : seul le champ RF du lecteur. Multi-source : le lecteur et chaque station de base fournissent de la puissance.",
+      "typeMix": "Mixte conserve la répartition Type 1 / 2a / 2b de l'article ; les autres options imposent un seul type.",
+      "ng": "Nombre de groupes de radiomessagerie périodique, sollicités à tour de rôle ; le protocole apériodique n'a pas de groupes.",
+      "depletion": "Si activé, un appareil dont l'énergie atteint E_low pendant un tour s'éteint (comportement de l'article). Désactivé reproduit les courbes « sans épuisement ».",
+      "ppo": "Le PPO récurrent adapte L et p à chaque tour à partir des comptes S1/S2a/S2b/I/C observés. Il nécessite un point de contrôle entraîné.",
+      "lInitial": "L du premier tour ; les contrôleurs adaptatifs le modifient ensuite.",
+      "controller": "PFSA/PZE garde L fixe et adapte p d'après le nombre d'occasions vides (Kodialam & Nandagopal). DFSA-Schoute et CMEBE adaptent la longueur de trame.",
+      "lFixed": "Nombre de créneaux Msg1 par tour (1 … {{lmax}}). L_max découle du budget énergétique du type d'appareil le plus faible.",
+      "alpha": "Poids entre succès et collisions Msg2/Msg3 : r = ((1−α)·S·t_S − α·C2·t_C)/T_round.",
+      "F": "Nombre d'occasions d'accès fréquentielles par créneau Msg1.",
+      "capture_ratio_db": "Une occasion en collision est décodée si l'appareil le plus fort dépasse les autres de ce rapport.",
+      "missed_detection_rate": "Probabilité que le lecteur manque un Msg1 émis.",
+      "false_alarm_rate": "Probabilité que le lecteur détecte un Msg1 sur une occasion vide.",
+      "max_time_s": "L'épisode s'arrête à cet instant même si des appareils restent non identifiés.",
+      "impairments": "Active la capture, la non-détection et la fausse alarme au décodage Msg1."
+    },
+    "ppo": {
+      "title": "Point de contrôle PPO récurrent",
+      "missing": "Aucun point de contrôle PPO récurrent n'est disponible. Entraînez-en un avec :",
+      "smoke": "Point de contrôle de test",
+      "ready": "Entraîné",
+      "unavailable": "Indisponible",
+      "steps": "Pas d'entraînement",
+      "arch": "Architecture",
+      "scenario": "Scénario d'entraînement",
+      "smokeNote": "Ce point de contrôle a été entraîné sur bien moins de pas que l'article ; ses résultats ne reproduisent pas les courbes PPO de l'article.",
+      "trainWith": "Entraînement complet :"
+    },
+    "plots": {
+      "band": "Bande 5–95 %",
+      "inventoryTitle": "Progression de l'inventaire",
+      "inventorySubtitle": "Part identifiée de N_eff = {{n}} ({{episodes}} épisode(s))",
+      "time": "Temps (s)",
+      "ratio": "Identifiés (%)",
+      "idle": "Vide",
+      "collision": "Collision",
+      "re": "Efficacité des ressources (%)",
+      "reward": "Récompense",
+      "roundTitle": "Tours et contrôleur",
+      "roundSubtitle": "{{n}} tours CBRA",
+      "viewAction": "L / p",
+      "viewOutcome": "Issues des occasions",
+      "viewReward": "Récompense",
+      "round": "Tour",
+      "aoCount": "Occasions d'accès"
+    },
+    "stages": {
+      "paging": "Radiomessagerie",
+      "msg1": "Msg1",
+      "EI": "EI",
+      "msg2": "Msg2",
+      "msg3": "Msg3"
+    },
+    "states": {
+      "OFF": "Éteint",
+      "MONITOR": "Écoute",
+      "RX": "Réception",
+      "TX": "Émission",
+      "INTRA_ROUND_SLEEP": "Veille intra-tour",
+      "INTERROUND_SYNC_SLEEP": "Veille synchronisée inter-tours",
+      "DONE": "Identifié"
+    },
+    "cbra": {
+      "title": "Inspecteur de tour CBRA",
+      "subtitle": "Tour {{round}} · L = {{L}} · F = {{F}} · {{mode}}",
+      "round": "Tour",
+      "paging": "Radiomessagerie",
+      "paged": "{{n}} appareils sollicités",
+      "rejected": "{{n}} non réveillés / rejetés",
+      "participants": "{{n}} participants",
+      "phys": {
+        "idle": "Vide",
+        "single": "Unique",
+        "captured": "Capturé",
+        "collision": "Collision"
+      },
+      "obs": {
+        "idle": "observé vide",
+        "success": "observé succès",
+        "collision": "observé collision"
+      },
+      "ei": "EI",
+      "eiFlags": "{{n}} attributions Msg2 signalées",
+      "eiNote": "Indication anticipée du nombre d'attributions Msg2 à suivre.",
+      "msg2": "Msg2",
+      "msg2Slots": "{{used}} utilisés / {{alloc}} alloués ({{decoded}} décodés)",
+      "msg3": "Msg3",
+      "identified": "{{n}} identifiés",
+      "msg3Slots": "{{n}} créneaux Msg3",
+      "periodicNote": "Référence périodique : les ressources Msg2/Msg3 sont dimensionnées à l'avance ; {{wasted}} créneaux sont perdus dans ce tour.",
+      "aperiodicNote": "Radiomessagerie apériodique : Msg2/Msg3 sont dimensionnés selon le nombre de Msg1 décodés ; aucun créneau n'est perdu.",
+      "mismatch": "Observé ≠ physique",
+      "wasted": "Créneau perdu",
+      "identifiedOne": "identifié"
+    },
+    "trace": {
+      "title": "Trace d'appareil",
+      "subtitle": "Appareil #{{id}} · Type {{type}} · P_harv {{p}} µW · identifié à {{done}}",
+      "notDone": "non identifié",
+      "energy": "Énergie stockée",
+      "energyAxis": "Énergie (µJ)",
+      "compressed": "Les longues périodes de cycle de service sont compressées dans la trace ; l'énergie reste exacte aux bornes des segments."
+    },
+    "metrics": {
+      "title": "Métriques de l'épisode",
+      "final": "Identifiés au final",
+      "meanIdTime": "Temps moyen d'ID (s)",
+      "rounds": "Tours",
+      "neff": "N_eff / N_tot",
+      "re": "Efficacité des ressources",
+      "msg2Wasted": "Msg2 perdus",
+      "alloc": "alloués",
+      "aoObs": "Occasions observées",
+      "reward": "Récompense moyenne",
+      "interround": "Épuisements inter-tours",
+      "lostSuccess": "Succès Msg1 perdus",
+      "depletionStage": "Épuisement en cours de tour",
+      "total": "Total",
+      "enforced": "Appliqué",
+      "wouldDeplete": "Épuiserait (diagnostic)",
+      "type": "Type",
+      "identified": "Identifiés",
+      "groups": "Populations des groupes",
+      "totalTime": "Temps total d'ID (s)"
+    },
+    "factory": {
+      "bs": "Station de base",
+      "reader": "Lecteur",
+      "xAxis": "x (m)",
+      "yAxis": "y (m)",
+      "deviceHover": "%{customdata[1]}<br>#%{customdata[0]} · type %{customdata[2]}<br>P_harv = %{customdata[3]:.2f} µW<extra></extra>",
+      "tracedHint": "Les dispositifs entourés ont une trace d'état/énergie enregistrée : cliquez pour l'ouvrir dans Inspecter."
+    },
+    "repro": {
+      "title": "Reproduction de l'article",
+      "subtitle": "Les résultats en cache proviennent des scripts de reproduction ; le recalcul exécute le même moteur sur le serveur.",
+      "paper": "article",
+      "panelMissing": "Le panneau {{panel}} n'est pas dans ce résultat.",
+      "curve": "Courbe",
+      "simVsPaper": "sim / article",
+      "pin": "Puissance incidente (dBm)",
+      "useCached": "Utiliser le cache",
+      "run": "Charger / lancer",
+      "status": {
+        "queued": "en attente",
+        "running": "en cours",
+        "done": "terminé",
+        "error": "erreur"
+      },
+      "sourceComputed": "Calculé maintenant ({{n}} épisodes)",
+      "sourceCached": "Sortie de script en cache : {{path}}",
+      "slowNote": "Recalculer une figure de 100 épisodes prend plusieurs minutes ; la tâche s'exécute en arrière-plan.",
+      "otherTarget": "La dernière tâche concernait une autre cible ; cliquez sur Charger / lancer.",
+      "underTrained": "Le RL (α = {{alpha}}) utilise un point de contrôle entraîné sur {{steps}} des 1 000 000 pas de l'article ; ses résultats ne reproduisent pas la politique de l'article.",
+      "ckMissing": "Aucun point de contrôle RL pour α = {{alpha}} ; ces lignes sont marquées indisponibles.",
+      "methodMissing": "{{method}} est indisponible dans ce résultat (pas de point de contrôle)."
+    },
+    "controllers": {
+      "pfsa_pze": "PFSA/PZE",
+      "dfsa_schoute": "DFSA (Schoute)",
+      "cmebe": "CMEBE",
+      "recurrent_ppo": "PPO récurrent (RL)"
+    },
+    "paperRef": {
+      "prefix": "Article",
+      "fig4": {
+        "label": "Fig. 4",
+        "caption": "CDF de P_in (dBm) dans la zone d'inventaire pour les deux scénarios de récupération d'énergie. En source unique, les appareils sous −36 dBm sont exclus."
+      },
+      "fig5a": {
+        "label": "Fig. 5(a)",
+        "caption": "Proportion d'appareils A-IoT inventoriés en fonction du temps, source unique, N_tot = 15000. Paging apériodique vs paging périodique à N_g groupes (avec et sans épuisement). (a) L_s = 16."
+      },
+      "fig5b": {
+        "label": "Fig. 5(b)",
+        "caption": "Proportion d'appareils A-IoT inventoriés en fonction du temps, source unique, N_tot = 15000. Paging apériodique vs paging périodique à N_g groupes (avec et sans épuisement). (b) L_s = 1."
+      },
+      "fig6a": {
+        "label": "Fig. 6(a)",
+        "caption": "Proportion d'appareils A-IoT inventoriés en fonction du temps, sources multiples, N_tot = 15000. Paging apériodique vs périodique, N_g = 1 et 4. (a) L_s = 16."
+      },
+      "fig6b": {
+        "label": "Fig. 6(b)",
+        "caption": "Proportion d'appareils A-IoT inventoriés en fonction du temps, sources multiples, N_tot = 15000. Paging apériodique vs périodique, N_g = 1 et 4. (b) L_s = 1."
+      },
+      "fig7": {
+        "label": "Fig. 7",
+        "caption": "Proportion d'appareils inventoriés en fonction du temps en paging apériodique avec le contrôleur RL et les références DFSA (DFSA-Schoute, CMEBE). Sources multiples, N_tot = 15000, L_1 = 1."
+      },
+      "fig8": {
+        "label": "Fig. 8",
+        "caption": "Efficacité moyenne des ressources en fonction de N_tot, sources multiples. Contrôleur RL et PFSA avec L_s = 1, 8, 32."
+      },
+      "tab4": {
+        "label": "Tableau IV",
+        "caption": "Nombre moyen d'épuisements d'énergie en cours de round par épisode, source unique, par étape CBRA."
+      },
+      "tab5": {
+        "label": "Tableau V",
+        "caption": "Temps total moyen d'identification (s) en paging apériodique, contrôleur RL et PFSA (L_s = 1, 8, 32) ; N_tot = 1000, 7500, 15000 ; sources multiples et unique."
+      },
+      "tab6": {
+        "label": "Tableau VI",
+        "caption": "Temps total moyen d'identification et efficacité des ressources (RE) du contrôleur RL pour différents α ; N_tot = 15000."
+      },
+      "tf": {
+        "label": "Fig. 1(b) / 2(b)",
+        "caption": "Séquence de messages d'un round CBRA : paging, Msg1 sur L temps × F fréquences, EI, Msg2 (une fréquence, séquentiel), Msg3 (parallèle sur F). Le paging périodique (Fig. 1b) réserve Msg2/Msg3 à l'avance ; le paging apériodique (Fig. 2b) n'alloue que ce qu'annonce l'EI."
+      },
+      "inventory": {
+        "label": "Fig. 5–7 (ordonnée)",
+        "caption": "Même grandeur que les Fig. 5–7 : part de N_eff inventoriée en fonction du temps ; T50/T90/T99 comme en section V-B."
+      },
+      "controller": {
+        "label": "Éq. (5)–(8)",
+        "caption": "Trace du contrôleur par round : état x_s = [S1, S2a, S2b, I, C, L, p] (éq. 5) ; L_s = min(⌈m_s·L_{s−1}⌉, L_max) et p_s = clip(q_s·p_{s−1}) (éq. 6–7) ; récompense r_s (éq. 8)."
+      },
+      "trace": {
+        "label": "Fig. 1(a), 2(a), 3",
+        "caption": "Énergie et état d'un appareil au cours du temps, comme dans les Fig. 1(a)/2(a) (charge et inventaire) et la Fig. 3 (états pendant un round CBRA)."
+      },
+      "factory": {
+        "label": "Sec. V-A, zone D1T1",
+        "caption": "Usine intérieure D1T1 : 120 m × 60 m, 18 BS en grille carrée, une BS centrale sert de lecteur. Les points sont un échantillon de 400 appareils colorés par état."
+      },
+      "metrics": {
+        "label": "Sec. V-B, Tableau IV",
+        "caption": "Métriques d'épisode : T50/T90/T99, temps total d'identification (éq. 4), efficacité des ressources (définition Fig. 8) et épuisements par étape (Tableau IV)."
+      }
+    },
+    "tf": {
+      "aria": "Carte temps–fréquence",
+      "freqAxis": "Fréquence (F = {{F}})",
+      "timeAxis": "Temps (un round CBRA)",
+      "msg2Freq": "1 fréquence, séquentiel",
+      "msg3Freq": "parallèle sur F",
+      "msg3Lost": "Msg3 perdu (épuisement)",
+      "used": "Utilisé",
+      "toScale": "Largeurs à l'échelle du temps",
+      "msg1Grid": "L × F = {{L}} × {{F}} = {{n}} AO"
+    },
+    "stage": {
+      "title": "Déroulement de l'inventaire",
+      "subtitle": "Lecture de {{n}} dispositifs échantillonnés sur le plan de l'usine (N_eff = {{neff}}).",
+      "empty": "Lancez la simulation, ou choisissez une figure dans Configuration de l'article puis Appliquer et lancer.",
+      "batchNote": "Le mode lot de l'article ne renvoie que des courbes agrégées ; passez en mode interactif pour l'animation.",
+      "identified": "{{pct}} % identifiés",
+      "play": "Lecture",
+      "pause": "Pause",
+      "restart": "Recommencer",
+      "round": "Round {{r}}",
+      "roundLen": "{{ms}} ms",
+      "mapNow": "Carte temps–fréquence de ce round :",
+      "mapNearest": "Carte temps–fréquence du round enregistré le plus proche ({{r}}) :",
+      "noRoundYet": "En attente du premier paging…",
+      "currentRound": "Tour CBRA en cours",
+      "currentRoundHint": "Tour en cours à t = {{t}} s de la lecture."
+    },
+    "paperConfig": {
+      "title": "Configuration de l'article",
+      "figure": "Figure de l'article",
+      "curve": "Courbe",
+      "hint": "Charge le réglage de la section V (Tableau II) pour la figure et la courbe choisies. Le mode interactif exécute un épisode ; l'article moyenne 100 épisodes (voir Reproduction de l'article).",
+      "curves": {
+        "aperiodic": "Paging apériodique",
+        "periodic_Ng1": "Périodique, N_g = 1",
+        "periodic_Ng4": "Périodique, N_g = 4",
+        "recurrent_ppo": "RL (PPO récurrent)",
+        "dfsa_schoute": "DFSA-Schoute",
+        "cmebe": "CMEBE"
+      },
+      "setup": {
+        "fig5a": "Source unique · N_tot = 15000, trois types · L_s = 16 fixe · PFSA/PZE · F = 8 · FA 0,1 %, MD 1 %, capture 6 dB.",
+        "fig5b": "Source unique · N_tot = 15000, trois types · L_s = 1 fixe · PFSA/PZE · F = 8 · FA 0,1 %, MD 1 %, capture 6 dB.",
+        "fig6a": "Sources multiples · N_tot = 15000, trois types · L_s = 16 fixe · PFSA/PZE · F = 8 · FA 0,1 %, MD 1 %, capture 6 dB.",
+        "fig6b": "Sources multiples · N_tot = 15000, trois types · L_s = 1 fixe · PFSA/PZE · F = 8 · FA 0,1 %, MD 1 %, capture 6 dB.",
+        "fig7": "Sources multiples · N_tot = 15000, trois types · L_1 = 1, L adaptatif · α = 0,5 · F = 8 · FA 0,1 %, MD 1 %, capture 6 dB."
+      },
+      "apply": "Appliquer",
+      "applyRun": "Appliquer et lancer",
+      "runPaper": "Lancer la configuration de l'article · {{fig}}",
+      "curveHint": "Chaque courbe de la figure choisie correspond à une exécution : changez de courbe pour comparer protocoles ou contrôleurs avec la même graine."
+    },
+    "dock": {
+      "inventory": "Progression de l'inventaire",
+      "rounds": "Tours et contrôleur",
+      "repro": "Reproduction de l'article"
+    }
+  }
+}
