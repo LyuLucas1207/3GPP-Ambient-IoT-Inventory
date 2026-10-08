@@ -1,3 +1,4 @@
+import { MathText } from '@/components/MathText'
 import { FieldLabel, ParamHint } from '@/components/ParamHint'
 import { Segmented } from '@/components/aperiodic/Segmented'
 import { Badge } from '@/components/ui/badge'
@@ -7,8 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { curvesFor, PAPER_FIGURES, type PaperCurve, type PaperFigure } from '@/components/aperiodic/paperPresets'
 import type { AperiodicSimulateRequest, ControllerName, PpoStatus } from '@/types/aperiodicSimulation'
-import { DicesIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { ChevronDownIcon, DicesIcon } from 'lucide-react'
 import { useState } from 'react'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 const L_PRESETS = [1, 8, 16, 32]
@@ -47,42 +50,103 @@ function PaperConfigSection({
 }) {
   const { t } = useTranslation()
   const rlBlocked = curve === 'recurrent_ppo' && !(ppo?.available && ppo.alphas.includes(0.5))
+  const [open, setOpen] = useState(() => localStorage.getItem(PAPER_OPEN_KEY) !== '0')
+  const toggle = () =>
+    setOpen((v) => {
+      localStorage.setItem(PAPER_OPEN_KEY, v ? '0' : '1')
+      return !v
+    })
+  const useButtons = (
+    <div className="grid grid-cols-2 gap-2">
+      <Button variant="outline" size="sm" disabled={busy} onClick={() => onPaper(false)}>
+        {t('ap.paperConfig.apply')}
+      </Button>
+      <Button size="sm" disabled={busy || rlBlocked} onClick={() => onPaper(true)}>
+        {busy ? t('ap.common.running') : t('ap.paperConfig.applyRun')}
+      </Button>
+    </div>
+  )
   return (
-    <Section title={t('ap.paperConfig.title')}>
-      <div className="grid gap-1">
-        <FieldLabel hint={t('ap.paperConfig.hint')}>{t('ap.paperConfig.figure')}</FieldLabel>
-        <Segmented
-          value={fig}
-          onChange={(f) => {
-            setFig(f)
-            if (!curvesFor(f).includes(curve)) setCurve(curvesFor(f)[0])
-          }}
-          options={PAPER_FIGURES.map((f) => ({ value: f, label: t(`ap.paperRef.${f}.label`) }))}
-        />
-      </div>
-      <div className="grid gap-1">
-        <FieldLabel hint={t('ap.paperConfig.curveHint')}>{t('ap.paperConfig.curve')}</FieldLabel>
-        <Segmented
-          value={curve}
-          onChange={setCurve}
-          options={curvesFor(fig).map((c) => ({ value: c, label: t(`ap.paperConfig.curves.${c}`) }))}
-        />
-      </div>
-      <p className="text-[11px] leading-snug text-muted-foreground">{t(`ap.paperConfig.setup.${fig}`)}</p>
-      {rlBlocked && <p className="text-[11px] text-amber-700 dark:text-amber-300">{t('ap.ppo.missing')}</p>}
-      <div className="grid grid-cols-2 gap-2">
-        <Button variant="outline" size="sm" disabled={busy} onClick={() => onPaper(false)}>
-          {t('ap.paperConfig.apply')}
-        </Button>
-        <Button size="sm" disabled={busy || rlBlocked} onClick={() => onPaper(true)}>
-          {busy ? t('ap.common.running') : t('ap.paperConfig.applyRun')}
-        </Button>
-      </div>
+    <Section
+      title={
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          className="flex items-center gap-1 rounded-sm uppercase outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          <ChevronDownIcon className={cn('size-3.5 transition-transform', !open && '-rotate-90')} aria-hidden />
+          {t('ap.paperConfig.title')}
+        </button>
+      }
+    >
+      {!open ? (
+        <>
+          <p className="text-xs text-muted-foreground">
+            <MathText text={t('ap.paperConfig.collapsed', { fig: t(`ap.paperRef.${fig}.label`), curve: t(`ap.paperConfig.curves.${curve}`) })} />
+          </p>
+          {useButtons}
+        </>
+      ) : (
+        <>
+          <div className="grid gap-1">
+            <FieldLabel hint={t('ap.paperConfig.hint')}>{t('ap.paperConfig.figure')}</FieldLabel>
+            <Segmented
+              value={fig}
+              onChange={(f) => {
+                setFig(f)
+                if (!curvesFor(f).includes(curve)) setCurve(curvesFor(f)[0])
+              }}
+              options={PAPER_FIGURES.map((f) => ({ value: f, label: t(`ap.paperRef.${f}.label`), hint: t(`ap.help.fig.${f}`) }))}
+            />
+          </div>
+          <div className="grid gap-1">
+            <FieldLabel hint={t('ap.paperConfig.curveHint')}>{t('ap.paperConfig.curve')}</FieldLabel>
+            <Segmented
+              value={curve}
+              onChange={setCurve}
+              options={curvesFor(fig).map((c) => ({ value: c, label: t(`ap.paperConfig.curves.${c}`), hint: curveHint(t, c) }))}
+            />
+          </div>
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            <MathText text={t(`ap.paperConfig.setup.${fig}`)} />
+          </p>
+          <SymbolsBlock />
+          {rlBlocked && <p className="text-[11px] text-amber-700 dark:text-amber-300">{t('ap.ppo.missing')}</p>}
+          {useButtons}
+        </>
+      )}
     </Section>
   )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+const PAPER_OPEN_KEY = 'ap.paperConfig.open'
+
+function curveHint(t: TFunction, c: PaperCurve): string {
+  const base = c.replace(/_wo_depletion$/, '')
+  const text = t(`ap.help.curve.${base}`)
+  return base === c ? text : `${text}\n\n${t('ap.help.symbols.dep')}`
+}
+
+const SYMBOLS = ['N_tot', 'N_g', 'L_s', 'p_s', 'F', 'E', 'alpha', 'pfsa', 'dep'] as const
+
+function SymbolsBlock() {
+  const { t } = useTranslation()
+  return (
+    <details className="rounded-md border bg-muted/30 px-2 py-1 text-[11px] leading-snug" open>
+      <summary className="cursor-pointer select-none font-medium text-muted-foreground">{t('ap.help.symbols.title')}</summary>
+      <ul className="mt-1 grid gap-1">
+        {SYMBOLS.map((s) => (
+          <li key={s}>
+            <MathText text={t(`ap.help.symbols.${s}`)} />
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
+function Section({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
   return (
     <fieldset className="grid gap-2 rounded-lg border border-border/60 p-2.5">
       <legend className="px-1 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">{title}</legend>
@@ -136,9 +200,7 @@ export function AperiodicControls({
         <Section title={t('ap.controls.scenario')}>
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <FieldLabel htmlFor="ap-n" hint={t('ap.hints.nTot')}>
-                {t('ap.controls.nTot')}
-              </FieldLabel>
+              <FieldLabel htmlFor="ap-n" hint={t('ap.hints.nTot')}>{t('ap.controls.nTot')}</FieldLabel>
               <Input
                 id="ap-n"
                 type="number"
@@ -237,7 +299,7 @@ export function AperiodicControls({
               <label className="flex items-center justify-between gap-2 text-sm">
                 <span className="flex items-center gap-1">
                   {t('ap.controls.depletion')}
-                  <ParamHint text={t('ap.hints.depletion')} />
+                  <ParamHint text={t('ap.hints.depletion')} title={t('ap.controls.depletion')} />
                 </span>
                 <Switch
                   checked={r.enforce_midround_depletion}
@@ -252,7 +314,7 @@ export function AperiodicControls({
           <div className="flex items-center justify-between gap-2 rounded-md bg-muted/50 px-2 py-1.5">
             <span className="flex items-center gap-1 text-sm font-medium">
               {t('ap.terms.recurrentPpo')}
-              <ParamHint text={t('ap.hints.ppo')} />
+              <ParamHint text={t('ap.hints.ppo')} title={t('ap.terms.recurrentPpo')} />
             </span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{ppoOn ? t('ap.controls.on') : t('ap.controls.off')}</span>
@@ -271,8 +333,12 @@ export function AperiodicControls({
           )}
           {ppoOn ? (
             <div className="grid gap-1 text-xs">
-              <p>{t('ap.controls.lAdaptivePpo')}</p>
-              <p>{t('ap.controls.pAdaptivePpo')}</p>
+              <p>
+                <MathText text={t('ap.controls.lAdaptivePpo')} />
+              </p>
+              <p>
+                <MathText text={t('ap.controls.pAdaptivePpo')} />
+              </p>
               <p className="text-muted-foreground">
                 L<sub>max</sub> = {lmax}
               </p>
@@ -331,9 +397,7 @@ export function AperiodicControls({
           )}
           {(ppoOn || advanced) && (
             <div className="grid gap-1">
-              <FieldLabel htmlFor="ap-alpha" hint={t('ap.hints.alpha')}>
-                {t('ap.controls.alpha')}
-              </FieldLabel>
+              <FieldLabel htmlFor="ap-alpha" hint={t('ap.hints.alpha')}>{t('ap.controls.alpha')}</FieldLabel>
               <Segmented
                 value={r.alpha}
                 onChange={(v) => patch({ alpha: v })}
@@ -382,7 +446,7 @@ export function AperiodicControls({
             <label className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1">
                 {t('ap.controls.impairments')}
-                <ParamHint text={t('ap.hints.impairments')} />
+                <ParamHint text={t('ap.hints.impairments')} title={t('ap.controls.impairments')} />
               </span>
               <Switch checked={r.impairments_enabled} onCheckedChange={(v) => patch({ impairments_enabled: v })} />
             </label>

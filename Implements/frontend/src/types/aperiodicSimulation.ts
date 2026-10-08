@@ -281,6 +281,137 @@ export interface JobStatus {
   result?: ReproResult
 }
 
+// ---------------------------------------------------------------- step sessions
+
+export interface StepAction {
+  L: number
+  p: number
+  info: Record<string, number | string | boolean | null>
+}
+
+export interface StepNow {
+  t_s: number
+  round: number
+  n_done: number
+  finished: boolean
+  states: string[]
+  energy_uJ: (number | null)[]
+  next_action: StepAction
+}
+
+export interface StepDeviceStatic {
+  id: number
+  type: '1' | '2a' | '2b'
+  x: number
+  y: number
+  p_harv_uW: number
+  E_up_uJ: number
+  E_low_uJ: number
+  P_mon_uW: number
+  cycle_s: number
+}
+
+export interface StepSessionInfo {
+  session_id: string
+  n_tot: number
+  n_eff: number
+  F: number
+  N_g: number
+  periodic: boolean
+  controller: ControllerName
+  t_mon_s: number
+  devices: StepDeviceStatic[]
+  now: StepNow
+}
+
+export type StepFate =
+  | 'success'
+  | 'missed_detection'
+  | 'collision'
+  | 'unserved'
+  | 'capture_loss'
+  | 'depleted'
+  | 'rejected'
+  | 'depleted_paging'
+
+export interface StepDeviceRound {
+  id: number
+  type: '1' | '2a' | '2b'
+  group: number | null
+  before: { state: string; E_uJ: number | null; mode: number }
+  after: { state: string; E_uJ: number | null; mode: number }
+  paged_via: 'monitor' | 'sync_wake' | 'resync' | null
+  monitor_phase_s: number | null
+  page: { E_start_uJ: number | null; E_end_uJ: number | null; depleted: boolean } | null
+  access: 'transmit' | 'reject' | null
+  ao: { index: number; slot: number; freq: number; physical: number; observed: number; occupancy: number; winner: boolean } | null
+  msg2_index: number | null
+  fate: StepFate | null
+  depleted_stage: string | null
+  exit_time_s: number | null
+  stage_energy_uJ: Record<string, number> | null
+  segments: TraceSegment[]
+}
+
+export interface StepRound {
+  round: number
+  t_start_s: number
+  t_end_s: number
+  L: number
+  p: number
+  F: number
+  group: number | null
+  periodic: boolean
+  timeline: Record<'paging' | 'msg1' | 'ei' | 'msg2' | 'msg3', [number, number]> & { end: number }
+  components_s: Record<string, number>
+  counts: {
+    monitoring_before: number
+    paged: number
+    paged_monitor: number
+    paged_sync_wake: number
+    paged_resync: number
+    page_depleted: number
+    rejected: number
+    participants: number
+    idle_obs: number
+    success_obs: number
+    collision_obs: number
+    physical: Record<string, number>
+    missed: number
+    false_alarm: number
+    k_decoded: number
+    k_alloc: number
+    k_served: number
+    identified: number
+    fates: Record<string, number>
+    depletion_by_stage: Record<string, number>
+    to_done: number
+    to_off: number
+    to_sync: number
+  }
+  ao: {
+    occupancy: number[]
+    physical: number[]
+    observed: number[]
+    winner_device: number[]
+    devices: number[][]
+    missed: boolean[]
+    false_alarm: boolean[]
+  }
+  msg2: { index: number; ao: number; device: number; identified: boolean }[]
+  msg3: { index: number; slot: number; freq: number; device: number; identified: boolean }[]
+  reward: number
+  controller: { used: StepAction; next: StepAction }
+  n_done: number
+  devices: StepDeviceRound[]
+  skipped_rounds: number
+  skipped_time_s: number
+  finished: boolean
+  now: StepNow
+}
+
+export type StepNextResult = StepRound | { finished: true; skipped_rounds: number; skipped_time_s: number; now: StepNow }
+
 // Reproduction payloads are figure-specific; the UI reads them defensively.
 export type ReproResult = Record<string, unknown> & {
   figure?: string

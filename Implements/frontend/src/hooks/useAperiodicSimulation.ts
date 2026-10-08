@@ -115,14 +115,14 @@ export function useAperiodicSimulation() {
       if (pollRef.current) window.clearTimeout(pollRef.current)
       setJob({ target, status: 'queued', progress: [] })
       try {
-        const s = await startReproduction(target, { episodes, base_seed: 0, use_cached: useCached, panels })
+        const s = await startReproduction(target, { episodes, base_seed: request.seed, use_cached: useCached, panels })
         setJob({ ...s, target })
         if (s.job_id && s.status !== 'done') poll(s.job_id)
       } catch (e) {
         setJob({ target, status: 'error', error: e instanceof Error ? e.message : String(e) })
       }
     },
-    [poll],
+    [poll, request.seed],
   )
 
   return { request, setRequest, result, busy, error, backendUp, paper, ppo, run, job, reproduce }

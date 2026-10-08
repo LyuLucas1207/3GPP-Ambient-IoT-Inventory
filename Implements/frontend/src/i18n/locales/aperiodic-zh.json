@@ -51,21 +51,21 @@
       "typeMix": "设备类型",
       "mixed": "混合",
       "protocol": "寻呼协议",
-      "ng": "寻呼分组数 N_g",
+      "ng": "寻呼分组数 $N_g$",
       "depletion": "轮内能量耗尽",
       "resources": "资源控制器",
       "on": "开",
       "off": "关",
-      "lAdaptivePpo": "自适应 L：L = min(⌈m·L_prev⌉, L_max)",
-      "pAdaptivePpo": "自适应 p：p = clip(q·p_prev)",
+      "lAdaptivePpo": "自适应 $L$：$L = \\min(\\lceil m\\,L_{\\mathrm{prev}}\\rceil,\\ L_{\\max})$",
+      "pAdaptivePpo": "自适应 $p$：$p = \\mathrm{clip}(q\\,p_{\\mathrm{prev}})$",
       "lInitial": "初始 L",
       "controller": "控制器",
       "lFixed": "固定 L",
       "custom": "自定义",
-      "alpha": "α（奖励权重）",
+      "alpha": "$\\alpha$（奖励权重）",
       "advanced": "高级 / 消融",
       "physical": "物理层与非理想因素",
-      "F": "F（每时隙接入机会数）",
+      "F": "$F$（每时隙接入机会数）",
       "capture_ratio_db": "捕获门限（dB）",
       "missed_detection_rate": "Msg1 漏检率",
       "false_alarm_rate": "Msg1 虚警率",
@@ -73,28 +73,28 @@
       "impairments": "捕获 / 漏检 / 虚警",
       "eiAlways": "EI 阶段始终计入轮次时长。",
       "run": "运行仿真",
-      "nTot": "N_tot"
+      "nTot": "$N_{\\mathrm{tot}}$"
     },
     "hints": {
-      "nTot": "灵敏度筛选前部署的设备数。论文使用 15000。",
-      "seed": "根种子。所有随机流（设备群、接入、非理想因素）均由其派生，相同种子可完全复现。",
-      "runtime": "交互式运行单回合并保留完整轨迹；论文批量运行多个种子，返回均值与 5–95 % 区间。",
-      "episodes": "独立种子数（基础种子 + i）。论文取 100 个回合的平均。",
-      "harvesting": "单源：仅读写器射频场。多源：读写器与所有基站共同提供采集功率。",
-      "typeMix": "混合模式保持论文中基于灵敏度的 Type 1 / 2a / 2b 比例；其他选项强制单一类型。",
-      "ng": "周期寻呼的分组数，各组轮流被寻呼；非周期协议不分组。",
-      "depletion": "开启时，轮内储能降到 E_low 的设备会关机（论文行为）。关闭则复现“无耗尽”消融曲线。",
-      "ppo": "循环 PPO 根据每轮观测到的 S1/S2a/S2b/I/C 同时调整 L 和 p，需要已训练的检查点。",
-      "lInitial": "第一轮的 L；自适应控制器之后会调整它。",
-      "controller": "PFSA/PZE 固定 L、根据空闲数调整 p（Kodialam & Nandagopal）。DFSA-Schoute 与 CMEBE 调整帧长。",
-      "lFixed": "每轮 Msg1 时隙数（1 … {{lmax}}）。L_max 由最弱设备类型的能量预算决定。",
-      "alpha": "成功与 Msg2/Msg3 冲突之间的奖励权重：r = ((1−α)·S·t_S − α·C2·t_C)/T_round。",
-      "F": "每个 Msg1 时隙的频域接入机会数。",
-      "capture_ratio_db": "冲突机会中最强设备超出其余设备该比值时可被解码。",
-      "missed_detection_rate": "读写器漏检已发送 Msg1 的概率。",
-      "false_alarm_rate": "读写器在空闲机会上误检到 Msg1 的概率。",
-      "max_time_s": "即使仍有设备未识别，回合也在此时间结束。",
-      "impairments": "在 Msg1 解码中启用捕获、漏检与虚警。"
+      "nTot": "**$N_{\\mathrm{tot}}$ — 部署的设备总数**，在灵敏度筛选（剔除接收功率不足的设备）之前计数。论文使用 $N_{\\mathrm{tot}} = 15000$。**$N_{\\mathrm{eff}}$**（有效设备数）是剩下的覆盖范围内设备数。",
+      "seed": "**种子（Seed）— 随机数生成器的根。** 所有随机流（设备布局、能量收集、占空比相位、接入选择、损伤）都由它派生，所以相同种子可以完全复现一次运行。",
+      "runtime": "**运行模式。** **交互（Interactive）**：运行一个 episode 并记录完整的设备轨迹用于回放。**论文批量（Paper batch）**：运行多个种子（episode），返回平均曲线和 5–95 % 区间。",
+      "episodes": "**Episodes — 求平均的独立仿真次数。** 第 i 个 episode 使用种子 = 基础种子 + i，即一个新的随机实现。论文平均 100 个 episode。",
+      "harvesting": "**能量收集场景 — 设备能量从哪里来。** **单源（Single-source）**：只有读写器的 RF（射频）场。**多源（Multi-source）**：读写器加上所有基站（BS）都提供可收集的功率。",
+      "typeMix": "**设备类型（3GPP A-IoT，环境物联网）。** **Type 1**：无源，约 1 µW，无放大器。**Type 2a**：半无源，带唤醒接收机。**Type 2b**：有源发射。**Mixed（混合）** 保持论文按灵敏度划分的 Type 1 / 2a / 2b 比例；其他选项强制只用一种类型。",
+      "ng": "**$N_g$ — 寻呼组数**（仅周期基线）。每个设备属于一个组，各组轮流被寻呼，所以 $N_g = 4$ 时一个设备每 4 轮才被寻呼一次。非周期协议没有分组。",
+      "depletion": "**轮内耗尽（Mid-round depletion）。** 开启时，设备在一轮中储能降到 **$E_{\\mathrm{low}}$**（关机阈值）就会关机并退出（论文行为）。关闭时复现 **w/o depletion**（无耗尽）消融曲线。",
+      "ppo": "**Recurrent PPO — 近端策略优化（Proximal Policy Optimization），使用循环（LSTM，长短期记忆）策略网络**，即论文的强化学习（RL）控制器。每轮根据观测到的 S1/S2a/S2b（各类型成功数）、I（空闲 AO 数）和 C（碰撞数）同时调整 $L$ 和 $p$。需要训练好的检查点。",
+      "lInitial": "**$L_1$ — 初始 $L$**，即第一轮的 Msg1 时隙数。自适应控制器之后会改变它。",
+      "controller": "**控制器 — 每轮选择 $L$ 和 $p$ 的算法。** **PFSA/PZE** — 概率帧时隙 ALOHA（Probabilistic Framed Slotted ALOHA）+ 概率零估计器（Probabilistic Zero Estimator）：$L$ 固定，根据空闲 AO 数调整 $p$（Kodialam & Nandagopal）。**DFSA-Schoute** — 动态帧时隙 ALOHA（Dynamic Framed Slotted ALOHA）+ Schoute 积压估计。**CMEBE** — 考虑捕获效应的最小误差积压估计（Capture-aware Minimum-Error Backlog Estimation）。后两者调整帧长 $L$。",
+      "lFixed": "**$L$ — 每个 CBRA 轮中的 Msg1 时隙数**（CBRA = 基于竞争的随机接入，contention-based random access）。配合 $F$ 个频点，一轮共有 $L \\cdot F$ 个接入机会（AO）。取值范围 1 … {{lmax}}；**$L_{\\max}$** 由最弱设备类型的能量预算决定。",
+      "alpha": "**$\\alpha$（alpha）— RL 智能体的奖励权重**，在识别设备数与 Msg2/Msg3 碰撞之间权衡：$r = \\big((1-\\alpha)\\,S\\,t_S - \\alpha\\,C_2\\,t_C\\big)/T_{\\mathrm{round}}$。",
+      "F": "**$F$ — 频率资源数**，即每个 Msg1 时隙的接入机会数（论文：$F = 8$）。",
+      "capture_ratio_db": "**捕获比（dB，分贝）** — 发生碰撞的 AO 中，如果最强设备的功率比其他设备高出这个比值，仍可被解码（捕获效应）。",
+      "missed_detection_rate": "**MD — Msg1 漏检率**：读写器漏掉一个已发送 Msg1 的概率。",
+      "false_alarm_rate": "**FA — Msg1 虚警率**：读写器在空闲 AO 上误检到 Msg1 的概率。",
+      "max_time_s": "**最长时间（s）** — 即使还有设备未识别，episode 也在此时刻停止。",
+      "impairments": "**Capture / MD / FA — 接收机损伤**：Msg1 解码中的捕获效应、漏检和虚警。开启以模拟非理想读写器。"
     },
     "ppo": {
       "title": "循环 PPO 检查点",
@@ -235,7 +235,11 @@
       "otherTarget": "上一个任务属于其他目标，请点击“加载 / 运行”。",
       "underTrained": "RL（α = {{alpha}}）使用的检查点只训练了 {{steps}} 步（论文为 1,000,000 步），其结果不是论文策略的复现。",
       "ckMissing": "α = {{alpha}} 没有 RL 检查点，相关行标记为不可用。",
-      "methodMissing": "本结果中 {{method}} 不可用（无检查点）。"
+      "methodMissing": "本结果中 {{method}} 不可用（无检查点）。",
+      "baseSeed": "基础种子 {{seed}}",
+      "cachedNote": "缓存：立即加载复现脚本的已存结果（100 个 episode，种子 基础+0 … 基础+99）；Episodes 输入会被忽略。",
+      "seedNote": "重新计算：episode 使用种子 {{seed}} … {{last}}（基础种子 = 配置面板中的种子），每个都是独立的随机实现。",
+      "otherRunning": "另一个复现任务（{{target}}）正在运行，请等待其完成。"
     },
     "controllers": {
       "pfsa_pze": "PFSA/PZE",
@@ -247,31 +251,31 @@
       "prefix": "论文",
       "fig4": {
         "label": "图 4",
-        "caption": "两种采能场景下库存布局中 P_in（dBm）的 CDF。单源场景排除入射功率低于 −36 dBm 的设备。"
+        "caption": "两种采能场景下库存布局中 $P_{\\mathrm{in}}$（dBm）的 CDF。单源场景排除入射功率低于 −36 dBm 的设备。"
       },
       "fig5a": {
         "label": "图 5(a)",
-        "caption": "单源采能、N_tot = 15000 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比分 N_g 组的周期寻呼（含/不含能量耗尽）。(a) L_s = 16。"
+        "caption": "单源采能、$N_{\\mathrm{tot}} = 15000$ 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比分 $N_g$ 组的周期寻呼（含/不含能量耗尽）。(a) $L_s = 16$。"
       },
       "fig5b": {
         "label": "图 5(b)",
-        "caption": "单源采能、N_tot = 15000 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比分 N_g 组的周期寻呼（含/不含能量耗尽）。(b) L_s = 1。"
+        "caption": "单源采能、$N_{\\mathrm{tot}} = 15000$ 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比分 $N_g$ 组的周期寻呼（含/不含能量耗尽）。(b) $L_s = 1$。"
       },
       "fig6a": {
         "label": "图 6(a)",
-        "caption": "多源采能、N_tot = 15000 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比周期寻呼 N_g = 1 与 4。(a) L_s = 16。"
+        "caption": "多源采能、$N_{\\mathrm{tot}} = 15000$ 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比周期寻呼 $N_g = 1$ 与 4。(a) $L_s = 16$。"
       },
       "fig6b": {
         "label": "图 6(b)",
-        "caption": "多源采能、N_tot = 15000 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比周期寻呼 N_g = 1 与 4。(b) L_s = 1。"
+        "caption": "多源采能、$N_{\\mathrm{tot}} = 15000$ 时成功盘点的 A-IoT 设备比例随时间变化。非周期寻呼对比周期寻呼 $N_g = 1$ 与 4。(b) $L_s = 1$。"
       },
       "fig7": {
         "label": "图 7",
-        "caption": "非周期寻呼下 RL 控制器与 DFSA 基线（DFSA-Schoute、CMEBE）的成功盘点比例随时间变化。多源采能，N_tot = 15000，L_1 = 1。"
+        "caption": "非周期寻呼下 RL 控制器与 DFSA 基线（DFSA-Schoute、CMEBE）的成功盘点比例随时间变化。多源采能，$N_{\\mathrm{tot}} = 15000$，$L_1 = 1$。"
       },
       "fig8": {
         "label": "图 8",
-        "caption": "多源采能下平均资源效率随设备总数 N_tot 的变化。RL 控制器与不同 L_s（1、8、32）的 PFSA。"
+        "caption": "多源采能下平均资源效率随设备总数 $N_{\\mathrm{tot}}$ 的变化。RL 控制器与不同 $L_s$（1、8、32）的 PFSA。"
       },
       "tab4": {
         "label": "表 IV",
@@ -279,23 +283,23 @@
       },
       "tab5": {
         "label": "表 V",
-        "caption": "非周期寻呼下 RL 控制器与 PFSA（L_s = 1、8、32）的平均总识别时间（秒）；N_tot = 1000、7500、15000；多源与单源采能。"
+        "caption": "非周期寻呼下 RL 控制器与 PFSA（$L_s = 1$、8、32）的平均总识别时间（秒）；$N_{\\mathrm{tot}} = 1000$、7500、15000；多源与单源采能。"
       },
       "tab6": {
         "label": "表 VI",
-        "caption": "不同 α 下 RL 控制器的平均总识别时间与资源效率（RE）；N_tot = 15000。"
+        "caption": "不同 $\\alpha$ 下 RL 控制器的平均总识别时间与资源效率（RE）；$N_{\\mathrm{tot}} = 15000$。"
       },
       "tf": {
         "label": "图 1(b) / 2(b)",
-        "caption": "单个 CBRA 回合内的消息序列：寻呼、Msg1（L 个时隙 × F 个频率的接入机会）、EI、Msg2（单一频率、按时间顺序）、Msg3（F 个频率并行）。周期寻呼（图 1b）预先预留 Msg2/Msg3；非周期寻呼（图 2b）只分配 EI 宣告的数量。"
+        "caption": "单个 CBRA 回合内的消息序列：寻呼、Msg1（$L$ 个时隙 × $F$ 个频率的接入机会）、EI、Msg2（单一频率、按时间顺序）、Msg3（$F$ 个频率并行）。周期寻呼（图 1b）预先预留 Msg2/Msg3；非周期寻呼（图 2b）只分配 EI 宣告的数量。"
       },
       "inventory": {
         "label": "图 5–7（纵轴）",
-        "caption": "与论文图 5–7 相同的量：N_eff 中成功盘点的比例随时间变化；T50/T90/T99 定义见第 V-B 节。"
+        "caption": "与论文图 5–7 相同的量：$N_{\\mathrm{eff}}$ 中成功盘点的比例随时间变化；$T_{50}$/$T_{90}$/$T_{99}$ 定义见第 V-B 节。"
       },
       "controller": {
         "label": "式 (5)–(8)",
-        "caption": "每回合控制器轨迹：状态 x_s = [S1, S2a, S2b, I, C, L, p]（式 5）；L_s = min(⌈m_s·L_{s−1}⌉, L_max)，p_s = clip(q_s·p_{s−1})（式 6–7）；奖励 r_s（式 8）。"
+        "caption": "每回合控制器轨迹：状态 $x_s = [S_1, S_{2a}, S_{2b}, I, C, L, p]$（式 5）；$L_s = \\min(\\lceil m_s\\,L_{s-1}\\rceil,\\ L_{\\max})$，$p_s = \\mathrm{clip}(q_s\\,p_{s-1})$（式 6–7）；奖励 $r_s$（式 8）。"
       },
       "trace": {
         "label": "图 1(a)、2(a)、3",
@@ -307,7 +311,7 @@
       },
       "metrics": {
         "label": "第 V-B 节，表 IV",
-        "caption": "回合指标：T50/T90/T99、总识别时间（式 4）、资源效率（图 8 定义）以及按阶段统计的轮内能量耗尽（表 IV）。"
+        "caption": "回合指标：$T_{50}$/$T_{90}$/$T_{99}$、总识别时间（式 4）、资源效率（图 8 定义）以及按阶段统计的轮内能量耗尽（表 IV）。"
       }
     },
     "tf": {
@@ -324,7 +328,7 @@
     "stage": {
       "title": "盘点运行",
       "subtitle": "工厂平面上 {{n}} 个采样设备的回放（N_eff = {{neff}}）。",
-      "empty": "点击“运行仿真”，或在“论文配置”中选择一幅图后点击“应用并运行”。",
+      "empty": "点击“运行仿真”，或在“论文配置”中选择一幅图后点击“使用并运行”。",
       "batchNote": "论文批量模式只返回聚合曲线；切换到交互模式可查看动画。",
       "identified": "已识别 {{pct}} %",
       "play": "播放",
@@ -342,31 +346,308 @@
       "title": "论文配置",
       "figure": "论文图",
       "curve": "曲线",
-      "hint": "按所选论文图和曲线载入第 V 节（表 II）的设置。交互模式运行一个带种子的回合；论文对 100 个回合取平均（见下方“论文复现”）。",
+      "hint": "**论文图 — 加载论文中的一组设置。** 为所选图和曲线加载第 V 节的设置（表 II）。交互模式运行一个带种子的 episode；论文平均 100 次（见下方“论文图”标签页）。",
       "curves": {
         "aperiodic": "非周期寻呼",
-        "periodic_Ng1": "周期寻呼，N_g = 1",
-        "periodic_Ng4": "周期寻呼，N_g = 4",
+        "periodic_Ng1": "周期寻呼，$N_g = 1$",
+        "periodic_Ng4": "周期寻呼，$N_g = 4$",
         "recurrent_ppo": "RL（循环 PPO）",
         "dfsa_schoute": "DFSA-Schoute",
-        "cmebe": "CMEBE"
+        "cmebe": "CMEBE",
+        "periodic_Ng1_wo_depletion": "周期，$N_g = 1$，无耗尽",
+        "periodic_Ng4_wo_depletion": "周期，$N_g = 4$，无耗尽"
       },
       "setup": {
-        "fig5a": "单源采能 · N_tot = 15000，三种类型 · L_s = 16 固定 · PFSA/PZE · F = 8 · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
-        "fig5b": "单源采能 · N_tot = 15000，三种类型 · L_s = 1 固定 · PFSA/PZE · F = 8 · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
-        "fig6a": "多源采能 · N_tot = 15000，三种类型 · L_s = 16 固定 · PFSA/PZE · F = 8 · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
-        "fig6b": "多源采能 · N_tot = 15000，三种类型 · L_s = 1 固定 · PFSA/PZE · F = 8 · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
-        "fig7": "多源采能 · N_tot = 15000，三种类型 · L_1 = 1，自适应 L · α = 0.5 · F = 8 · 虚警 0.1 %、漏检 1 %、捕获 6 dB。"
+        "fig5a": "单源采能 · $N_{\\mathrm{tot}} = 15000$，三种类型 · $L_s = 16$ 固定 · PFSA/PZE · $F = 8$ · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
+        "fig5b": "单源采能 · $N_{\\mathrm{tot}} = 15000$，三种类型 · $L_s = 1$ 固定 · PFSA/PZE · $F = 8$ · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
+        "fig6a": "多源采能 · $N_{\\mathrm{tot}} = 15000$，三种类型 · $L_s = 16$ 固定 · PFSA/PZE · $F = 8$ · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
+        "fig6b": "多源采能 · $N_{\\mathrm{tot}} = 15000$，三种类型 · $L_s = 1$ 固定 · PFSA/PZE · $F = 8$ · 虚警 0.1 %、漏检 1 %、捕获 6 dB。",
+        "fig7": "多源采能 · $N_{\\mathrm{tot}} = 15000$，三种类型 · $L_1 = 1$，自适应 $L$ · $\\alpha = 0.5$ · $F = 8$ · 虚警 0.1 %、漏检 1 %、捕获 6 dB。"
       },
-      "apply": "应用",
-      "applyRun": "应用并运行",
-      "runPaper": "运行论文配置 · {{fig}}",
-      "curveHint": "所选论文图中的每条曲线对应一次运行：切换曲线即可在相同种子下比较协议或控制器。"
+      "apply": "使用论文图",
+      "applyRun": "使用并运行",
+      "runPaper": "运行论文图 · {{fig}}",
+      "curveHint": "**曲线 — 所选图中的一条线。** 每条曲线对应一种协议/控制器；切换曲线可在相同种子下比较。",
+      "collapsed": "已收起 · 当前 **{{fig}}** · {{curve}}"
     },
     "dock": {
       "inventory": "盘点进度",
       "rounds": "轮次与控制器",
-      "repro": "论文复现"
+      "repro": "论文复现",
+      "inventoryHint": "**盘点进度 — 已盘点比例随时间变化**（交互模式为单个带种子的 episode，论文批量模式为批量均值）。",
+      "roundsHint": "**轮次与控制器 — 每轮的动作和结果**：控制器选择的 $L_s$、$p_s$，以及每个 CBRA 轮的空闲 / 成功 / 碰撞数和奖励。",
+      "figure": "论文图 · {{fig}}",
+      "figureHint": "**论文图 — 跟随左侧配置面板中选择的图。** 上方：当前单次运行与论文曲线对比。下方：N 个 episode 的平均（论文使用 100 个）。",
+      "other": "其他论文结果",
+      "otherHint": "**其他论文结果** — 不是单次盘点曲线的结果：图 4（接收功率 CDF）、图 8（资源效率随 $N_{\\mathrm{tot}}$ 变化）以及表 IV–VI。"
+    },
+    "overview": {
+      "button": "总览",
+      "buttonAria": "打开非周期寻呼协议的设备状态机",
+      "title": "非周期寻呼 — 设备状态机（论文图 2 / 图 3）",
+      "lead": "单个 A-IoT 设备如何经历充电、监听、寻呼与 CBRA 轮（Msg1 → EI → Msg2 → Msg3）。紫色分支是周期寻呼基线（论文图 1），用于对比。",
+      "steps": "充电阶段：所有设备初始为 OFF，持续收集能量直到储能达到 E_up。\n达到 E_up 后进入 MONITOR，最多监听寻呼 T_mon（Type 2a/2b 用 WuRX，Type 1 用 RX）。T_mon 内没有寻呼 → 回到 OFF 继续充电（占空比循环）。\n读写器非周期地发起寻呼：上一个 CBRA 轮结束后立即开始新的寻呼。只有该时刻正在监听的设备能收到。\n接入决策：每个被寻呼的设备以概率 p_s 发送，否则被拒绝。\nMsg1：设备在 L_s × F 个接入机会（AO，L_s 个时隙 × F 个频点）中随机选一个发送 RN16，结果为空闲、单个、捕获或碰撞。\nEI（早期指示）：读写器标记解码成功的 AO；Msg2/Msg3 资源数 K 等于成功解码的 Msg1 数（动态分配）。\nMsg2：单频点上依次回显 RN16。捕获失败的设备听到别人的 RN16 → 失败。\nMsg3：设备发送 ID（F 路并行）→ DONE（已识别）。\n非周期：任何失败或被拒 → OFF，充电到 E_up 后再等后续寻呼。周期基线：失败设备同步睡眠到本组下一次寻呼（每 N_g 轮一次）。\n任何阶段储能低于 E_low 即耗尽，设备关机并重新充电。",
+      "ascii": "OFF ──E=E_up──► MONITOR ──t0 寻呼──► RX 寻呼\n ▲                │ T_mon 内无寻呼         │\n │◄───────────────┘                        ▼\n │                               接入 p_s ─ 拒绝 ─► OFF（非周期）\n │                                    │              同步睡眠（周期）\n │                                    ▼\n │                      Msg1：L_s × F 中选 1 个 AO\n │                                    ▼\n │◄── 无 EI 标记（碰撞/漏检）──────── EI\n │                                    ▼\n │◄── 捕获失败 ────────────────────── Msg2\n │                                    ▼\n │                                  Msg3 ──► DONE\n └◄── E < E_low（轮内耗尽）",
+      "node": {
+        "charge": "OFF — 收集能量直到 $E = E_{\\mathrm{up}}$（充电阶段）",
+        "monitor": "MONITOR 监听寻呼，≤ T_mon（WuRX：Type 2a/2b，RX：Type 1）",
+        "page": "读写器：A-IoT 寻呼（非周期机会，紧接上一轮之后）",
+        "caught": "寻呼开始时正在监听？→ 接收寻呼（RX）",
+        "access": "接入决策：以概率 $p_s$ 发送",
+        "msg1": "Msg1：在 $L_s \\times F$ 中随机一个 AO 发送 RN16",
+        "ei": "EI：读写器标记解码成功的 AO，$K$ = 解码的 Msg1 数",
+        "msg2": "Msg2：RN16 回显（单频点，依次）",
+        "msg3": "Msg3：设备 ID（$F$ 路并行）",
+        "done": "DONE — 已识别",
+        "fail": "失败：碰撞 / 漏检 / 无资源 / 捕获失败",
+        "rejected": "接入决策拒绝（概率 1 − $p_s$）",
+        "sync": "仅周期基线：轮间同步睡眠，直到本组下一次寻呼（每 $N_g$ 轮）",
+        "depleted": "轮内耗尽：某阶段 $E < E_{\\mathrm{low}}$"
+      },
+      "edge": {
+        "full": "E = E_up",
+        "noPage": "T_mon 内无寻呼",
+        "page": "t0 时刻开始寻呼",
+        "rx": "收到",
+        "transmit": "发送 (p_s)",
+        "reject": "拒绝 (1 − p_s)",
+        "flag": "EI 已标记",
+        "noFlag": "无 EI 标记",
+        "echo": "回显自己的 RN16",
+        "captureLoss": "别人的 RN16",
+        "identified": "Msg3 解码",
+        "depleted": "E < E_low",
+        "toOff": "关机，重新充电",
+        "aperiodicOff": "非周期：回到 OFF",
+        "periodicSleep": "周期：同步睡眠",
+        "wake": "本组寻呼（每 N_g 轮）",
+        "syncLow": "睡眠中降到 E_low"
+      },
+      "nodeHelp": {
+        "charge": {
+          "title": "OFF / 充电",
+          "body": "设备关机，只收集能量。收集功率 $P_{\\mathrm{harv}}$ 取决于与读写器的距离（单源）或与读写器及所有基站的距离（多源）。储能达到 $E_{\\mathrm{up}}$ 时开机。"
+        },
+        "monitor": {
+          "title": "MONITOR（寻呼接收窗口）",
+          "body": "充满后设备最多监听 T_mon。Type 2a/2b 使用唤醒接收机（WuRX，极低功耗），Type 1 使用主接收机（RX）。监听期间耗电；没有寻呼就再次关机。这一 OFF ↔ MONITOR 循环就是论文图 2(a) 的占空比（DCM）。"
+        },
+        "page": {
+          "title": "非周期寻呼机会",
+          "body": "与周期寻呼（固定间隔、固定资源）不同，读写器在上一轮结束后立即再次寻呼，所以寻呼时刻是不规则的（图 2(a) 中的箭头）。"
+        },
+        "caught": {
+          "title": "收到寻呼",
+          "body": "只有寻呼开始时处于 MONITOR 的设备才能收到（RX 持续 t_page）。其他设备继续 OFF/MONITOR 循环，等待后续寻呼。"
+        },
+        "access": {
+          "title": "接入概率 $p_s$",
+          "body": "每个被寻呼的设备以概率 $p_s$ 参与本轮（由控制器给出：PFSA/PZE、DFSA、CMEBE 或循环 PPO）。被拒绝的设备不发送直接离开。"
+        },
+        "msg1": {
+          "title": "Msg1（RN16）",
+          "body": "$L_s$ 个时隙 × $F$ 个频点 = $L_s \\cdot F$ 个接入机会（AO）。每个参与者均匀随机选一个 AO。每个 AO 的结果：空闲、单个、捕获（最强信号超过捕获门限即胜出）或碰撞；漏检和虚警会改变读写器的观测结果。"
+        },
+        "ei": {
+          "title": "早期指示（EI）",
+          "body": "读写器广播哪些 AO 被解码。非周期协议中 Msg2/Msg3 资源数 $K$ = 解码的 Msg1 数，不浪费资源。AO 未被标记的设备在 EI 后停止。"
+        },
+        "msg2": {
+          "title": "Msg2",
+          "body": "读写器在单频点上依次回显每个解码的 RN16。若设备所在 AO 被别的设备捕获，它听到的是别人的 RN16，失败。"
+        },
+        "msg3": {
+          "title": "Msg3",
+          "body": "每个被服务的设备发送其 ID；每个 Msg3 时隙最多 $F$ 个并行。"
+        },
+        "done": {
+          "title": "已识别",
+          "body": "设备已完成盘点，在本 episode 剩余时间内保持静默。"
+        },
+        "fail": {
+          "title": "失败",
+          "body": "碰撞、漏检、没有 Msg2 资源（周期分配不足）或捕获失败。非周期寻呼中设备关机，必须重新充到 $E_{\\mathrm{up}}$ 才能接收新的寻呼。"
+        },
+        "rejected": {
+          "title": "被拒绝",
+          "body": "设备收到了寻呼，但接入抽签（概率 1 − $p_s$）决定它不发送。"
+        },
+        "sync": {
+          "title": "轮间同步睡眠（仅周期）",
+          "body": "周期基线中，第一次收到的寻呼决定设备所在组（$N_g$ 个组轮流寻呼）。在两次本组寻呼之间以 $P_{\\mathrm{sl}}$ 睡眠并保持时钟；若 $P_{\\mathrm{harv}} < P_{\\mathrm{sl}}$ 可能降到 $E_{\\mathrm{low}}$ 而关机。"
+        },
+        "depleted": {
+          "title": "轮内耗尽",
+          "body": "若在寻呼、Msg1、EI、Msg2 或 Msg3 中储能低于 $E_{\\mathrm{low}}$，设备立即关机（III-C 节）。当 $L_s \\le L_{\\max}$ 时，满电的非周期设备不会发生这种情况。"
+        }
+      }
+    },
+    "step": {
+      "button": "分步流程",
+      "title": "分步流程 — 逐个 CBRA 轮演示（论文图 2 / 图 3）",
+      "lead": "使用当前设置的小规模 episode（与“运行仿真”相同的引擎、控制器和种子规则）。点击“下一步”依次查看每一轮：寻呼前 → 寻呼 → 接入 → Msg1 → EI → Msg2 → Msg3 → 状态转换。",
+      "devices": "设备数 $N_{\\mathrm{tot}}$",
+      "devicesHint": "**设备数 $N_{\\mathrm{tot}}$ — 这个逐步演示 episode 的规模**（其他设置都来自配置面板）。覆盖范围外的设备会被排除，所以 $N_{\\mathrm{eff}}$ 可能更小。N 小时表格易读；N 大时碰撞更多。",
+      "skipEmpty": "跳过空轮",
+      "skipEmptyHint": "**跳过空轮。** 设备少时很多寻呼没有设备收到（$t_0$ 时没有设备在监听）。开启后，“下一步”会跳到至少有一个设备收到寻呼的轮次，并显示跳过的轮数。",
+      "restart": "重新开始",
+      "round": "第 {{r}} 轮",
+      "identifiedOf": "已识别 {{n}} / {{total}}",
+      "prev": "上一步",
+      "next": "下一步",
+      "first": "发出第一次寻呼",
+      "auto": "自动",
+      "nextRound": "下一轮",
+      "nowTitle": "当前步骤",
+      "noSession": "无法创建分步会话。",
+      "intro": "充电阶段结束：覆盖范围内共 {{n}} 个设备。t = 0 时 {{mon}} 个处于 MONITOR（监听寻呼），{{off}} 个处于 OFF 充电（占空比的稳态相位，论文图 2(a)）。",
+      "introHint": "点击“发出第一次寻呼”（或 →）开始第 0 轮；← 返回上一步。",
+      "skipped": "（跳过 {{n}} 个空轮，{{ms}} ms）",
+      "pending": "待进行",
+      "pagedN": "{{n}} 个被寻呼",
+      "eiFlags": "{{n}} 个标记",
+      "eiLegend": "EI 已标记（分配 Msg2）",
+      "sleep": "睡眠",
+      "device": "设备",
+      "monitorRx": "用 RX 监听",
+      "monitorWurx": "用 WuRX 监听",
+      "noPaged": "本轮没有设备被寻呼。",
+      "reader": "读写器",
+      "timelineHint": "柱高 = 功率状态（TX > RX > WuRX > 睡眠 > 关机）；黑线是储能，下边界 E_low，上边界 E_up。粉色窗口标出当前步骤。",
+      "stripTitle": "目前为止的寻呼机会",
+      "stripHint": "**寻呼机会 — 论文图 2(a)。** 非周期寻呼下每个箭头（寻呼）紧跟上一轮之后，所以时间上不规则。周期寻呼（图 1）则位于固定网格上。",
+      "tfTitle": "本轮的时频资源",
+      "tfHint": "**时频资源 — 论文图 2(b)。** 纵轴为频率（$F$ 行），横轴为时间。每个 Msg1 单元格是一个 **AO（接入机会）**，显示使用它的设备 ID。Msg2 在一个频点上依次进行，Msg3 在 $F$ 个频点上并行。点击单元格可跟踪该设备。",
+      "powerTitle": "设备功率状态（论文图 3）",
+      "powerHint": "**设备功率状态 — 论文图 3。** Type 2a/2b 设备（使用 **WuRX，唤醒接收机**）和 Type 1 设备（使用主 **RX，接收机**）在本轮中的行为；**TX** = 发送。点击表格行或时频单元格选择设备。",
+      "tableEmpty": "第一次寻呼后显示设备表。",
+      "tableHint": "高亮行参与当前步骤；点击被寻呼的设备查看其功率时间线。",
+      "filterAll": "全部 ({{n}})",
+      "filterPaged": "被寻呼 ({{n}})",
+      "filterPart": "发送 ({{n}})",
+      "ownRn16": "自己的 RN16",
+      "foreignRn16": "别人的 RN16",
+      "col": {
+        "type": "类型",
+        "before": "t0 时状态",
+        "paged": "寻呼",
+        "access": "接入",
+        "ao": "Msg1 AO（时隙, 频点）",
+        "fate": "结果",
+        "after": "之后状态"
+      },
+      "via": {
+        "monitor": "监听中",
+        "sync_wake": "唤醒（本组寻呼）",
+        "resync": "其他组 → 重新同步"
+      },
+      "access": {
+        "transmit": "发送",
+        "reject": "拒绝"
+      },
+      "fate": {
+        "success": "已识别",
+        "missed_detection": "漏检",
+        "collision": "碰撞",
+        "unserved": "无 Msg2 资源",
+        "capture_loss": "捕获失败",
+        "depleted": "耗尽（E < E_low）",
+        "rejected": "被拒（1 − p_s）",
+        "depleted_paging": "寻呼时耗尽"
+      },
+      "phase": {
+        "before": "寻呼前",
+        "paging": "寻呼",
+        "access": "接入 $p_s$",
+        "msg1": "Msg1",
+        "ei": "EI",
+        "msg2": "Msg2",
+        "msg3": "Msg3",
+        "after": "状态转换"
+      },
+      "explain": {
+        "before": "第 {{round}} 轮在 $t_0 = {{t0}}$ s 开始。寻呼前 {{monitor}} 个设备在 MONITOR，{{off}} 个 OFF 充电，{{done}} 个已识别。只有 $t_0$ 时刻正在监听的设备才能收到这次寻呼。",
+        "beforePeriodic": "第 {{round}} 轮在 $t_0 = {{t0}}$ s 开始，寻呼 $N_g = {{Ng}}$ 中的第 {{group}} 组。{{monitor}} 个设备在 MONITOR（尚未同步或重新捕获），{{sync}} 个同步睡眠、只在本组寻呼时醒来，{{off}} 个 OFF，{{done}} 个已识别。",
+        "paging": "读写器在所有频点上发送 A-IoT 寻呼。{{paged}} 个设备收到——它们在 $t_0$ 时都在监听。{{pageDepleted}} 个在接收期间低于 $E_{\\mathrm{low}}$ 而关机。",
+        "pagingPeriodic": "读写器发送第 {{group}} 组的周期寻呼。{{paged}} 个设备收到：{{pagedMonitor}} 个在监听（第一次收到即确定所在组），{{pagedWake}} 个从同步睡眠中为本组醒来，{{pagedResync}} 个属于其他组、只做重新同步。{{pageDepleted}} 个低于 $E_{\\mathrm{low}}$。",
+        "access": "每个被寻呼设备以 $p_s = {{p}}$ 抽签决定是否接入：{{participants}} 个在本轮发送，{{rejected}} 个被拒绝、不发送直接离开。",
+        "msg1": "Msg1：{{participants}} 个设备各自在 $L_s \\times F = {{L}} \\times {{F}} = {{nAo}}$ 个 AO 中选一个发送 RN16。读写器观测到 {{idle}} 个空闲、{{success}} 个成功解码（单个或捕获）、{{coll}} 个碰撞 AO。",
+        "ei": "EI：读写器标记 {{decoded}} 个解码成功的 AO。{{flagged}} 个设备看到自己的标记并等待 Msg2；{{noFlag}} 个（碰撞、漏检）没有标记，离开本轮。",
+        "msg2": "Msg2：读写器在单频点上依次回显解码的 RN16；非周期寻呼正好分配 $K = {{alloc}}$ 个 Msg2，不浪费。{{toMsg3}} 个设备听到自己的 RN16；{{captureLoss}} 个捕获失败、听到别人的 RN16 而失败。",
+        "msg2Periodic": "Msg2（周期基线）：预先保留了 $K_{\\mathrm{fixed}} = 0.5\\,L F = {{alloc}}$ 个 Msg2 时隙，但只解码了 {{decoded}} 个 RN16，浪费 {{wasted}} 个时隙。{{toMsg3}} 个设备听到自己的 RN16；{{captureLoss}} 个听到别人的而失败。",
+        "msg3": "Msg3：{{toMsg3}} 个设备发送 ID，每个 Msg3 时隙最多 $F = {{F}}$ 个并行（{{msg3Slots}} 个时隙）。{{identified}} 个设备被识别。",
+        "after": "第 {{round}} 轮结束：{{identified}} 个设备 → DONE。{{toOff}} 个失败或被拒的被寻呼设备进入 OFF，必须重新充到 $E_{\\mathrm{up}}$ 才能收到新的寻呼；{{depleted}} 个在轮内耗尽。控制器给出下一轮：$L = {{nextL}}$，$p = {{nextP}}$。下一次寻呼立即开始。",
+        "afterPeriodic": "第 {{round}} 轮结束：{{identified}} 个设备 → DONE。{{toSync}} 个失败/被拒的设备同步睡眠到本组下一次寻呼（每 $N_g = {{Ng}}$ 轮）；{{toOff}} 个进入 OFF（能量降到 $E_{\\mathrm{low}}$），需要重新捕获寻呼。下一轮：$L = {{nextL}}$，$p = {{nextP}}$。"
+      },
+      "paper": {
+        "before": "论文 III-A 节，图 2(a)：充电阶段与 OFF ↔ MONITOR 占空比。",
+        "paging": "论文 III-B 节，图 2：非周期寻呼机会；t_page 见表 II。",
+        "access": "论文第 IV 节：控制器（PFSA/PZE、DFSA、CMEBE 或循环 PPO）给出 $p_s$。",
+        "msg1": "论文 II-C 节，图 2(b)：Msg1 AO 网格；捕获门限 6 dB，漏检 1 %，虚警 0.1 %（表 II）。",
+        "ei": "论文 III-B 节：早期指示根据解码的 Msg1 确定 Msg2/Msg3 资源数。",
+        "msg2": "论文图 2(b) / 图 3：Msg2 在单频点上，设备睡眠直到自己的时隙。",
+        "msg3": "论文图 2(b) / 图 3：Msg3 在 $F$ 个频点上并行。",
+        "after": "论文 III-B 节：失败 → OFF 并充电（非周期） vs. 同步睡眠（周期，图 1）。"
+      },
+      "mapTitle": "厂房布局（当前步骤）",
+      "mapHint": "**厂房布局 — 论文第 V-A 节布局**，显示这个小规模 episode 的设备。颜色跟随当前子步骤：接收寻呼 / EI / Msg2（RX）、发送 Msg1 / Msg3（TX）、失败设备回落到的状态、已识别（DONE）。带圈的点参与当前子步骤；点击被寻呼的设备可查看其功率时间线。",
+      "mapActive": "参与当前子步骤",
+      "mapHover": "#%{customdata[0]} · 类型 %{customdata[2]}<br>%{customdata[1]}<br>结果：%{customdata[3]}<extra></extra>"
+    },
+    "figTab": {
+      "synced": "本页跟随左侧配置面板选择的论文图 / 曲线。在左侧点击“使用并运行”即可得到这里显示的单次运行曲线。",
+      "thisRun": "本次运行（1 个 episode）",
+      "thisRunHint": "**本次运行 — 一个带种子的 episode**（交互模式），叠加在同一张图的论文数字化曲线（虚线）上。单次 episode 会在论文 100 次平均值附近波动。",
+      "thisRunShort": "本次运行，种子 {{seed}}",
+      "thisRunCol": "本次运行",
+      "metric": "指标",
+      "noRun": "还没有运行。在左侧选择曲线并点击“使用并运行”（或页眉的“运行论文图”按钮）。",
+      "mismatch": "当前运行没有使用 {{fig}} 的设置（{{diffs}}）。点击“使用并运行”加载这些设置。",
+      "notInFigure": "当前运行的协议/控制器不在 {{fig}} 的曲线中；仅显示论文曲线作为参考。",
+      "average": "N 个 episode 平均（论文复现）",
+      "averageHint": "**N 个 episode 平均 — 论文复现。** 对所选图运行 N 个独立 episode 并求平均（均值与 5–95 % 区间）。第 i 个 episode 使用种子 = 基础种子 + i，所以每个 episode 的设备布局、收集功率、初始占空比相位、AO 选择和损伤抽样都不同；同一张图的所有曲线共享相同的种子序列以保证公平比较。设置完全相同时，第 0 个 episode 就是上面的单次运行。"
+    },
+    "otherTab": {
+      "lead": "这些结果不是单次盘点运行，因此在配置面板中没有对应的交互运行。它们来自批量任务（缓存的脚本输出或在服务器上重新计算）。",
+      "empty": "点击“加载 / 运行”显示该结果。"
+    },
+    "help": {
+      "useCached": "**使用缓存 — 加载已存结果。** 开启：立即显示复现脚本的已存输出。关闭：按这里的 Episodes 和种子在服务器上重新计算（100 个 episode 需要几分钟）。",
+      "episodes": "**Episodes — 求平均的独立运行次数。** 第 i 个 episode 使用种子 {{seed}} + i：新的随机布局、能量收集、占空比相位、AO 选择和损伤。论文平均 100 次。",
+      "tq": "**$T_q$ — 盘点 q % 所需时间**：覆盖范围内设备（$N_{\\mathrm{eff}}$）中 q % 被识别的时间（秒）。$T_{50}$、$T_{90}$、$T_{99}$ 概括整条曲线，越小越快。",
+      "mae": "**MAE — 平均绝对误差（mean absolute error）**：仿真平均曲线与论文数字化曲线之间的误差，单位为已盘点比例的百分点。",
+      "fig": {
+        "fig4": "**论文图 4 — 设备处入射射频功率 $P_{\\mathrm{in}}$ 的 CDF（累积分布函数）**，分别对应单源（仅读写器）和多源（读写器 + 所有基站）收集。它决定哪些设备在覆盖范围内以及充电快慢。",
+        "fig5a": "**论文图 5(a) — 单源收集，每轮 $L_s = 16$ 个 Msg1 时隙。** 比较所提非周期寻呼与周期基线（$N_g = 1$ 或 4 个寻呼组），以及有无轮内耗尽。只有读写器的射频场为设备充电，很多设备充电很慢。",
+        "fig5b": "**论文图 5(b) — 单源收集，$L_s = 1$。** 与 5(a) 相同，但每轮只有 1 个 Msg1 时隙 × $F$ 个频点：轮次很短，碰撞很多。",
+        "fig6a": "**论文图 6(a) — 多源收集（读写器 + 18 个基站），$L_s = 16$。** 非周期寻呼 vs. $N_g = 1$ 和 $N_g = 4$ 的周期寻呼。",
+        "fig6b": "**论文图 6(b) — 多源收集，$L_s = 1$。**",
+        "fig7": "**论文图 7 — 控制器比较**（非周期寻呼，多源，$L_1 = 1$）：Recurrent PPO（近端策略优化）智能体每轮调整 $L_s$ 和 $p_s$；DFSA-Schoute（动态帧时隙 ALOHA）和 CMEBE（考虑捕获的最小误差积压估计）是经典的 RFID 帧长估计方法。",
+        "fig8": "**论文图 8 — 平均资源效率**（每个 AO 接入机会识别的设备数）随设备数 $N_{\\mathrm{tot}}$ 的变化：RL（强化学习）vs. $L = 1$、8、32 的 PFSA（概率帧时隙 ALOHA）。",
+        "tab4": "**论文表 IV — 各阶段轮内耗尽次数**：图 5 运行中在寻呼、Msg1、EI、Msg2、Msg3 阶段能量耗尽的平均设备数。",
+        "tab5": "**论文表 V — 平均识别时间（秒）**，按控制器和 $N_{\\mathrm{tot}}$ 列出。",
+        "tab6": "**论文表 VI — 奖励权重 $\\alpha$ 的影响**：对识别时间和资源效率的影响（$N_{\\mathrm{tot}} = 15000$）。"
+      },
+      "curve": {
+        "aperiodic": "**非周期寻呼（所提协议）。** 读写器在每轮结束后立即再次寻呼；失败设备进入 OFF、充电后再接收后续寻呼。Msg2/Msg3 资源通过 EI（早期指示，early indication）按解码的 Msg1 分配。没有分组（$N_g$ 不适用）。",
+        "periodic_Ng1": "**周期寻呼，$N_g = 1$（基线）。** 所有设备为一组，按固定间隔 $T_{\\mathrm{periodic}}(L)$ 寻呼；Msg2/Msg3 资源预先保留（$K = 0.5\\,L F$）。",
+        "periodic_Ng4": "**周期寻呼，$N_g = 4$（4 个寻呼组的基线）。** 每个设备加入它第一次收到的寻呼所属的组；4 个组轮流寻呼，所以设备每 4 轮才被寻呼一次，期间同步睡眠。",
+        "recurrent_ppo": "**Recurrent PPO — 近端策略优化（Proximal Policy Optimization），循环（LSTM）策略**（论文第 IV 节）：每轮根据观测到的成功、空闲和碰撞数选择 $L_s$ 和 $p_s$。需要训练好的检查点。",
+        "dfsa_schoute": "**DFSA-Schoute — 动态帧时隙 ALOHA（Dynamic Framed Slotted ALOHA）+ Schoute 积压估计**（积压 ≈ 2.39 × 碰撞数）；调整帧长 $L_s$。",
+        "cmebe": "**CMEBE — 考虑捕获效应的最小误差积压估计（Capture-aware Minimum-Error Backlog Estimation）**（Li & Wang）；在估计积压时考虑捕获效应，并调整帧长 $L_s$。"
+      },
+      "symbols": {
+        "title": "论文中的符号",
+        "N_tot": "**$N_{\\mathrm{tot}}$ — 部署的设备总数**（论文：15000）。**$N_{\\mathrm{eff}}$** — 有效设备数，即覆盖范围内的设备。",
+        "N_g": "**$N_g$ — 寻呼组数**（周期基线）。每个设备属于一个组，各组轮流被寻呼，所以 $N_g = 4$ 时一个设备每 4 轮才被寻呼一次。非周期协议没有分组（$N_g = 1$）。",
+        "L_s": "**$L_s$ — 第 s 轮的 Msg1 时隙数。** 配合 $F$ 个频点共有 $L_s \\cdot F$ 个 **AO（接入机会，access occasion）**。$L_1$ 是自适应控制器第一轮的取值。",
+        "p_s": "**$p_s$ — 第 s 轮的接入概率**：被寻呼的设备以概率 $p_s$ 发送 Msg1，否则跳过本轮。",
+        "F": "**$F$ — 频率资源数**，每个 Msg1 时隙的频点数（论文：8）。",
+        "alpha": "**$\\alpha$（alpha）— 奖励权重**：RL（强化学习）智能体在识别设备数与碰撞之间的权衡。",
+        "pfsa": "**PFSA/PZE — 概率帧时隙 ALOHA / 概率零估计器**（Probabilistic Framed Slotted ALOHA / Probabilistic Zero Estimator）：$L_s$ 固定，$p_s$ 根据上一轮观测到的空闲 AO 数调整。",
+        "dep": "**w/o depletion — 无轮内耗尽（without depletion）**：消融实验，设备在轮内低于 $E_{\\mathrm{low}}$ 时不关机。",
+        "E": "**$E_{\\mathrm{up}}$ / $E_{\\mathrm{low}}$ — 能量上 / 下阈值**：设备开机 / 必须关机时的储能水平。"
+      }
     }
   }
 }

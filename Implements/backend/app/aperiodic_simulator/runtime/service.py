@@ -114,6 +114,29 @@ def paper_config_payload() -> dict:
     )
 
 
+PAPER_PANELS = {
+    "fig5a": ("figure5", "a_L16_"),
+    "fig5b": ("figure5", "b_L1_"),
+    "fig6a": ("figure6", "a_L16_"),
+    "fig6b": ("figure6", "b_L1_"),
+    "fig7": ("figure7", ""),
+}
+
+
+def paper_reference_payload(panel_id: str) -> dict:
+    """Digitized paper curves of one inventory-vs-time panel (overlay only)."""
+    from app.aperiodic_simulator.analysis.reference_targets import DATA_DIR, reference_curve
+
+    figure, prefix = PAPER_PANELS[panel_id]
+    curves = {}
+    for path in sorted((DATA_DIR / figure).glob(f"{prefix}*.csv")):
+        name = path.stem[len(prefix):]
+        ref = reference_curve(figure, path.stem)
+        if ref is not None:
+            curves[name] = {"x": ref[0], "y": ref[1]}
+    return _np({"panel": panel_id, "figure": figure, "curves": curves})
+
+
 def build_config(req) -> EpisodeConfig:
     system = SystemParams(
         F=req.F,

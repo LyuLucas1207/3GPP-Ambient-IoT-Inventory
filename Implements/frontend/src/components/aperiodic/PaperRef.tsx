@@ -1,4 +1,7 @@
+import { MathText } from '@/components/MathText'
+import { ParamHint } from '@/components/ParamHint'
 import { Badge } from '@/components/ui/badge'
+import { texToPlain } from '@/lib/tex'
 import { useTranslation } from 'react-i18next'
 
 export type PaperRefId =
@@ -23,20 +26,25 @@ export type PaperRefId =
 export function PaperRef({ id }: { id: PaperRefId }) {
   const { t } = useTranslation()
   return (
-    <Badge variant="outline" className="cursor-help font-normal" title={t(`ap.paperRef.${id}.caption`)}>
+    <Badge variant="outline" className="cursor-help font-normal" title={texToPlain(t(`ap.paperRef.${id}.caption`))}>
       {t('ap.paperRef.prefix')} {t(`ap.paperRef.${id}.label`)}
     </Badge>
   )
 }
 
-export function PaperCaption({ id }: { id: PaperRefId }) {
+export function PaperCaption({ id, hint }: { id: PaperRefId; hint?: string }) {
   const { t } = useTranslation()
   return (
     <p className="text-xs leading-snug">
       <span className="font-medium">
         {t('ap.paperRef.prefix')} {t(`ap.paperRef.${id}.label`)}.
       </span>{' '}
-      <span className="text-muted-foreground">{t(`ap.paperRef.${id}.caption`)}</span>
+      {hint && (
+        <span className="mr-1 inline-flex align-middle">
+          <ParamHint text={hint} title={t(`ap.paperRef.${id}.label`)} />
+        </span>
+      )}
+      <MathText className="text-muted-foreground" text={t(`ap.paperRef.${id}.caption`)} />
     </p>
   )
 }

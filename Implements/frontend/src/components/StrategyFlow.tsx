@@ -25,7 +25,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { NODE_WIDTH, NodeKind, type StrategyMapDef, type StrategyNodeData } from '@/strategyMaps/types'
+import {
+  NODE_WIDTH,
+  NodeKind,
+  type FlowHighlight,
+  type StrategyMapDef,
+  type StrategyNodeData,
+} from '@/strategyMaps/types'
 import { XIcon } from 'lucide-react'
 import { memo, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -56,8 +62,13 @@ function StrategyNode({ data, selected, dragging }: NodeProps<Node<StrategyNodeD
   const Icon = data.icon
   const [open, setOpen] = useState(false)
   if (dragging && open) setOpen(false)
-  const helpKey =
-    data.helpPrefix && data.nodeId ? `maps.nodeHelp.${data.helpPrefix}.${data.nodeId}` : null
+  const helpKey = !data.nodeId
+    ? null
+    : data.helpBase
+      ? `${data.helpBase}.${data.nodeId}`
+      : data.helpPrefix
+        ? `maps.nodeHelp.${data.helpPrefix}.${data.nodeId}`
+        : null
   const helpTitle = helpKey ? t(`${helpKey}.title`, { defaultValue: data.label }) : data.label
   const helpBody = helpKey ? t(`${helpKey}.body`) : ''
   const popoverOpen = open && !dragging
@@ -89,6 +100,8 @@ function StrategyNode({ data, selected, dragging }: NodeProps<Node<StrategyNodeD
                 KIND_CLASS[data.kind],
                 KIND_SHAPE[data.kind],
                 selected && 'ring-3 ring-ring/50',
+                data.active && 'shadow-lg ring-4 ring-fuchsia-500/80',
+                data.dimmed && 'opacity-35',
               )}
               style={{ ['--drop-delay' as string]: `${data.dropDelayMs ?? 0}ms` }}
             />
@@ -126,7 +139,8 @@ function StrategyNode({ data, selected, dragging }: NodeProps<Node<StrategyNodeD
 
 const nodeTypes = { strategy: memo(StrategyNode) }
 
-function cloneNodes(def: StrategyMapDef, dropGen: number): Node<StrategyNodeData>[] {
+function cloneNodes(def: StrategyMapDef, dropGen: number, highlight?: FlowHighlight): Node<StrategyNodeData>[] {
+  const hl = highlight ? new Set(highlight.nodes) : null
   return def.nodes.map((node) => ({
     ...node,
     position: { ...node.position },
@@ -134,28 +148,39 @@ function cloneNodes(def: StrategyMapDef, dropGen: number): Node<StrategyNodeData
     data: {
       ...node.data,
       helpPrefix: def.helpPrefix,
+      helpBase: def.helpBase,
       nodeId: node.id,
-      dropDelayMs: Math.round(node.position.y / 2.1 + node.position.x / 20),
+      dropDelayMs: hl ? 0 : Math.round(node.position.y / 2.1 + node.position.x / 20),
       dropGen,
+      active: hl?.has(node.id) ?? false,
+      dimmed: hl ? !hl.has(node.id) : false,
     },
   }))
 }
 
-function FlowInner({ def }: { def: StrategyMapDef }) {
+function FlowInner({ def, highlight, toolbar = true }: { def: StrategyMapDef; highlight?: FlowHighlight; toolbar?: boolean }) {
   const { fitView } = useReactFlow()
   const { t } = useTranslation()
   const [dropGen, setDropGen] = useState(0)
-  const origin = useMemo(() => cloneNodes(def, dropGen), [def, dropGen])
+  const origin = useMemo(() => cloneNodes(def, dropGen, highlight), [def, dropGen, highlight])
   const [nodes, setNodes, onNodesChange] = useNodesState(origin)
   const reduceMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const originEdges = useMemo(() => {
-    const labeled = def.edges.map((edge) => ({
-      ...edge,
-      label: edge.label ? t(String(edge.label), { defaultValue: String(edge.label) }) : edge.label,
-    }))
+    const labeled = def.edges.map((edge) => {
+      const base = edge.label ? t(String(edge.label), { defaultValue: String(edge.label) }) : ''
+      if (!highlight) return { ...edge, label: base || edge.label }
+      const extra = highlight.edges[edge.id]
+      if (extra == null) return { ...edge, label: base || edge.label, animated: false, style: { ...edge.style, opacity: 0.25 } }
+      return {
+        ...edge,
+        label: extra ? (base ? `${base} · ${extra}` : extra) : base,
+        animated: true,
+        style: { ...edge.style, strokeWidth: 4, opacity: 1 },
+      }
+    })
     return reduceMotion ? labeled.map((edge) => ({ ...edge, animated: false })) : labeled
-  }, [def.edges, reduceMotion, t])
+  }, [def.edges, reduceMotion, t, highlight])
   const [edges, setEdges, onEdgesChange] = useEdgesState(originEdges)
 
   const centerMap = (duration = 0) => {
@@ -163,9 +188,9 @@ function FlowInner({ def }: { def: StrategyMapDef }) {
   }
 
   useEffect(() => {
-    setNodes(cloneNodes(def, dropGen))
+    setNodes(cloneNodes(def, dropGen, highlight))
     setEdges(originEdges)
-  }, [def, dropGen, originEdges, setNodes, setEdges])
+  }, [def, dropGen, highlight, originEdges, setNodes, setEdges])
 
   useEffect(() => {
     let inner = 0
@@ -180,12 +205,12 @@ function FlowInner({ def }: { def: StrategyMapDef }) {
 
   const resetLayout = () => {
     setDropGen((n) => n + 1)
-    setNodes(cloneNodes(def, dropGen + 1))
+    setNodes(cloneNodes(def, dropGen + 1, highlight))
   }
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 gap-2 p-2">
+      <div className={cn('flex shrink-0 gap-2 p-2', !toolbar && 'hidden')}>
         <Button
           type="button"
           size="sm"
@@ -231,17 +256,28 @@ function FlowInner({ def }: { def: StrategyMapDef }) {
           style={{ width: '100%', height: '100%' }}
         >
           <Background gap={20} size={1} />
-          <Controls showInteractive={false} />
+          <Controls
+            showInteractive={false}
+            className="overflow-hidden rounded-md border border-border shadow-sm [&_button]:border-border! [&_button]:bg-card! [&_button]:fill-foreground! [&_button:hover]:bg-muted!"
+          />
         </ReactFlow>
       </div>
     </div>
   )
 }
 
-export function StrategyFlow({ def }: { def: StrategyMapDef }) {
+export function StrategyFlow({
+  def,
+  highlight,
+  toolbar = true,
+}: {
+  def: StrategyMapDef
+  highlight?: FlowHighlight
+  toolbar?: boolean
+}) {
   return (
     <ReactFlowProvider>
-      <FlowInner def={def} />
+      <FlowInner def={def} highlight={highlight} toolbar={toolbar} />
     </ReactFlowProvider>
   )
 }

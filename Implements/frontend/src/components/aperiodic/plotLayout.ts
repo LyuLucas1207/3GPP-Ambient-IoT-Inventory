@@ -40,3 +40,20 @@ export const STATE_COLORS: Record<string, string> = {
   INTERROUND_SYNC_SLEEP: '#7e2f8e',
   DONE: '#77ac30',
 }
+
+/** Dashed boundary of the W × H m factory hall, drawn under the devices. */
+export function warehouseOutline(W: number, H: number, color: string) {
+  return {
+    type: 'rect' as const,
+    xref: 'x' as const,
+    yref: 'y' as const,
+    x0: 0,
+    y0: 0,
+    x1: W,
+    y1: H,
+    layer: 'below' as const,
+    line: { color, width: 1.5, dash: 'dash' as const },
+    fillcolor: 'rgba(0,0,0,0)',
+  }
+}
+

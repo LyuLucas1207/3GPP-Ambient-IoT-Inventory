@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MATLAB, STATE_COLORS } from '@/components/aperiodic/plotLayout'
+import { MATLAB, STATE_COLORS, warehouseOutline } from '@/components/aperiodic/plotLayout'
 import { usePlotTheme } from '@/hooks/usePlotTheme'
 import Plot from '@/lib/Plot'
 import type { AperiodicPaperConfig, AperiodicSimulationResult, Snapshot as AperiodicSnapshot } from '@/types/aperiodicSimulation'
@@ -97,6 +97,7 @@ export function AperiodicFactoryView({ result, paper, snapshot, selectedId, onSe
           dragmode: 'pan',
           hovermode: 'closest',
           uirevision: 'ap-factory-bay',
+          shapes: [warehouseOutline(W, H, plot.font)],
           xaxis: {
             ...axisLine,
             range: [0, W],

@@ -1,9 +1,7 @@
-import { PaperCaption, type PaperRefId } from '@/components/aperiodic/PaperRef'
+import { ParamHint } from '@/components/ParamHint'
 import { axis, baseLayout, MATLAB, PLOT_CONFIG } from '@/components/aperiodic/plotLayout'
-import { Segmented } from '@/components/aperiodic/Segmented'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { usePlotTheme } from '@/hooks/usePlotTheme'
@@ -12,26 +10,9 @@ import type { JobStatus, ReproResult, ReproTarget } from '@/types/aperiodicSimul
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-interface Preset {
-  id: Exclude<PaperRefId, 'tf' | 'inventory' | 'controller' | 'trace' | 'factory' | 'metrics'>
-  target: ReproTarget
-  panel?: string
-}
+// Shared views of the paper reproduction payloads (100-episode batch jobs).
 
-const PRESETS: Preset[] = [
-  { id: 'fig4', target: 'figure4' },
-  { id: 'fig5a', target: 'figure5', panel: 'a_L16' },
-  { id: 'fig5b', target: 'figure5', panel: 'b_L1' },
-  { id: 'fig6a', target: 'figure6', panel: 'a_L16' },
-  { id: 'fig6b', target: 'figure6', panel: 'b_L1' },
-  { id: 'fig7', target: 'figure7' },
-  { id: 'fig8', target: 'figure8' },
-  { id: 'tab4', target: 'figure5' },
-  { id: 'tab5', target: 'tables' },
-  { id: 'tab6', target: 'tables' },
-]
-
-const CURVE_COLORS: Record<string, string> = {
+export const CURVE_COLORS: Record<string, string> = {
   aperiodic: MATLAB.yellow,
   periodic_Ng1: MATLAB.green,
   periodic_Ng1_wo_depletion: MATLAB.purple,
@@ -59,7 +40,7 @@ type Curve = {
 }
 type Panel = { L?: number; curves: Record<string, Curve>; validation?: Record<string, unknown> }
 
-function ProtocolFigure({ result, panel }: { result: ReproResult; panel: string }) {
+export function ProtocolFigure({ result, panel }: { result: ReproResult; panel: string }) {
   const { t } = useTranslation()
   const plot = usePlotTheme()
   const p = (result.panels as Record<string, Panel> | undefined)?.[panel]
@@ -109,10 +90,17 @@ function ProtocolFigure({ result, panel }: { result: ReproResult; panel: string 
             <th className="text-left font-normal">{t('ap.repro.curve')}</th>
             {['T50', 'T90', 'T99'].map((k) => (
               <th key={k} className="text-right font-normal">
-                {k} {t('ap.repro.simVsPaper')}
+                <span className="inline-flex items-center gap-1">
+                  {k} {t('ap.repro.simVsPaper')}
+                  {k === 'T50' && <ParamHint text={t('ap.help.tq')} title="T_q" />}
+                </span>
               </th>
             ))}
-            <th className="text-right font-normal">MAE (pp)</th>
+            <th className="text-right font-normal">
+              <span className="inline-flex items-center gap-1">
+                MAE (pp) <ParamHint text={t('ap.help.mae')} title="MAE" />
+              </span>
+            </th>
           </tr>
         </thead>
         <tbody className="font-mono">
@@ -138,7 +126,7 @@ function ProtocolFigure({ result, panel }: { result: ReproResult; panel: string 
   )
 }
 
-function Figure4View({ result }: { result: ReproResult }) {
+export function Figure4View({ result }: { result: ReproResult }) {
   const { t } = useTranslation()
   const plot = usePlotTheme()
   const scen = (result.scenarios ?? {}) as Record<
@@ -190,7 +178,7 @@ type Fig8Series = {
   reference?: { mae?: number }
 }
 
-function Figure8View({ result }: { result: ReproResult }) {
+export function Figure8View({ result }: { result: ReproResult }) {
   const { t } = useTranslation()
   const plot = usePlotTheme()
   const series = (result.series ?? {}) as Record<string, Fig8Series>
@@ -242,7 +230,7 @@ function Figure8View({ result }: { result: ReproResult }) {
   )
 }
 
-function CheckpointNotes({ result }: { result: ReproResult }) {
+export function CheckpointNotes({ result }: { result: ReproResult }) {
   const { t } = useTranslation()
   const cks = (result.checkpoints ?? {}) as Record<string, { available: boolean; training_steps?: number; fully_trained?: boolean }>
   const unavailable = (result.unavailable ?? {}) as Record<string, string>
@@ -265,13 +253,13 @@ function CheckpointNotes({ result }: { result: ReproResult }) {
   )
 }
 
-function GenericObject({ value }: { value: unknown }) {
+export function GenericObject({ value }: { value: unknown }) {
   return (
     <pre className="max-h-60 overflow-auto rounded-md bg-muted/50 p-2 text-[10px] leading-snug">{JSON.stringify(value, (_, v) => (typeof v === 'number' ? Number(v.toPrecision(5)) : v), 1)}</pre>
   )
 }
 
-function RowsTable({ rows }: { rows: Array<Record<string, unknown>> }) {
+export function RowsTable({ rows }: { rows: Array<Record<string, unknown>> }) {
   const flat = rows.map((r) => {
     const o: Record<string, string> = {}
     const walk = (prefix: string, v: unknown) => {
@@ -310,81 +298,74 @@ function RowsTable({ rows }: { rows: Array<Record<string, unknown>> }) {
   )
 }
 
-export function ReproductionPanel({ job, reproduce }: { job: JobStatus | null; reproduce: (t: ReproTarget, e: number, c: boolean, p?: string[]) => void }) {
+export type Reproduce = (target: ReproTarget, episodes: number, useCached: boolean, panels?: string[]) => void
+
+/** Episodes / cached switch / run button and job status for one reproduction target. */
+export function ReproRunControls({
+  job,
+  target,
+  panels,
+  reproduce,
+  baseSeed,
+  defaultEpisodes = 100,
+}: {
+  job: JobStatus | null
+  target: ReproTarget
+  panels?: string[]
+  reproduce: Reproduce
+  baseSeed: number
+  defaultEpisodes?: number
+}) {
   const { t } = useTranslation()
-  const [preset, setPreset] = useState<Preset['id']>('fig5a')
-  const [episodes, setEpisodes] = useState(100)
+  const [episodes, setEpisodes] = useState(defaultEpisodes)
   const [useCached, setUseCached] = useState(true)
-  const sel = PRESETS.find((p) => p.id === preset)!
   const running = job?.status === 'queued' || job?.status === 'running'
-  const result = job?.status === 'done' ? job.result : undefined
+  const mine = job?.target === target
+  const result = mine && job?.status === 'done' ? job.result : undefined
   const source = result?.source
-
-  const body = () => {
-    if (!result) return null
-    if (sel.id === 'fig4' && result.figure === 'figure4') return <Figure4View result={result} />
-    if (sel.panel && result.panels) return <ProtocolFigure result={result} panel={sel.panel} />
-    if (sel.id === 'tab4' && Array.isArray(result.table_iv)) return <RowsTable rows={result.table_iv as Array<Record<string, unknown>>} />
-    if (sel.id === 'fig8' && result.series) return <Figure8View result={result} />
-    if (sel.id === 'fig7' && result.panels)
-      return (
-        <div className="grid gap-4">
-          {Object.keys(result.panels as object).map((k) => (
-            <div key={k}>
-              <p className="text-xs font-medium">{t(`ap.terms.${k === 'single_source' ? 'singleSource' : 'multiSource'}`)}</p>
-              <ProtocolFigure result={result} panel={k} />
-            </div>
-          ))}
-        </div>
-      )
-    const key = sel.id === 'tab5' ? 'table_v' : sel.id === 'tab6' ? 'table_vi' : null
-    if (key && Array.isArray(result[key])) return <RowsTable rows={result[key] as Array<Record<string, unknown>>} />
-    return <GenericObject value={result} />
-  }
-
+  const cachedSeed = (result as { base_seed?: number } | undefined)?.base_seed
   return (
-    <Card plain size="sm">
-      <CardHeader>
-        <CardTitle>{t('ap.repro.title')}</CardTitle>
-        <CardDescription>{t('ap.repro.subtitle')}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        <Segmented value={preset} onChange={setPreset} options={PRESETS.map((p) => ({ value: p.id, label: t(`ap.paperRef.${p.id}.label`) }))} />
-        <PaperCaption id={sel.id} />
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <label className="flex items-center gap-2">
-            {t('ap.repro.useCached')}
-            <Switch checked={useCached} onCheckedChange={setUseCached} />
-          </label>
-          <label className="flex items-center gap-2">
-            {t('ap.controls.episodes')}
-            <Input className="w-20" type="number" min={1} max={100} value={episodes} onChange={(e) => setEpisodes(Number(e.target.value))} />
-          </label>
-          <Button size="sm" disabled={running} onClick={() => reproduce(sel.target, episodes, useCached, sel.panel && !useCached ? [sel.panel] : undefined)}>
-            {running ? t('ap.common.running') : t('ap.repro.run')}
-          </Button>
-          {job && (
-            <Badge variant={job.status === 'error' ? 'destructive' : job.status === 'done' ? 'default' : 'secondary'}>
-              {job.target} · {t(`ap.repro.status.${job.status}`)}
-            </Badge>
-          )}
-          {source && (
-            <span className="text-[11px] text-muted-foreground">
-              {source.kind === 'computed' ? t('ap.repro.sourceComputed', { n: source.episodes }) : t('ap.repro.sourceCached', { path: source.path })}
-            </span>
-          )}
-        </div>
-        {!useCached && <p className="text-[11px] text-muted-foreground">{t('ap.repro.slowNote')}</p>}
-        {job?.progress && job.progress.length > 0 && running && (
-          <pre className="max-h-24 overflow-auto rounded-md bg-muted/50 p-2 text-[10px]">{job.progress.slice(-8).join('\n')}</pre>
+    <div className="grid gap-2">
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <label className="flex items-center gap-2">
+          {t('ap.repro.useCached')}
+          <ParamHint text={t('ap.help.useCached')} title={t('ap.repro.useCached')} />
+          <Switch checked={useCached} onCheckedChange={setUseCached} />
+        </label>
+        <label className="flex items-center gap-2">
+          {t('ap.controls.episodes')}
+          <ParamHint text={t('ap.help.episodes', { seed: baseSeed })} title={t('ap.controls.episodes')} />
+          <Input className="w-20" type="number" min={1} max={100} value={episodes} onChange={(e) => setEpisodes(Number(e.target.value))} />
+        </label>
+        <Button size="sm" disabled={running} onClick={() => reproduce(target, episodes, useCached, panels && !useCached ? panels : undefined)}>
+          {running && mine ? t('ap.common.running') : t('ap.repro.run')}
+        </Button>
+        {job && mine && (
+          <Badge variant={job.status === 'error' ? 'destructive' : job.status === 'done' ? 'default' : 'secondary'}>
+            {t(`ap.repro.status.${job.status}`)}
+          </Badge>
         )}
-        {job?.error && <p className="text-xs text-destructive">{job.error}</p>}
-        {result && result.figure && result.figure !== sel.target && (
-          <p className="text-xs text-muted-foreground">{t('ap.repro.otherTarget')}</p>
+        {source && (
+          <span className="text-[11px] text-muted-foreground">
+            {source.kind === 'computed' ? t('ap.repro.sourceComputed', { n: source.episodes }) : t('ap.repro.sourceCached', { path: source.path })}
+            {cachedSeed != null && ` · ${t('ap.repro.baseSeed', { seed: cachedSeed })}`}
+          </span>
         )}
-        {result && result.figure === sel.target && <CheckpointNotes result={result} />}
-        {result && result.figure === sel.target && body()}
-      </CardContent>
-    </Card>
+      </div>
+      <p className="text-[11px] leading-snug text-muted-foreground">
+        {useCached ? t('ap.repro.cachedNote') : t('ap.repro.seedNote', { seed: baseSeed, last: baseSeed + episodes - 1 })}
+        {!useCached && ` ${t('ap.repro.slowNote')}`}
+      </p>
+      {job?.progress && job.progress.length > 0 && running && mine && (
+        <pre className="max-h-24 overflow-auto rounded-md bg-muted/50 p-2 text-[10px]">{job.progress.slice(-8).join('\n')}</pre>
+      )}
+      {job?.error && mine && <p className="text-xs text-destructive">{job.error}</p>}
+      {running && !mine && <p className="text-xs text-muted-foreground">{t('ap.repro.otherRunning', { target: job?.target })}</p>}
+    </div>
   )
+}
+
+/** The finished reproduction result for ``target`` (if the last job was for it). */
+export function jobResult(job: JobStatus | null, target: ReproTarget): ReproResult | undefined {
+  return job?.status === 'done' && job.target === target && job.result?.figure === target ? job.result : undefined
 }

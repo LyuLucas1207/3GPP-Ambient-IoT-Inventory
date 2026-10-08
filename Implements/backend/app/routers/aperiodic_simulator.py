@@ -5,12 +5,29 @@ Thin layer: request validation here, all science in ``app.aperiodic_simulator``.
 
 from fastapi import APIRouter, HTTPException
 
-from app.aperiodic_simulator.runtime import jobs, service
+from app.aperiodic_simulator.runtime import jobs, service, step_session
 from app.aperiodic_simulator.reproduction import presets
 from app.aperiodic_simulator.runtime.run_store import device_trace
-from app.schemas.aperiodic_simulator import AperiodicSimulateRequest, ReproduceRequest
+from app.schemas.aperiodic_simulator import (
+    AperiodicSimulateRequest,
+    ReproduceRequest,
+    StepNextRequest,
+    StepSessionRequest,
+)
 
 router = APIRouter()
+
+
+def _controller_factory(req: AperiodicSimulateRequest):
+    if req.controller != "recurrent_ppo":
+        return None
+    from app.aperiodic_simulator.rl.checkpoint import CheckpointMissing
+    from app.aperiodic_simulator.controllers.recurrent_ppo import ppo_controller_factory
+
+    try:
+        return ppo_controller_factory(alpha=req.alpha)
+    except CheckpointMissing as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.get("/about")
@@ -25,19 +42,45 @@ def paper_config() -> dict:
 
 @router.post("/simulate")
 def simulate(req: AperiodicSimulateRequest) -> dict:
-    factory = None
-    if req.controller == "recurrent_ppo":
-        from app.aperiodic_simulator.rl.checkpoint import CheckpointMissing
-        from app.aperiodic_simulator.controllers.recurrent_ppo import ppo_controller_factory
-
-        try:
-            factory = ppo_controller_factory(alpha=req.alpha)
-        except CheckpointMissing as exc:
-            raise HTTPException(status_code=409, detail=str(exc)) from exc
+    factory = _controller_factory(req)
     try:
         return service.simulate(req, controller_factory=factory)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/paper-reference/{panel_id}")
+def paper_reference(panel_id: str) -> dict:
+    if panel_id not in service.PAPER_PANELS:
+        raise HTTPException(status_code=404, detail=f"unknown panel {panel_id}; one of {list(service.PAPER_PANELS)}")
+    return service.paper_reference_payload(panel_id)
+
+
+@router.post("/step-sessions")
+def create_step_session(req: StepSessionRequest) -> dict:
+    cfg_req = req.config.model_copy(
+        update={"num_devices": req.n_devices, "runtime_mode": "interactive", "num_episodes": 1}
+    )
+    factory = _controller_factory(cfg_req)
+    try:
+        sess = step_session.create(service.build_config(cfg_req), controller_factory=factory)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return service._np(sess.info())
+
+
+@router.post("/step-sessions/{session_id}/next")
+def next_step(session_id: str, req: StepNextRequest | None = None) -> dict:
+    try:
+        sess = step_session.get(session_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return service._np(sess.next(skip_empty=(req or StepNextRequest()).skip_empty))
+
+
+@router.delete("/step-sessions/{session_id}")
+def delete_step_session(session_id: str) -> dict:
+    return {"deleted": step_session.delete(session_id)}
 
 
 @router.post("/reproduce/{target}")

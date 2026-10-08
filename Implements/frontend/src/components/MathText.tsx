@@ -15,13 +15,33 @@ export function MathInline({ tex, className }: { tex: string; className?: string
   return <span className={className} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-/** Mixed copy with $...$ TeX islands. */
+/** Mixed copy with $...$ TeX islands and **bold** terms. */
 export function MathText({ text, className }: { text: string; className?: string }) {
-  const nodes = useMemo(() => splitMath(text), [text])
+  const nodes = useMemo(() => splitBold(text), [text])
   return <span className={className}>{nodes}</span>
 }
 
-function splitMath(text: string): ReactNode[] {
+function splitBold(text: string): ReactNode[] {
+  const out: ReactNode[] = []
+  const re = /\*\*(.+?)\*\*/g
+  let last = 0
+  let i = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(...splitMath(text.slice(last, m.index), `t${i}`))
+    out.push(
+      <strong key={`b${i}`} className="font-semibold text-foreground">
+        {splitMath(m[1], `b${i}`)}
+      </strong>,
+    )
+    i += 1
+    last = m.index + m[0].length
+  }
+  if (last < text.length) out.push(...splitMath(text.slice(last), 'end'))
+  return out
+}
+
+function splitMath(text: string, keyPrefix: string): ReactNode[] {
   const out: ReactNode[] = []
   const re = /\$([^$]+)\$/g
   let last = 0
@@ -30,7 +50,7 @@ function splitMath(text: string): ReactNode[] {
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) out.push(text.slice(last, m.index))
     const html = renderTex(m[1])
-    out.push(<span key={`m${i}`} dangerouslySetInnerHTML={{ __html: html }} />)
+    out.push(<span key={`${keyPrefix}m${i}`} dangerouslySetInnerHTML={{ __html: html }} />)
     i += 1
     last = m.index + m[0].length
   }

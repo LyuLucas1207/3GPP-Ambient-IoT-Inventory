@@ -177,6 +177,10 @@ class Episode:
         k = min(SNAPSHOT_SAMPLE, n)
         self.snapshot_ids = np.sort(self.rng_misc.choice(n, size=k, replace=False)) if k else np.empty(0, dtype=np.int64)
         self.cbra_inspect: list[dict] = []
+        # Step-by-step inspection: when set, step() keeps the raw per-device
+        # arrays of the last round in ``last_detail`` (no effect on dynamics).
+        self.capture_detail = False
+        self.last_detail: dict | None = None
 
     # ------------------------------------------------------------------ state
     @property
@@ -293,6 +297,7 @@ class Episode:
             di = paged[dep_pg]
             self._to_dcm(di, np.full(di.size, t_after_page), self.e_low[di])
         n_c = cand.size
+        cand_paged = cand
         if resync_idx.size:
             ok = ~dep_pg[n_c:] if enforce else np.ones(resync_idx.size, dtype=bool)
             self.protocol.after_resync(r, resync_idx[ok], np.full(int(ok.sum()), t_after_page), e_pg[n_c:][ok])
@@ -405,6 +410,21 @@ class Episode:
             n_done_total=self.n_done,
             fates={name: int((out.fate == i).sum()) for i, name in enumerate(Fate.NAMES)},
         )
+        if self.capture_detail:
+            self.last_detail = {
+                "dcm_idx": dcm_idx,
+                "dcm_phase_s": dcm_phase,
+                "cand": cand_paged,
+                "resync": resync_idx,
+                "paged": paged,
+                "e_page_start": np.concatenate([e_start, resync_e]),
+                "e_page_end": e_pg,
+                "page_depleted": dep_pg,
+                "rejected": rej,
+                "participants": part,
+                "e_part": e_part,
+                "out": out,
+            }
         for k_, v in depletion.items():
             self.depletion_totals[k_] += v
         for k_, v in would.items():

@@ -10,11 +10,18 @@ import {
 import { Button } from '@/components/ui/button'
 import { StrategyFlow } from '@/components/StrategyFlow'
 import { overviewMap } from '@/strategyMaps/overview'
+import type { StrategyMapDef } from '@/strategyMaps/types'
 import { WorkflowIcon, XIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export function OverviewFlowButton() {
+interface Props {
+  def?: StrategyMapDef
+  /** i18n prefix holding button, buttonAria, title, lead, steps and ascii. */
+  prefix?: string
+}
+
+export function OverviewFlowButton({ def = overviewMap, prefix = 'overview' }: Props) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const btn = useRef<HTMLButtonElement>(null)
@@ -27,11 +34,11 @@ export function OverviewFlowButton() {
         variant="outline"
         size="xs"
         className="gap-1"
-        aria-label={t('overview.buttonAria')}
+        aria-label={t(`${prefix}.buttonAria`)}
         onClick={() => setOpen(true)}
       >
         <WorkflowIcon className="size-3.5" aria-hidden />
-        {t('overview.button')}
+        {t(`${prefix}.button`)}
       </Button>
       <Dialog
         modal
@@ -49,8 +56,8 @@ export function OverviewFlowButton() {
           >
             <div className="flex shrink-0 items-start justify-between gap-3 border-b px-4 py-3">
               <div className="min-w-0">
-                <DialogTitle>{t('overview.title')}</DialogTitle>
-                <DialogDescription>{t('overview.lead')}</DialogDescription>
+                <DialogTitle>{t(`${prefix}.title`)}</DialogTitle>
+                <DialogDescription>{t(`${prefix}.lead`)}</DialogDescription>
               </div>
               <DialogClose
                 className="rounded-md p-1 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -61,15 +68,15 @@ export function OverviewFlowButton() {
             </div>
             <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(22rem,26rem)]">
               <div className="h-full min-h-0 border-b lg:border-r lg:border-b-0">
-                <StrategyFlow key="overview" def={overviewMap} />
+                <StrategyFlow key={prefix} def={def} />
               </div>
-              <aside className="grid gap-4 overflow-auto p-5 text-sm">
+              <aside className="grid content-start gap-4 overflow-auto p-5 text-sm">
                 <section>
                   <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     {t('maps.how')}
                   </h3>
                   <ol className="mt-1.5 list-decimal space-y-1.5 pl-4 text-sm">
-                    {t('overview.steps')
+                    {t(`${prefix}.steps`)
                       .split('\n')
                       .filter(Boolean)
                       .map((line) => (
@@ -80,7 +87,7 @@ export function OverviewFlowButton() {
                 <p className="text-xs leading-relaxed text-muted-foreground">{t('maps.clickNode')}</p>
                 <p className="text-xs leading-relaxed text-muted-foreground">{t('maps.legend')}</p>
                 <pre className="overflow-auto rounded-md bg-muted/60 p-3 text-[11px] leading-tight text-muted-foreground">
-                  {t('overview.ascii')}
+                  {t(`${prefix}.ascii`)}
                 </pre>
               </aside>
             </div>

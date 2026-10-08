@@ -16,7 +16,7 @@ export enum EdgeKind {
   Sleep = 'sleep',
 }
 
-export type StrategyHelpPrefix = 'em' | 'dcm1' | 'dcm4' | 'overview'
+export type StrategyHelpPrefix = 'em' | 'dcm1' | 'dcm4' | 'overview' | 'apOverview'
 
 export interface StrategyNodeData extends Record<string, unknown> {
   label: string
@@ -25,7 +25,10 @@ export interface StrategyNodeData extends Record<string, unknown> {
   dropDelayMs?: number
   dropGen?: number
   helpPrefix?: StrategyHelpPrefix
+  helpBase?: string
   nodeId?: string
+  active?: boolean
+  dimmed?: boolean
 }
 
 export interface StrategyMapDef {
@@ -34,6 +37,14 @@ export interface StrategyMapDef {
   summaryKey: string
   stepsKey: string
   helpPrefix: StrategyHelpPrefix
+  /** i18n base for node help (`<helpBase>.<nodeId>.title|body`); defaults to `maps.nodeHelp.<helpPrefix>`. */
+  helpBase?: string
+}
+
+/** Highlight overlay for a map: active nodes and per-edge labels (e.g. device counts). */
+export interface FlowHighlight {
+  nodes: string[]
+  edges: Record<string, string>
 }
 
 export const NODE_WIDTH = 320

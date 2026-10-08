@@ -65,6 +65,17 @@ class AperiodicSimulateRequest(BaseModel):
         return self
 
 
+class StepSessionRequest(BaseModel):
+    """Small episode for the step-by-step view: same settings, fewer devices."""
+
+    config: AperiodicSimulateRequest = Field(default_factory=AperiodicSimulateRequest)
+    n_devices: int = Field(40, ge=10, le=200)
+
+
+class StepNextRequest(BaseModel):
+    skip_empty: bool = True
+
+
 class ReproduceRequest(BaseModel):
     episodes: int = Field(10, ge=1, le=100)
     base_seed: int = Field(0, ge=0)

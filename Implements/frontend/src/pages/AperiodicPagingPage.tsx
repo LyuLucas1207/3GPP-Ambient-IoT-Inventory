@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HudPanel, HudSplit } from '@/components/HudDock'
 import { LanguageToggle } from '@/components/LanguageToggle'
+import { OverviewFlowButton } from '@/components/OverviewFlowDialog'
 import { PaperNav } from '@/components/PaperNav'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AperiodicCBRAInspector } from '@/components/aperiodic/AperiodicCBRAInspector'
@@ -15,22 +16,25 @@ import { paperRequest, type PaperCurve, type PaperFigure } from '@/components/ap
 import { CurrentRoundCard, PlaybackControls } from '@/components/aperiodic/PlaybackPanel'
 import { STATE_COLORS } from '@/components/aperiodic/plotLayout'
 import { PpoStatusCard } from '@/components/aperiodic/PpoStatusCard'
-import { ReproductionPanel } from '@/components/aperiodic/ReproductionPanel'
+import { OtherResultsTab } from '@/components/aperiodic/OtherResultsTab'
+import { PaperFigureTab } from '@/components/aperiodic/PaperFigureTab'
 import { RoundControllerPlot } from '@/components/aperiodic/RoundControllerPlot'
 import { Segmented } from '@/components/aperiodic/Segmented'
+import { StepProcessButton } from '@/components/aperiodic/step/StepProcessDialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAperiodicPlayback } from '@/hooks/useAperiodicPlayback'
 import { useAperiodicSimulation } from '@/hooks/useAperiodicSimulation'
+import { aperiodicOverviewMap } from '@/strategyMaps/aperiodicOverview'
 import { HudDock } from '@/types/hud'
 
 const LEFT_DEFAULT = 320
 const RIGHT_DEFAULT = 360
 const TAB_GUTTER = 52
 
-type DockTab = 'inventory' | 'rounds' | 'repro'
+type DockTab = 'inventory' | 'rounds' | 'figure' | 'other'
 
 function defaultBottomHeight(viewportH: number) {
   return Math.max(200, Math.floor(viewportH / 3))
@@ -84,6 +88,8 @@ export default function AperiodicPagingPage() {
     const req = paperRequest(sim.request, paperFig, paperCurve)
     if (run) void sim.run(req)
     else sim.setRequest(req)
+    setTab('figure')
+    setBottomOpen(true)
   }
 
   const selectDevice = (id: number) => {
@@ -122,7 +128,11 @@ export default function AperiodicPagingPage() {
         <Card className="bg-card/90 px-4 py-2.5 backdrop-blur-md" size="sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <PaperNav className="mb-1.5" />
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <PaperNav />
+                <OverviewFlowButton def={aperiodicOverviewMap} prefix="ap.overview" />
+                <StepProcessButton request={sim.request} paper={sim.paper} />
+              </div>
               <p className="text-[11px] tracking-[0.16em] text-muted-foreground uppercase">{t('aperiodic.kicker')}</p>
               <h1 className="truncate text-lg font-medium" title={t('aperiodic.title')}>
                 {t('aperiodic.title')}
@@ -278,15 +288,31 @@ export default function AperiodicPagingPage() {
               value={tab}
               onChange={setTab}
               options={[
-                { value: 'inventory', label: t('ap.dock.inventory') },
-                { value: 'rounds', label: t('ap.dock.rounds') },
-                { value: 'repro', label: t('ap.dock.repro') },
+                { value: 'inventory', label: t('ap.dock.inventory'), hint: t('ap.dock.inventoryHint') },
+                { value: 'rounds', label: t('ap.dock.rounds'), hint: t('ap.dock.roundsHint') },
+                {
+                  value: 'figure',
+                  label: t('ap.dock.figure', { fig: t(`ap.paperRef.${paperFig}.label`) }),
+                  hint: t('ap.dock.figureHint'),
+                },
+                { value: 'other', label: t('ap.dock.other'), hint: t('ap.dock.otherHint') },
               ]}
             />
             <div className="min-h-0 flex-1">
-              {tab === 'repro' ? (
+              {tab === 'figure' ? (
                 <ScrollArea className="h-full">
-                  <ReproductionPanel job={sim.job} reproduce={sim.reproduce} />
+                  <PaperFigureTab
+                    fig={paperFig}
+                    curve={paperCurve}
+                    result={result}
+                    request={sim.request}
+                    job={sim.job}
+                    reproduce={sim.reproduce}
+                  />
+                </ScrollArea>
+              ) : tab === 'other' ? (
+                <ScrollArea className="h-full">
+                  <OtherResultsTab job={sim.job} reproduce={sim.reproduce} baseSeed={sim.request.seed} />
                 </ScrollArea>
               ) : !result ? (
                 <p className="text-xs text-muted-foreground">{sim.busy ? t('ap.common.running') : t('ap.stage.empty')}</p>
