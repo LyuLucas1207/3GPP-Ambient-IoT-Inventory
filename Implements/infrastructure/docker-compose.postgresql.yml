@@ -1,0 +1,33 @@
+# Local PostgreSQL for the thesis scene store.
+# From this directory:
+#   docker compose -f docker-compose.postgresql.yml up -d
+#
+# Defaults match THESIS_DATABASE_URL in the backend:
+#   postgresql+psycopg://thesis:thesis@127.0.0.1:5432/thesis
+# thesis_test is created for pytest and is not the dev database.
+
+name: thesis-infrastructure
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: thesis-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-thesis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-thesis}
+      POSTGRES_DB: ${POSTGRES_DB:-thesis}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - thesis_postgres_data:/var/lib/postgresql/data
+      - ./configuration/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  thesis_postgres_data:

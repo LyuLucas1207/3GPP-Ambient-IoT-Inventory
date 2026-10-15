@@ -4,10 +4,12 @@ import { cn } from '@/lib/utils'
 
 export const PERIODIC_PAGING_PATH = '/periodic-paging'
 export const APERIODIC_PAGING_PATH = '/aperiodic-paging'
+export const THESIS_SIMULATION_PATH = '/thesis-simulation'
 
 const LINKS = [
   { to: PERIODIC_PAGING_PATH, key: 'nav.periodicPaper' },
   { to: APERIODIC_PAGING_PATH, key: 'nav.aperiodicPaper' },
+  { to: THESIS_SIMULATION_PATH, key: 'nav.thesisSimulation' },
 ] as const
 
 export function PaperNav({ className }: { className?: string }) {

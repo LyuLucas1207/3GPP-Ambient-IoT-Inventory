@@ -19,6 +19,9 @@ import glossaryZh from '@/i18n/locales/glossary-zh.json'
 import aperiodicEn from '@/i18n/locales/aperiodic-en.json'
 import aperiodicFr from '@/i18n/locales/aperiodic-fr.json'
 import aperiodicZh from '@/i18n/locales/aperiodic-zh.json'
+import thesisEn from '@/i18n/locales/thesis-en.json'
+import thesisFr from '@/i18n/locales/thesis-fr.json'
+import thesisZh from '@/i18n/locales/thesis-zh.json'
 
 function mergeExplain(
   base: Record<string, unknown>,
@@ -107,32 +110,41 @@ function deepMerge(base: Dict, overlay: Dict): Dict {
 
 const resources = {
   [AppLocale.En]: {
-    translation: {
-      ...mergeExplain(en as Dict, {
-        ...(explainEn as Dict),
-        glossary: glossaryEn,
-      }),
-      ...(aperiodicEn as Dict),
-    },
+    translation: deepMerge(
+      {
+        ...mergeExplain(en as Dict, {
+          ...(explainEn as Dict),
+          glossary: glossaryEn,
+        }),
+        ...(aperiodicEn as Dict),
+      },
+      thesisEn as Dict,
+    ),
   },
   [AppLocale.Zh]: {
-    translation: {
-      ...mergeExplain(zh as Dict, {
-        ...(explainZh as Dict),
-        glossary: glossaryZh,
-      }),
-      ...deepMerge(aperiodicEn as Dict, aperiodicZh as Dict),
-    },
+    translation: deepMerge(
+      {
+        ...mergeExplain(zh as Dict, {
+          ...(explainZh as Dict),
+          glossary: glossaryZh,
+        }),
+        ...deepMerge(aperiodicEn as Dict, aperiodicZh as Dict),
+      },
+      deepMerge(thesisEn as Dict, thesisZh as Dict),
+    ),
   },
   [AppLocale.Fr]: {
-    translation: {
-      ...mergeExplain(
-        fr as Dict,
-        { ...(explainEn as Dict), glossary: glossaryEn },
-        { ...(explainFr as Dict), glossary: glossaryFr },
-      ),
-      ...deepMerge(aperiodicEn as Dict, aperiodicFr as Dict),
-    },
+    translation: deepMerge(
+      {
+        ...mergeExplain(
+          fr as Dict,
+          { ...(explainEn as Dict), glossary: glossaryEn },
+          { ...(explainFr as Dict), glossary: glossaryFr },
+        ),
+        ...deepMerge(aperiodicEn as Dict, aperiodicFr as Dict),
+      },
+      deepMerge(thesisEn as Dict, thesisFr as Dict),
+    ),
   },
 }
 

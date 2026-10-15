@@ -187,7 +187,7 @@ html.hud-resizing-y * {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .strategy-drop-inner {
+.strategy-drop-inner {
     animation: none;
   }
 }

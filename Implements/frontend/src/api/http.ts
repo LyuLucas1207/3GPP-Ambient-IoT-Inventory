@@ -24,6 +24,25 @@ export async function postJson<T>(url: string, body: unknown): Promise<T> {
   return res.json()
 }
 
+export async function patchJson<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(await parseError(res))
+  return res.json()
+}
+
+export async function deleteOk(url: string, body?: unknown): Promise<void> {
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(await parseError(res))
+}
+
 export async function fetchHealth(): Promise<boolean> {
   try {
     const res = await fetch('/api/health')
