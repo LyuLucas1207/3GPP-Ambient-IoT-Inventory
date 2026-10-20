@@ -530,6 +530,7 @@ export function ThesisWarehouse({
                 const tone = beaconTone(placement)
                 const picked = pickedIds.includes(String(placement.id))
                 const isFocus = focusReaderId != null && placement.id === focusReaderId
+                const dimmed = focusReaderId != null && !isFocus
                 const size = 0.85 * markerScale * (selectedId === String(placement.id) || isFocus ? 1.3 : 1)
                 return (
                   <g
@@ -537,6 +538,7 @@ export function ThesisWarehouse({
                     data-placement={placement.id}
                     transform={`translate(${placement.x_m} ${placement.y_m})`}
                     className="cursor-pointer"
+                    opacity={dimmed ? 0.18 : 1}
                     onClick={(event) => {
                       event.stopPropagation()
                       if (selecting && placement.kind !== 'device') {
@@ -549,14 +551,14 @@ export function ThesisWarehouse({
                     {picked ? (
                       <circle r={size * 2.2} className="fill-none stroke-foreground" strokeWidth={2} vectorEffect="non-scaling-stroke" />
                     ) : null}
-                    {beacon ? (
+                    {beacon && !dimmed ? (
                       <>
                         <PulseRing size={size} tone={tone} delay={beaconDelay(placement.id)} />
                         <PulseRing size={size} tone={tone} delay={beaconDelay(placement.id) + 1400} />
                       </>
                     ) : null}
                     <g opacity={beacon ? 0.85 : 1}>
-                      {beacon ? (
+                      {beacon && !dimmed ? (
                         <animate
                           attributeName="opacity"
                           values="0.68;1;0.68"
@@ -571,7 +573,7 @@ export function ThesisWarehouse({
                       <MarkerShape
                         shape={shapeOf(placement)}
                         r={size}
-                        className={fillClass(placement)}
+                        className={dimmed ? 'fill-foreground' : fillClass(placement)}
                         strokeWidth={0}
                       />
                     </g>
@@ -588,7 +590,7 @@ export function ThesisWarehouse({
       )}
       <div
         ref={layersRef}
-        className="absolute top-3 right-3 overflow-hidden bg-background/80 text-foreground shadow-sm ring-1 ring-foreground/10 backdrop-blur-md transition-[width,height,border-radius] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="absolute top-3 right-14 overflow-hidden bg-background/80 text-foreground shadow-sm ring-1 ring-foreground/10 backdrop-blur-md transition-[width,height,border-radius] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{
           width: layersOpen ? layersSize.width : 36,
           height: layersOpen ? layersSize.height : 36,

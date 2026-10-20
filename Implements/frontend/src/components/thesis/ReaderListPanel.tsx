@@ -22,10 +22,18 @@ export function ReaderListPanel({
   }, [scene])
 
   return (
-    <div className={`relative h-full shrink-0 ${open ? 'w-64 max-w-[35vw]' : 'w-0'}`}>
-      <aside className={`flex h-full flex-col overflow-hidden bg-card ${open ? 'w-full border-l' : 'hidden'}`}>
-        {open ? (
-          <div className="flex min-h-0 flex-1 flex-col">
+    <div
+      className={`relative h-full shrink-0 transition-[width] duration-300 ease-out ${
+        open ? 'w-64 max-w-[35vw]' : 'w-0'
+      }`}
+    >
+      <div className="h-full overflow-hidden">
+      <aside
+        className={`flex h-full w-64 max-w-[35vw] flex-col overflow-hidden bg-card ${open ? 'border-l' : ''}`}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
               <h2 className="text-sm font-medium">{t('thesis.readerList.title', { count: readers.length })}</h2>
               {focusReaderId != null ? (
@@ -70,8 +78,8 @@ export function ReaderListPanel({
               {t('thesis.readerList.hint')}
             </p>
           </div>
-        ) : null}
       </aside>
+      </div>
       <Button
         type="button"
         size="icon-sm"

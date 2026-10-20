@@ -96,9 +96,17 @@ export function ThesisSidebar({
   const [open, setOpen] = useState(true)
 
   return (
-    <div className={`relative h-full shrink-0 ${open ? 'w-80 max-w-[40vw]' : 'w-0'}`}>
-      <aside className={`flex h-full flex-col overflow-hidden bg-card ${open ? 'w-full border-r' : 'hidden'}`}>
-      {open ? (
+    <div
+      className={`relative h-full shrink-0 transition-[width] duration-300 ease-out ${
+        open ? 'w-80 max-w-[40vw]' : 'w-0'
+      }`}
+    >
+      <div className="h-full overflow-hidden">
+      <aside
+        className={`flex h-full w-80 max-w-[40vw] flex-col overflow-hidden bg-card ${open ? 'border-r' : ''}`}
+        aria-hidden={!open}
+        inert={!open}
+      >
       <Tabs
         defaultValue="section"
         className="min-h-0 w-full flex-1 flex-col gap-0"
@@ -344,7 +352,6 @@ export function ThesisSidebar({
           </ScrollArea>
         </TabsContent>
       </Tabs>
-      ) : null}
       <Dialog open={pendingDelete != null} onOpenChange={(next) => { if (!next) setPendingDelete(null) }}>
         <DialogPortal>
           <DialogBackdrop />
@@ -406,6 +413,7 @@ export function ThesisSidebar({
         </DialogPortal>
       </Dialog>
     </aside>
+      </div>
       <Button
         type="button"
         size="icon-sm"
