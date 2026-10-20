@@ -25,6 +25,18 @@
     "showDevice2b": "Show Device 2b",
     "showRadar": "Show reader",
     "showStation": "Show station",
+    "readerFormulas": {
+      "title": "Effective reader coverage (3GPP TR 38.769)",
+      "note": "EH is modeled as a harvest-rate (device charge over time), not a hard distance cutoff. Toggling off \"include D2R\" falls back to R2D-only."
+    },
+    "readerList": {
+      "title": "Readers ({{count}})",
+      "empty": "No readers yet. Convert selected stations into readers from the sidebar.",
+      "clear": "Clear focus",
+      "collapse": "Collapse reader list",
+      "expand": "Open reader list",
+      "hint": "Click a reader to highlight the devices it can inventory. Click again to clear."
+    },
     "resetToDefault": "Reset to default",
     "resetAll": "Reset all",
     "populationWarnLarge": "Beyond {{count}} placements renders slowly; the server caps at 20000.",
@@ -124,7 +136,8 @@
       "extra_attenuation_db": "Extra attenuation (dB)",
       "carrier_ghz": "Carrier (GHz)",
       "show_range": "Show range for this one",
-      "show_outer": "Show outer warehouse"
+      "show_outer": "Show outer warehouse",
+      "include_d2r": "Include D2R uplink leg (uncheck = R2D only, legacy)"
     },
     "errors": {
       "network": "Cannot reach the thesis service. Start PostgreSQL and the backend.",

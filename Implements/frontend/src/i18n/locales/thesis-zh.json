@@ -25,6 +25,18 @@
     "showDevice2b": "显示 Device 2b",
     "showRadar": "显示 Reader",
     "showStation": "显示 Station",
+    "readerFormulas": {
+      "title": "Reader 有效覆盖(3GPP TR 38.769)",
+      "note": "EH 在参考代码里按充电速率建模,不是硬距离截止。取消 \"启用 D2R\" 会回退到仅 R2D 的老算法。"
+    },
+    "readerList": {
+      "title": "Reader 列表({{count}})",
+      "empty": "还没有 reader。先在左边选中 station 再转成 reader。",
+      "clear": "取消聚焦",
+      "collapse": "收起 reader 列表",
+      "expand": "打开 reader 列表",
+      "hint": "点击一个 reader → 它能盘点到的 device 保持原色,其余变灰。再次点击取消。"
+    },
     "resetToDefault": "恢复默认",
     "resetAll": "全部恢复",
     "populationWarnLarge": "超过 {{count}} 个节点时画面可能变慢；后端上限 20000。",
@@ -124,7 +136,8 @@
       "extra_attenuation_db": "额外衰减 (dB)",
       "carrier_ghz": "载频 (GHz)",
       "show_range": "只显示这一个的范围",
-      "show_outer": "显示仓库外的部分"
+      "show_outer": "显示仓库外的部分",
+      "include_d2r": "启用 D2R 上行链路(取消勾选 = 仅 R2D,老版本)"
     },
     "errors": {
       "network": "连不上论文仿真服务。请先启动 PostgreSQL 和后端。",

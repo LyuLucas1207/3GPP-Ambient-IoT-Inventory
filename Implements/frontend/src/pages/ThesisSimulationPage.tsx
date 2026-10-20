@@ -4,6 +4,7 @@ import { LanguageToggle } from '@/components/LanguageToggle'
 import { PaperNav } from '@/components/PaperNav'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { PlaceMenu, PlacementMenu } from '@/components/thesis/PlacementMenu'
+import { ReaderListPanel } from '@/components/thesis/ReaderListPanel'
 import { ThesisSidebar } from '@/components/thesis/ThesisSidebar'
 import { ThesisWarehouse } from '@/components/thesis/ThesisWarehouse'
 import { Badge } from '@/components/ui/badge'
@@ -24,12 +25,14 @@ export default function ThesisSimulationPage() {
   const [menu, setMenu] = useState<Menu | null>(null)
   const [selecting, setSelecting] = useState(false)
   const [picked, setPicked] = useState<string[]>([])
+  const [focusReaderId, setFocusReaderId] = useState<PlacementId | null>(null)
   const [menuKey, setMenuKey] = useState(sceneKey)
   if (menuKey !== sceneKey) {
     setMenuKey(sceneKey)
     setMenu(null)
     setPicked([])
     setSelecting(false)
+    setFocusReaderId(null)
   }
 
   useEffect(() => {
@@ -136,6 +139,7 @@ export default function ThesisSimulationPage() {
             scene={scene}
             catalog={studio.catalog}
             selectedId={selected ? String(selected.id) : null}
+            focusReaderId={focusReaderId}
             markerScale={scene?.markerScale ?? 0.7}
             deviceMarkerScale={scene?.deviceMarkerScale ?? 0.3}
             selecting={selecting}
@@ -148,6 +152,7 @@ export default function ThesisSimulationPage() {
             onPlace={(worldX, worldY, x, y) => setMenu({ type: 'place', worldX, worldY, x, y })}
           />
         </main>
+        <ReaderListPanel scene={scene} focusReaderId={focusReaderId} onFocus={setFocusReaderId} />
       </div>
       {menu?.type === 'place' ? (
         <PlaceMenu anchor={{ x: menu.x, y: menu.y }} onClose={() => setMenu(null)} onPick={place} />

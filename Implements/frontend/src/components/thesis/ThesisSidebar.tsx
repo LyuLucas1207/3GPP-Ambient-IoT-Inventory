@@ -1,6 +1,7 @@
 import { PanelLeftClose, PanelLeftOpen, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { MathInline } from '@/components/MathText'
 import { ShapeGlyph } from '@/components/thesis/MarkerShape'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -325,6 +326,7 @@ export function ThesisSidebar({
                         )
                       })}
                     </div>
+                    {entry.kind === 'radar' ? <ReaderCoverageFormulas /> : null}
                     <Button
                       type="button"
                       size="sm"
@@ -440,17 +442,16 @@ function Stat({ value, label, align }: { value: number; label: string; align: 's
 
 function EffectiveRangesSummary({ catalog }: { catalog: CatalogEntry[] }) {
   const { t } = useTranslation()
-  const sensitivities = useMemo<Partial<Record<DeviceSubtype, number>>>(() => {
-    const out: Partial<Record<DeviceSubtype, number>> = {}
+  const deviceDefaults = useMemo<Partial<Record<DeviceSubtype, CatalogEntry['defaults']>>>(() => {
+    const out: Partial<Record<DeviceSubtype, CatalogEntry['defaults']>> = {}
     for (const subtype of DEVICE_SUBTYPES) {
       const entry = catalog.find((item) => item.kind === 'device' && item.subtype === subtype)
-      const value = entry?.defaults.rx_sensitivity_dbm
-      if (typeof value === 'number') out[subtype] = value
+      if (entry) out[subtype] = entry.defaults
     }
     return out
   }, [catalog])
   const radarEntry = catalog.find((entry) => entry.kind === 'radar')
-  const ranges = useMemo(() => (radarEntry ? deriveReaderRanges(toRf(radarEntry.defaults), sensitivities) : null), [radarEntry, sensitivities])
+  const ranges = useMemo(() => (radarEntry ? deriveReaderRanges(toRf(radarEntry.defaults), deviceDefaults) : null), [radarEntry, deviceDefaults])
   if (!ranges) return null
   return (
     <ul className="space-y-0.5 text-xs">
@@ -769,6 +770,24 @@ function StationSelect({
         </Button>
       </div>
     </div>
+  )
+}
+
+function ReaderCoverageFormulas() {
+  const { t } = useTranslation()
+  const formulas = [
+    String.raw`r_{\mathrm{eff,\,dev1}} = \min\bigl(R2D_{\mathrm{dev1}},\, D2R_{\mathrm{dev1}},\, EH_{\mathrm{dev1}}\bigr)`,
+    String.raw`r_{\mathrm{eff,\,dev2a}} = \min\bigl(R2D_{\mathrm{dev2a}},\, D2R_{\mathrm{dev2a}},\, EH_{\mathrm{dev2a}}\bigr)`,
+    String.raw`r_{\mathrm{eff,\,dev2b}} = \min\bigl(R2D_{\mathrm{dev2b}},\, D2R_{\mathrm{dev2b}},\, EH_{\mathrm{dev2b}}\bigr)`,
+  ]
+  return (
+    <section className="mt-3 flex flex-col gap-1 rounded-md border border-dashed bg-muted/30 p-2 text-[11px]">
+      <h4 className="mb-1 font-medium text-muted-foreground">{t('thesis.readerFormulas.title')}</h4>
+      {formulas.map((tex, index) => (
+        <MathInline key={index} tex={tex} className="block" />
+      ))}
+      <p className="mt-1 text-muted-foreground">{t('thesis.readerFormulas.note')}</p>
+    </section>
   )
 }
 

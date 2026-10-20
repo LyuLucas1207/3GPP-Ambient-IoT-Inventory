@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.thesis_simulator.physics import range_from_sensitivity_m
+from app.thesis_simulator.physics import effective_coverage_m
 
 DEVICE_SUBTYPES: tuple[str, ...] = ("1", "2a", "2b")
 
@@ -115,7 +115,7 @@ class RadarSpec(CatalogSpec):
     shape = "hexagon"
 
     def defaults(self) -> dict[str, Any]:
-        return {**_rf_defaults(), "show_range": False, "show_outer": False}
+        return {**_rf_defaults(), "show_range": False, "show_outer": False, "include_d2r": True}
 
 
 def catalog_specs() -> tuple[CatalogSpec, ...]:
@@ -133,26 +133,37 @@ def device_sensitivity_defaults() -> dict[str, float]:
     return {subtype: float(spec_for("device", subtype).defaults()["rx_sensitivity_dbm"]) for subtype in DEVICE_SUBTYPES}
 
 
+def device_params_defaults() -> dict[str, dict[str, Any]]:
+    return {subtype: dict(spec_for("device", subtype).defaults()) for subtype in DEVICE_SUBTYPES}
+
+
 def derive_reader_ranges(
     rf_params: dict[str, Any],
     device_sensitivities: dict[str, float] | None = None,
+    device_params: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, float]:
-    sens = dict(device_sensitivities or device_sensitivity_defaults())
-    tx = float(rf_params.get("tx_power_dbm", 33.0))
-    gain = float(rf_params.get("antenna_gain_dbi", 6.0))
-    extra = float(rf_params.get("extra_attenuation_db", 0.0))
-    carrier = float(rf_params.get("carrier_ghz", 0.9))
+    """Return horizontal reach per device subtype.
+
+    If rf_params includes ``include_d2r=False``, use R2D only (legacy).
+    Otherwise use the paper's ``min(R2D, D2R)`` model.
+    """
+    params = dict(device_params or device_params_defaults())
+    if device_sensitivities:
+        for subtype, sens in device_sensitivities.items():
+            if subtype in params:
+                params[subtype] = {**params[subtype], "rx_sensitivity_dbm": float(sens)}
+    rf = {
+        "tx_power_dbm": float(rf_params.get("tx_power_dbm", 33.0)),
+        "antenna_gain_dbi": float(rf_params.get("antenna_gain_dbi", 6.0)),
+        "extra_attenuation_db": float(rf_params.get("extra_attenuation_db", 0.0)),
+        "carrier_ghz": float(rf_params.get("carrier_ghz", 0.9)),
+    }
+    include_d2r = bool(rf_params.get("include_d2r", True))
     out: dict[str, float] = {}
     for subtype in DEVICE_SUBTYPES:
-        if subtype not in sens:
+        if subtype not in params:
             continue
-        out[subtype] = range_from_sensitivity_m(
-            rx_sens_dbm=sens[subtype],
-            tx_power_dbm=tx,
-            antenna_gain_dbi=gain,
-            extra_atten_db=extra,
-            carrier_ghz=carrier,
-        )
+        out[subtype] = effective_coverage_m(params[subtype], rf, include_d2r=include_d2r)
     return out
 
 

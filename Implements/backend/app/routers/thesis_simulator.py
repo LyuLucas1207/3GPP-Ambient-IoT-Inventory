@@ -63,6 +63,7 @@ def compute_derived_ranges(body: DerivedRangesIn) -> dict:
         "antenna_gain_dbi": body.antenna_gain_dbi,
         "extra_attenuation_db": body.extra_attenuation_db,
         "carrier_ghz": body.carrier_ghz,
+        "include_d2r": body.include_d2r,
     }
     return {"effective_range_m": derive_reader_ranges(rf, body.device_sensitivities)}
 

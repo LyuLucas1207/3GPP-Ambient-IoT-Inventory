@@ -5,7 +5,7 @@ import { MarkerShape } from '@/components/thesis/MarkerShape'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { inside } from '@/lib/thesisGeometry'
-import { DEVICE_SUBTYPES, deriveReaderRanges, rangeFromSensitivityM } from '@/lib/thesisPhysics'
+import { DEVICE_SUBTYPES, deriveReaderRanges, effectiveCoverageM, rangeFromSensitivityM } from '@/lib/thesisPhysics'
 import type { CatalogEntry, DeviceSubtype, Kind, Placement, Scene, Shape } from '@/types/thesis'
 
 const LAYER_KEYS = ['device1', 'device2a', 'device2b', 'radar', 'station'] as const
@@ -38,6 +38,7 @@ export function ThesisWarehouse({
   scene,
   catalog,
   selectedId,
+  focusReaderId,
   markerScale,
   deviceMarkerScale,
   selecting = false,
@@ -49,6 +50,7 @@ export function ThesisWarehouse({
   scene: Scene | null
   catalog: CatalogEntry[]
   selectedId: string | null
+  focusReaderId: Placement['id'] | null
   markerScale: number
   deviceMarkerScale: number
   selecting?: boolean
@@ -80,15 +82,22 @@ export function ThesisWarehouse({
 
   const deviceCanvasRef = useRef<HTMLCanvasElement>(null)
 
-  const sensitivities = useMemo<Partial<Record<DeviceSubtype, number>>>(() => {
-    const out: Partial<Record<DeviceSubtype, number>> = {}
+  const deviceDefaults = useMemo<Partial<Record<DeviceSubtype, CatalogEntry['defaults']>>>(() => {
+    const out: Partial<Record<DeviceSubtype, CatalogEntry['defaults']>> = {}
     for (const subtype of DEVICE_SUBTYPES) {
       const entry = catalog.find((item) => item.kind === 'device' && item.subtype === subtype)
-      const value = entry?.defaults.rx_sensitivity_dbm
-      if (typeof value === 'number') out[subtype] = value
+      if (entry) out[subtype] = entry.defaults
     }
     return out
   }, [catalog])
+  const sensitivities = useMemo<Partial<Record<DeviceSubtype, number>>>(() => {
+    const out: Partial<Record<DeviceSubtype, number>> = {}
+    for (const subtype of DEVICE_SUBTYPES) {
+      const value = deviceDefaults[subtype]?.rx_sensitivity_dbm
+      if (typeof value === 'number') out[subtype] = value
+    }
+    return out
+  }, [deviceDefaults])
 
   useLayoutEffect(() => {
     const node = layersContentRef.current
@@ -287,22 +296,57 @@ export function ThesisWarehouse({
     const panY = view.panY
     const flipY = scene.height_m
     const radiusPx = Math.max(0.4, 0.42 * deviceMarkerScale * scale)
-    const buckets: Record<string, { color: string; show: boolean; placements: Placement[] }> = {
-      '1': { color: '#1d4ed8', show: layers.device1, placements: [] },
-      '2a': { color: '#0f766e', show: layers.device2a, placements: [] },
-      '2b': { color: '#c2410c', show: layers.device2b, placements: [] },
+
+    const focusReader = focusReaderId
+      ? scene.placements.find((p) => p.id === focusReaderId && p.kind === 'radar')
+      : null
+    const coverageSq: Partial<Record<DeviceSubtype, number>> = {}
+    let focusCx = 0
+    let focusCy = 0
+    if (focusReader) {
+      focusCx = focusReader.x_m
+      focusCy = focusReader.y_m
+      const rf = {
+        tx_power_dbm: toNumber(focusReader.params.tx_power_dbm, 33),
+        antenna_gain_dbi: toNumber(focusReader.params.antenna_gain_dbi, 6),
+        extra_attenuation_db: toNumber(focusReader.params.extra_attenuation_db, 0),
+        carrier_ghz: toNumber(focusReader.params.carrier_ghz, 0.9),
+      }
+      const includeD2r = focusReader.params.include_d2r !== false
+      for (const subtype of DEVICE_SUBTYPES) {
+        const params = deviceDefaults[subtype]
+        if (!params) continue
+        const r = effectiveCoverageM(params, rf, includeD2r)
+        coverageSq[subtype] = r * r
+      }
+    }
+
+    type Bucket = { color: string; show: boolean; litInRange: Placement[]; dimOutOfRange: Placement[] }
+    const buckets: Record<string, Bucket> = {
+      '1': { color: '#1d4ed8', show: layers.device1, litInRange: [], dimOutOfRange: [] },
+      '2a': { color: '#0f766e', show: layers.device2a, litInRange: [], dimOutOfRange: [] },
+      '2b': { color: '#c2410c', show: layers.device2b, litInRange: [], dimOutOfRange: [] },
     }
     for (const placement of scene.placements) {
       if (placement.kind !== 'device') continue
       const bucket = buckets[placement.subtype ?? '']
       if (!bucket || !bucket.show) continue
-      bucket.placements.push(placement)
+      if (focusReader) {
+        const covSq = coverageSq[placement.subtype as DeviceSubtype]
+        const dx = placement.x_m - focusCx
+        const dy = placement.y_m - focusCy
+        const inRange = typeof covSq === 'number' && dx * dx + dy * dy <= covSq
+        if (inRange) bucket.litInRange.push(placement)
+        else bucket.dimOutOfRange.push(placement)
+      } else {
+        bucket.litInRange.push(placement)
+      }
     }
-    for (const bucket of Object.values(buckets)) {
-      if (bucket.placements.length === 0) continue
-      ctx.fillStyle = bucket.color
+    const drawCircles = (items: Placement[], fillStyle: string) => {
+      if (items.length === 0) return
+      ctx.fillStyle = fillStyle
       ctx.beginPath()
-      for (const placement of bucket.placements) {
+      for (const placement of items) {
         const sx = placement.x_m * scale + panX
         const sy = (flipY - placement.y_m) * scale + panY
         ctx.moveTo(sx + radiusPx, sy)
@@ -310,7 +354,13 @@ export function ThesisWarehouse({
       }
       ctx.fill()
     }
-  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale])
+    for (const bucket of Object.values(buckets)) {
+      drawCircles(bucket.dimOutOfRange, 'rgba(120,120,120,0.25)')
+    }
+    for (const bucket of Object.values(buckets)) {
+      drawCircles(bucket.litInRange, bucket.color)
+    }
+  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults])
 
   function screenToWorld(clientX: number, clientY: number) {
     const rect = hostRef.current?.getBoundingClientRect()
@@ -445,7 +495,7 @@ export function ThesisWarehouse({
                         extra_attenuation_db: toNumber(placement.params.extra_attenuation_db, 0),
                         carrier_ghz: toNumber(placement.params.carrier_ghz, 0.9),
                       }
-                      const ranges = deriveReaderRanges(readerRf, sensitivities)
+                      const ranges = deriveReaderRanges(readerRf, deviceDefaults, placement.params.include_d2r !== false)
                       return (
                         <g key={`reader-range-${placement.id}`}>
                           {DEVICE_SUBTYPES.map((subtype) => {
@@ -479,7 +529,8 @@ export function ThesisWarehouse({
                 const beacon = true
                 const tone = beaconTone(placement)
                 const picked = pickedIds.includes(String(placement.id))
-                const size = 0.85 * markerScale * (selectedId === String(placement.id) ? 1.15 : 1)
+                const isFocus = focusReaderId != null && placement.id === focusReaderId
+                const size = 0.85 * markerScale * (selectedId === String(placement.id) || isFocus ? 1.3 : 1)
                 return (
                   <g
                     key={placement.id}

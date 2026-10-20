@@ -25,6 +25,18 @@
     "showDevice2b": "Afficher Device 2b",
     "showRadar": "Afficher le reader",
     "showStation": "Afficher la station",
+    "readerFormulas": {
+      "title": "Couverture effective du reader (3GPP TR 38.769)",
+      "note": "EH est modélisé par le taux de collecte d'énergie, pas une coupure stricte. Décocher \"D2R\" revient au modèle R2D seul."
+    },
+    "readerList": {
+      "title": "Readers ({{count}})",
+      "empty": "Aucun reader. Convertissez des stations sélectionnées en readers depuis la barre.",
+      "clear": "Retirer le focus",
+      "collapse": "Replier la liste",
+      "expand": "Ouvrir la liste",
+      "hint": "Cliquez un reader pour mettre en évidence les devices qu'il peut inventorier."
+    },
     "resetToDefault": "Réinitialiser",
     "resetAll": "Tout réinitialiser",
     "populationWarnLarge": "Au-delà de {{count}} placements le rendu ralentit ; limite serveur 20000.",
@@ -124,7 +136,8 @@
       "extra_attenuation_db": "Atténuation supplémentaire (dB)",
       "carrier_ghz": "Porteuse (GHz)",
       "show_range": "Afficher la portée (ce nœud)",
-      "show_outer": "Afficher hors entrepôt"
+      "show_outer": "Afficher hors entrepôt",
+      "include_d2r": "Inclure la liaison D2R (décocher = R2D seul, hérité)"
     },
     "errors": {
       "network": "Service de thèse injoignable. Démarrez PostgreSQL et le backend.",

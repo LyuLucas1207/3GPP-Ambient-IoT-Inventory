@@ -56,8 +56,10 @@ def test_catalog_lists_five_shapes(client: TestClient):
     assert "radius_m" not in radar["defaults"]
     assert radar["defaults"]["show_range"] is False
     assert set(radar["derived_ranges"]) == {"1", "2a", "2b"}
-    assert radar["derived_ranges"]["1"] > 30
+    # effective coverage = min(R2D, D2R). For Device 1 under default RF ~24 m.
+    assert 20 < radar["derived_ranges"]["1"] < 30
     assert radar["derived_ranges"]["2a"] > radar["derived_ranges"]["1"]
+    assert radar["derived_ranges"]["2b"] > radar["derived_ranges"]["2a"]
     station = next(row for row in rows if row["kind"] == "station")
     assert "radius_m" not in station["defaults"]
     assert station["defaults"]["show_range"] is False

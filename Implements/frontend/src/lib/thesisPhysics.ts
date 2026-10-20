@@ -2,13 +2,16 @@
 // recompute per-device-type ranges live without a network round-trip. The
 // backend endpoint stays authoritative.
 
-import type { DerivedRanges, DeviceSubtype } from '@/types/thesis'
+import type { DerivedRanges, DeviceSubtype, Params } from '@/types/thesis'
 
 export const FC_GHZ = 0.9
 export const H_BS = 8.0
 export const H_AIOT = 1.5
 export const FIXED_DEV_DB = 7.0
 export const L_OBJ_DB = 0.9
+export const CANCEL_DEPTH_DB = 140.0
+export const SNR_REQ_DB = 0.5
+export const DEFAULT_READER_TX_DBM = 33.0
 
 export const DEVICE_SUBTYPES: readonly DeviceSubtype[] = ['1', '2a', '2b']
 
@@ -64,15 +67,74 @@ export function rangeFromSensitivityM(
   return horizontalFrom3d(d3d, h_tx, h_rx)
 }
 
+export function readerRequiredLevelDbm(txPowerDbm: number = DEFAULT_READER_TX_DBM): number {
+  return txPowerDbm - CANCEL_DEPTH_DB + SNR_REQ_DB
+}
+
+function mplToHorizontalM(mplDb: number, carrierGhz: number, h_tx: number, h_rx: number): number {
+  if (mplDb <= 0) return 0
+  const d3d = solveDistanceFromMpl(mplDb, carrierGhz)
+  return horizontalFrom3d(d3d, h_tx, h_rx)
+}
+
+export function d2rBackscatterRangeM(
+  backscatterLossDb: number,
+  backscatterGainDb: number,
+  rf: RfParams = {},
+  h_tx: number = H_BS,
+  h_rx: number = H_AIOT,
+): number {
+  const tx = rf.tx_power_dbm ?? DEFAULT_READER_TX_DBM
+  const extra = rf.extra_attenuation_db ?? 0
+  const carrier = rf.carrier_ghz ?? FC_GHZ
+  const gbs = -backscatterLossDb + backscatterGainDb
+  const pReq = readerRequiredLevelDbm(tx)
+  const mpl = 0.5 * (tx + gbs - FIXED_DEV_DB - extra - pReq)
+  return mplToHorizontalM(mpl, carrier, h_tx, h_rx)
+}
+
+export function d2rActiveRangeM(
+  activeTxDbm: number,
+  rf: RfParams = {},
+  h_tx: number = H_BS,
+  h_rx: number = H_AIOT,
+): number {
+  const tx = rf.tx_power_dbm ?? DEFAULT_READER_TX_DBM
+  const extra = rf.extra_attenuation_db ?? 0
+  const carrier = rf.carrier_ghz ?? FC_GHZ
+  const pReq = readerRequiredLevelDbm(tx)
+  const mpl = activeTxDbm - FIXED_DEV_DB - extra - pReq
+  return mplToHorizontalM(mpl, carrier, h_tx, h_rx)
+}
+
+export function effectiveCoverageM(deviceParams: Params, rf: RfParams = {}, includeD2r: boolean = true): number {
+  const rxSens = typeof deviceParams.rx_sensitivity_dbm === 'number' ? deviceParams.rx_sensitivity_dbm : -36
+  const r2d = rangeFromSensitivityM(rxSens, rf)
+  if (!includeD2r) return r2d
+  const uplink = deviceParams.uplink
+  let d2r = 0
+  if (uplink === 'active') {
+    const activeTx = typeof deviceParams.active_tx_power_dbm === 'number' ? deviceParams.active_tx_power_dbm : null
+    if (activeTx == null) return 0
+    d2r = d2rActiveRangeM(activeTx, rf)
+  } else {
+    const loss = typeof deviceParams.backscatter_loss_db === 'number' ? deviceParams.backscatter_loss_db : 6
+    const gain = typeof deviceParams.backscatter_gain_db === 'number' ? deviceParams.backscatter_gain_db : 0
+    d2r = d2rBackscatterRangeM(loss, gain, rf)
+  }
+  return Math.min(r2d, d2r)
+}
+
 export function deriveReaderRanges(
   rf: RfParams,
-  deviceSensitivities: Partial<Record<DeviceSubtype, number>>,
+  deviceDefaults: Partial<Record<DeviceSubtype, Params>>,
+  includeD2r: boolean = true,
 ): DerivedRanges {
   const out = { '1': 0, '2a': 0, '2b': 0 } as DerivedRanges
   for (const subtype of DEVICE_SUBTYPES) {
-    const sens = deviceSensitivities[subtype]
-    if (typeof sens !== 'number') continue
-    out[subtype] = rangeFromSensitivityM(sens, rf)
+    const params = deviceDefaults[subtype]
+    if (!params) continue
+    out[subtype] = effectiveCoverageM(params, rf, includeD2r)
   }
   return out
 }

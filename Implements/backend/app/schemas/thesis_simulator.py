@@ -114,6 +114,7 @@ class DerivedRangesIn(BaseModel):
     antenna_gain_dbi: float = 6.0
     extra_attenuation_db: float = 0.0
     carrier_ghz: float = 0.9
+    include_d2r: bool = True
     device_sensitivities: dict[str, float] | None = None
 
 

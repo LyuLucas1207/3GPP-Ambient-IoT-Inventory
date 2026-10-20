@@ -48,12 +48,13 @@ export function PlacementMenu({
   const pristine = findCatalog(pristineCatalog, kind, kind === 'device' ? subtype : null)?.defaults ?? sample
   const pos = clampAnchor(anchor.x, anchor.y)
 
-  const deviceSensitivities = useMemo(() => deviceSensitivityDefaults(catalog), [catalog])
+  const deviceDefaults = useMemo(() => catalogDeviceDefaults(catalog), [catalog])
   const derivedRanges = useMemo<DerivedRanges | null>(() => {
     if (kind === 'device') return null
     const rf = draftToRf(draft, sample)
-    return deriveReaderRanges(rf, deviceSensitivities)
-  }, [kind, draft, sample, deviceSensitivities])
+    const includeD2r = kind === 'radar' ? draft.include_d2r !== 'false' : true
+    return deriveReaderRanges(rf, deviceDefaults, includeD2r)
+  }, [kind, draft, sample, deviceDefaults])
 
   function convertKind() {
     const next: Kind = kind === 'radar' ? 'station' : 'radar'
@@ -105,7 +106,7 @@ export function PlacementMenu({
   }
 
   const keys = orderedKeys(sample, draft).filter(
-    (key) => !(kind !== 'device' && (key === 'show_range' || key === 'show_outer')),
+    (key) => !(kind !== 'device' && (key === 'show_range' || key === 'show_outer' || key === 'include_d2r')),
   )
 
   return (
@@ -150,6 +151,15 @@ export function PlacementMenu({
                 />
                 {t('thesis.params.show_outer')}
               </label>
+              {kind === 'radar' ? (
+                <label className="col-span-2 flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={draft.include_d2r !== 'false'}
+                    onCheckedChange={(value) => setParam('include_d2r', value === true ? 'true' : 'false')}
+                  />
+                  {t('thesis.params.include_d2r')}
+                </label>
+              ) : null}
               <Button type="button" size="sm" variant="outline" className="col-span-2" onClick={convertKind}>
                 {kind === 'radar' ? t('thesis.toStation') : t('thesis.toRadar')}
               </Button>
@@ -372,12 +382,11 @@ function draftToRf(draft: Record<string, string>, sample: Params) {
   }
 }
 
-function deviceSensitivityDefaults(catalog: CatalogEntry[]): Partial<Record<DeviceSubtype, number>> {
-  const out: Partial<Record<DeviceSubtype, number>> = {}
+function catalogDeviceDefaults(catalog: CatalogEntry[]): Partial<Record<DeviceSubtype, Params>> {
+  const out: Partial<Record<DeviceSubtype, Params>> = {}
   for (const subtype of DEVICE_SUBTYPES) {
     const entry = catalog.find((item) => item.kind === 'device' && item.subtype === subtype)
-    const value = entry?.defaults.rx_sensitivity_dbm
-    if (typeof value === 'number') out[subtype] = value
+    if (entry) out[subtype] = entry.defaults
   }
   return out
 }
