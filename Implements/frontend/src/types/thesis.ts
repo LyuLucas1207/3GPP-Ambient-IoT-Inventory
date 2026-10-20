@@ -4,12 +4,25 @@ export type ParamValue = string | number | boolean | null
 export type Params = Record<string, ParamValue>
 export type PlacementId = number | string
 export type DeviceMix = 'mixed' | '1' | '2a' | '2b'
+export type DeviceSubtype = '1' | '2a' | '2b'
+export type DerivedRanges = Record<DeviceSubtype, number>
+
+export type ScenarioDefaults = {
+  width_m: number
+  height_m: number
+  bs_lattice_spacing_m: number
+  bs_positions: [number, number][]
+  active_bs_xy: [number, number]
+  default_n_devices: number
+  max_placements: number
+}
 
 export type CatalogEntry = {
   kind: Kind
   subtype: string | null
   shape: Shape
   defaults: Params
+  derived_ranges?: DerivedRanges
 }
 
 export type Placement = {
@@ -19,6 +32,7 @@ export type Placement = {
   x_m: number
   y_m: number
   params: Params
+  derived?: { effective_range_m?: DerivedRanges }
 }
 
 export type PlacementInput = {
@@ -41,6 +55,7 @@ export type Scene = {
   saved: boolean
   status: SectionStatus
   markerScale: number
+  deviceMarkerScale: number
   nonce: number
 }
 
@@ -61,6 +76,7 @@ export type SectionDetail = {
   height_m: number
   status: SectionStatus
   marker_scale: number
+  device_marker_scale: number
   created_at: string
   updated_at: string
   placements: Placement[]

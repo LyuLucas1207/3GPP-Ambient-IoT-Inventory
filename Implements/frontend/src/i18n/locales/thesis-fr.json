@@ -25,6 +25,16 @@
     "showDevice2b": "Afficher Device 2b",
     "showRadar": "Afficher le reader",
     "showStation": "Afficher la station",
+    "resetToDefault": "Réinitialiser",
+    "resetAll": "Tout réinitialiser",
+    "populationWarnLarge": "Au-delà de {{count}} placements le rendu ralentit ; limite serveur 20000.",
+    "effectiveRange": {
+      "title": "Portée effective par type de device",
+      "device1": "Device 1",
+      "device2a": "Device 2a",
+      "device2b": "Device 2b",
+      "unit": "m"
+    },
     "tabs": {
       "section": "Scène",
       "warehouse": "Entrepôt",
@@ -47,23 +57,18 @@
     "stationInterval": "À intervalle fixe",
     "stationRandom": "Aléatoire",
     "mixed": "Types mélangés",
-    "radarGrid": "Grille rapide de radars",
-    "margin": "Marge (m)",
-    "spacing": "Espacement (m)",
+    "applyStandardLayout": "Appliquer la disposition 3GPP ({{count}} BS)",
     "spacingX": "X (m)",
     "spacingY": "Y (m)",
-    "placeRadars": "Placer les radars",
-    "radarOverlap": "L'espacement tient dans deux rayons : les portées peuvent se chevaucher.",
-    "radarGap": "L'espacement dépasse deux rayons : les portées peuvent laisser des trous.",
-    "markerScale": "Taille des marqueurs",
+    "markerScaleInfra": "Taille · station + reader",
+    "markerScaleDevice": "Taille · device",
     "devices": "Devices",
     "stations": "Stations",
     "readers": "Readers",
     "group": {
       "floor": "Sol",
       "place": "Placement",
-      "readers": "Readers",
-      "range": "Portée"
+      "readers": "Readers"
     },
     "bulkHint": "Cette scène est initializing. Ajoutez des devices et des stations, transformez certaines stations en readers, puis enregistrez.",
     "bulkLocked": "Cette scène est initialized. Modifiez ou placez un nœud à la fois. La génération groupée reste désactivée.",
@@ -118,8 +123,8 @@
       "antenna_gain_dbi": "Gain d'antenne (dBi)",
       "extra_attenuation_db": "Atténuation supplémentaire (dB)",
       "carrier_ghz": "Porteuse (GHz)",
-      "radius_m": "Rayon (m)",
-      "show_range": "Afficher la portée"
+      "show_range": "Afficher la portée (ce nœud)",
+      "show_outer": "Afficher hors entrepôt"
     },
     "errors": {
       "network": "Service de thèse injoignable. Démarrez PostgreSQL et le backend.",

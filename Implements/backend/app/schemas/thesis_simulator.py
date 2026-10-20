@@ -55,6 +55,7 @@ class SectionPatch(BaseModel):
     height_m: float | None = Field(default=None, gt=0, le=10_000)
     status: Literal["initialized"] | None = None
     marker_scale: float | None = Field(default=None, ge=0, le=5)
+    device_marker_scale: float | None = Field(default=None, ge=0, le=5)
 
 
 class PlacementOut(BaseModel):
@@ -64,6 +65,7 @@ class PlacementOut(BaseModel):
     x_m: float
     y_m: float
     params: dict[str, Any]
+    derived: dict[str, Any] | None = None
 
 
 class SectionOut(BaseModel):
@@ -73,6 +75,7 @@ class SectionOut(BaseModel):
     height_m: float
     status: SectionStatus
     marker_scale: float
+    device_marker_scale: float
     created_at: str
     updated_at: str
     placements: list[PlacementOut]
@@ -93,3 +96,26 @@ class CatalogEntryOut(BaseModel):
     subtype: str | None
     shape: Shape
     defaults: dict[str, Any]
+    derived_ranges: dict[str, float] | None = None
+
+
+class ScenarioDefaultsOut(BaseModel):
+    width_m: float
+    height_m: float
+    bs_lattice_spacing_m: float
+    bs_positions: list[list[float]]
+    active_bs_xy: list[float]
+    default_n_devices: int
+    max_placements: int
+
+
+class DerivedRangesIn(BaseModel):
+    tx_power_dbm: float = 33.0
+    antenna_gain_dbi: float = 6.0
+    extra_attenuation_db: float = 0.0
+    carrier_ghz: float = 0.9
+    device_sensitivities: dict[str, float] | None = None
+
+
+class DerivedRangesOut(BaseModel):
+    effective_range_m: dict[str, float]

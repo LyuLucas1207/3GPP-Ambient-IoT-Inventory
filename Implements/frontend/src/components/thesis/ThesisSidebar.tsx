@@ -1,5 +1,5 @@
-import { PanelLeftClose, PanelLeftOpen, Plus, Trash2 } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { PanelLeftClose, PanelLeftOpen, Plus, RotateCcw, Trash2 } from 'lucide-react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ShapeGlyph } from '@/components/thesis/MarkerShape'
 import { Button } from '@/components/ui/button'
@@ -19,12 +19,16 @@ import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   DEFAULT_HEIGHT_M,
+  DEFAULT_POPULATION,
   DEFAULT_WIDTH_M,
 } from '@/lib/thesisGeometry'
-import type { CatalogEntry, DeviceMix, ParamValue, Scene, SectionSummary } from '@/types/thesis'
+import { DEVICE_SUBTYPES, deriveReaderRanges } from '@/lib/thesisPhysics'
+import type { CatalogEntry, DeviceMix, DeviceSubtype, ParamValue, ScenarioDefaults, Scene, SectionSummary } from '@/types/thesis'
 
 export function ThesisSidebar({
   catalog,
+  pristineCatalog,
+  scenarioDefaults,
   sections,
   scene,
   busy,
@@ -33,12 +37,15 @@ export function ThesisSidebar({
   onDelete,
   onApplySize,
   onMarkerScale,
+  onDeviceMarkerScale,
   onAddDevices,
   onAddStations,
   onAddStationGrid,
+  onApplyStandardLayout,
   onClearDevices,
   onClearInfra,
   onCatalogValue,
+  onResetCatalog,
   onApplyKind,
   selecting,
   pickedCount,
@@ -49,6 +56,8 @@ export function ThesisSidebar({
   onLeaveSelect,
 }: {
   catalog: CatalogEntry[]
+  pristineCatalog: CatalogEntry[]
+  scenarioDefaults: ScenarioDefaults | null
   sections: SectionSummary[]
   scene: Scene | null
   busy: boolean
@@ -57,12 +66,15 @@ export function ThesisSidebar({
   onDelete: (id: number) => Promise<void>
   onApplySize: (width: number, height: number) => void
   onMarkerScale: (scale: number) => void
+  onDeviceMarkerScale: (scale: number) => void
   onAddDevices: (count: number, mix: DeviceMix) => void
   onAddStations: (count: number) => void
   onAddStationGrid: (spacingX: number, spacingY: number) => void
+  onApplyStandardLayout: () => void
   onClearDevices: () => void
   onClearInfra: () => void
   onCatalogValue: (kind: CatalogEntry['kind'], subtype: string | null, key: string, value: CatalogEntry['defaults'][string]) => void
+  onResetCatalog: (kind: CatalogEntry['kind'], subtype: string | null) => void
   onApplyKind: (kind: CatalogEntry['kind'], subtype: string | null, params: CatalogEntry['defaults']) => void
   selecting: boolean
   pickedCount: number
@@ -155,18 +167,35 @@ export function ThesisSidebar({
                 />
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{t('thesis.markerScale')}</span>
-                    <span className="tabular-nums">{(scene?.markerScale ?? 1).toFixed(1)}</span>
+                    <span>{t('thesis.markerScaleInfra')}</span>
+                    <span className="tabular-nums">{(scene?.markerScale ?? 0.7).toFixed(1)}</span>
                   </div>
                   <Slider
                     min={0}
                     max={5}
                     step={0.1}
                     disabled={!scene || busy}
-                    value={[scene?.markerScale ?? 1]}
+                    value={[scene?.markerScale ?? 0.7]}
                     onValueChange={(value) => {
                       const next = Array.isArray(value) ? value[0] : value
                       if (typeof next === 'number') onMarkerScale(next)
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{t('thesis.markerScaleDevice')}</span>
+                    <span className="tabular-nums">{(scene?.deviceMarkerScale ?? 0.3).toFixed(1)}</span>
+                  </div>
+                  <Slider
+                    min={0}
+                    max={5}
+                    step={0.1}
+                    disabled={!scene || busy}
+                    value={[scene?.deviceMarkerScale ?? 0.3]}
+                    onValueChange={(value) => {
+                      const next = Array.isArray(value) ? value[0] : value
+                      if (typeof next === 'number') onDeviceMarkerScale(next)
                     }}
                   />
                 </div>
@@ -178,6 +207,7 @@ export function ThesisSidebar({
                     label={t('thesis.addDevices')}
                     actionLabel={t('thesis.add')}
                     disabled={busy}
+                    defaultCount={DEFAULT_POPULATION}
                     extra={
                       <MenuSelect
                         value={deviceMix}
@@ -193,7 +223,21 @@ export function ThesisSidebar({
                     }
                     onRun={(count) => onAddDevices(count, deviceMix)}
                   />
-                  <StationPlace disabled={busy} onRandom={onAddStations} onInterval={onAddStationGrid} />
+                  <StationPlace
+                    disabled={busy}
+                    defaultSpacing={scenarioDefaults?.bs_lattice_spacing_m ?? 20}
+                    onRandom={onAddStations}
+                    onInterval={onAddStationGrid}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={busy || !scenarioDefaults}
+                    onClick={onApplyStandardLayout}
+                  >
+                    {t('thesis.applyStandardLayout', { count: scenarioDefaults?.bs_positions.length ?? 18 })}
+                  </Button>
                   <div className="grid grid-cols-2 gap-2">
                     <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setPendingClear('device')}>
                       {t('thesis.clearDevices')}
@@ -215,27 +259,8 @@ export function ThesisSidebar({
                   onClear={onClearPicked}
                 />
               </Panel>
-              <Panel title={t('thesis.group.range')}>
-                <ClassRange
-                  label={t('thesis.kind.station')}
-                  radius={Number(catalog.find((entry) => entry.kind === 'station')?.defaults.radius_m ?? 20)}
-                  disabled={!scene || busy}
-                  applyLabel={t('thesis.apply')}
-                  onApply={(radius) => {
-                    onCatalogValue('station', null, 'radius_m', radius)
-                    onApplyKind('station', null, { radius_m: radius })
-                  }}
-                />
-                <ClassRange
-                  label={t('thesis.kind.radar')}
-                  radius={Number(catalog.find((entry) => entry.kind === 'radar')?.defaults.radius_m ?? 30)}
-                  disabled={!scene || busy}
-                  applyLabel={t('thesis.apply')}
-                  onApply={(radius) => {
-                    onCatalogValue('radar', null, 'radius_m', radius)
-                    onApplyKind('radar', null, { radius_m: radius })
-                  }}
-                />
+              <Panel title={t('thesis.effectiveRange.title')}>
+                <EffectiveRangesSummary catalog={catalog} />
               </Panel>
             </div>
           </ScrollArea>
@@ -243,42 +268,76 @@ export function ThesisSidebar({
         <TabsContent value="catalog" className="min-h-0 flex-1">
           <ScrollArea className="h-full">
             <div className="flex flex-col gap-3 p-3">
-              {catalog.map((entry) => (
-                <article key={`${entry.kind}-${entry.subtype}`} className="rounded-xl border p-3">
-                  <div className="mb-2 flex items-center gap-2">
-                    <ShapeGlyph shape={entry.kind === 'device' ? 'circle' : entry.shape} className={`size-6 ${glyphClass(entry)}`} />
-                    <h3 className="text-sm font-medium">{cardTitle(t, entry)}</h3>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {Object.entries(entry.defaults).map(([key, value]) =>
-                      typeof value === 'boolean' ? (
-                        <label key={key} className="flex items-center gap-2 text-xs">
-                          <Checkbox checked={value} onCheckedChange={(next) => onCatalogValue(entry.kind, entry.subtype, key, next === true)} />
-                          <span>{paramLabel(t, key)}</span>
-                        </label>
-                      ) : (
-                        <label key={key} className="grid grid-cols-[1fr_7.5rem] items-center gap-2 text-xs">
-                          <span className="text-muted-foreground">{paramLabel(t, key)}</span>
-                          <CatalogInput
-                            value={value}
-                            onCommit={(next) => onCatalogValue(entry.kind, entry.subtype, key, next)}
-                          />
-                        </label>
-                      ),
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="mt-3 w-full"
-                    disabled={!scene || busy}
-                    onClick={() => onApplyKind(entry.kind, entry.subtype, entry.defaults)}
-                  >
-                    {t('thesis.applyToPlaced')}
-                  </Button>
-                </article>
-              ))}
+              {catalog.map((entry) => {
+                const pristine = pristineCatalog.find((item) => item.kind === entry.kind && item.subtype === entry.subtype)
+                return (
+                  <article key={`${entry.kind}-${entry.subtype}`} className="rounded-xl border p-3">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <ShapeGlyph shape={entry.kind === 'device' ? 'circle' : entry.shape} className={`size-6 ${glyphClass(entry)}`} />
+                        <h3 className="text-sm font-medium">{cardTitle(t, entry)}</h3>
+                      </div>
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="ghost"
+                        aria-label={t('thesis.resetAll')}
+                        onClick={() => onResetCatalog(entry.kind, entry.subtype)}
+                      >
+                        <RotateCcw className="mr-1 size-3" />
+                        {t('thesis.resetAll')}
+                      </Button>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {Object.entries(entry.defaults).map(([key, value]) => {
+                        const pristineValue = pristine?.defaults[key]
+                        return typeof value === 'boolean' ? (
+                          <label key={key} className="flex items-center gap-2 text-xs">
+                            <Checkbox checked={value} onCheckedChange={(next) => onCatalogValue(entry.kind, entry.subtype, key, next === true)} />
+                            <span className="flex-1">
+                              {paramLabel(t, key)} <DefaultHint value={pristineValue} />
+                            </span>
+                            {pristine ? (
+                              <ResetButton
+                                label={t('thesis.resetToDefault')}
+                                onClick={() => onCatalogValue(entry.kind, entry.subtype, key, pristineValue ?? null)}
+                              />
+                            ) : null}
+                          </label>
+                        ) : (
+                          <label key={key} className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-xs">
+                            <span className="text-muted-foreground">
+                              {paramLabel(t, key)} <DefaultHint value={pristineValue} />
+                            </span>
+                            <CatalogInput
+                              value={value}
+                              onCommit={(next) => onCatalogValue(entry.kind, entry.subtype, key, next)}
+                            />
+                            {pristine ? (
+                              <ResetButton
+                                label={t('thesis.resetToDefault')}
+                                onClick={() => onCatalogValue(entry.kind, entry.subtype, key, pristineValue ?? null)}
+                              />
+                            ) : (
+                              <span />
+                            )}
+                          </label>
+                        )
+                      })}
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 w-full"
+                      disabled={!scene || busy}
+                      onClick={() => onApplyKind(entry.kind, entry.subtype, entry.defaults)}
+                    >
+                      {t('thesis.applyToPlaced')}
+                    </Button>
+                  </article>
+                )
+              })}
             </div>
           </ScrollArea>
         </TabsContent>
@@ -379,6 +438,43 @@ function Stat({ value, label, align }: { value: number; label: string; align: 's
   )
 }
 
+function EffectiveRangesSummary({ catalog }: { catalog: CatalogEntry[] }) {
+  const { t } = useTranslation()
+  const sensitivities = useMemo<Partial<Record<DeviceSubtype, number>>>(() => {
+    const out: Partial<Record<DeviceSubtype, number>> = {}
+    for (const subtype of DEVICE_SUBTYPES) {
+      const entry = catalog.find((item) => item.kind === 'device' && item.subtype === subtype)
+      const value = entry?.defaults.rx_sensitivity_dbm
+      if (typeof value === 'number') out[subtype] = value
+    }
+    return out
+  }, [catalog])
+  const radarEntry = catalog.find((entry) => entry.kind === 'radar')
+  const ranges = useMemo(() => (radarEntry ? deriveReaderRanges(toRf(radarEntry.defaults), sensitivities) : null), [radarEntry, sensitivities])
+  if (!ranges) return null
+  return (
+    <ul className="space-y-0.5 text-xs">
+      {DEVICE_SUBTYPES.map((subtype) => (
+        <li key={subtype} className="flex justify-between tabular-nums">
+          <span className="text-muted-foreground">{t(`thesis.effectiveRange.device${subtype}`)}</span>
+          <span>
+            {ranges[subtype].toFixed(2)} {t('thesis.effectiveRange.unit')}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function toRf(defaults: CatalogEntry['defaults']) {
+  return {
+    tx_power_dbm: typeof defaults.tx_power_dbm === 'number' ? defaults.tx_power_dbm : 33,
+    antenna_gain_dbi: typeof defaults.antenna_gain_dbi === 'number' ? defaults.antenna_gain_dbi : 6,
+    extra_attenuation_db: typeof defaults.extra_attenuation_db === 'number' ? defaults.extra_attenuation_db : 0,
+    carrier_ghz: typeof defaults.carrier_ghz === 'number' ? defaults.carrier_ghz : 0.9,
+  }
+}
+
 function NewSectionRow({ busy, onCreate }: { busy: boolean; onCreate: (name: string) => Promise<boolean> }) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
@@ -455,18 +551,20 @@ function SizeFields({
 
 function StationPlace({
   disabled,
+  defaultSpacing,
   onRandom,
   onInterval,
 }: {
   disabled: boolean
+  defaultSpacing: number
   onRandom: (count: number) => void
   onInterval: (spacingX: number, spacingY: number) => void
 }) {
   const { t } = useTranslation()
   const [mode, setMode] = useState<'interval' | 'random'>('interval')
-  const [spacingX, setSpacingX] = useState('10')
-  const [spacingY, setSpacingY] = useState('10')
-  const [count, setCount] = useState('10')
+  const [spacingX, setSpacingX] = useState(String(defaultSpacing))
+  const [spacingY, setSpacingY] = useState(String(defaultSpacing))
+  const [count, setCount] = useState('18')
   return (
     <div className="flex flex-col gap-2">
       <span className="text-xs text-muted-foreground">{t('thesis.addStations')}</span>
@@ -544,26 +642,32 @@ function CountAction({
   label,
   actionLabel,
   disabled,
+  defaultCount,
   extra,
   onRun,
 }: {
   label: string
   actionLabel: string
   disabled: boolean
+  defaultCount: number
   extra?: ReactNode
   onRun: (count: number) => void
 }) {
-  const [count, setCount] = useState('100')
+  const [count, setCount] = useState(String(defaultCount))
+  const { t } = useTranslation()
+  const current = Number(count)
+  const warn = Number.isFinite(current) && current > defaultCount
   return (
     <div className="flex flex-col gap-2">
       <span className="text-xs text-muted-foreground">{label}</span>
       {extra}
       <div className="flex items-center gap-2">
         <Input className="w-24" value={count} disabled={disabled} onChange={(event) => setCount(event.target.value)} />
-        <Button type="button" size="sm" disabled={disabled} onClick={() => onRun(Number(count))}>
+        <Button type="button" size="sm" disabled={disabled} onClick={() => onRun(current)}>
           {actionLabel}
         </Button>
       </div>
+      {warn ? <p className="text-[11px] text-muted-foreground">{t('thesis.populationWarnLarge', { count: defaultCount })}</p> : null}
     </div>
   )
 }
@@ -585,6 +689,27 @@ function paramLabel(t: (key: string) => string, key: string) {
   const i18nKey = `thesis.params.${key}`
   const translated = t(i18nKey)
   return translated === i18nKey ? key : translated
+}
+
+function DefaultHint({ value }: { value: ParamValue | undefined }) {
+  if (value === undefined) return null
+  if (typeof value === 'boolean') return <span className="text-muted-foreground/80">({value ? 'on' : 'off'})</span>
+  if (value == null) return <span className="text-muted-foreground/80">(—)</span>
+  return <span className="text-muted-foreground/80">({String(value)})</span>
+}
+
+function ResetButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <RotateCcw className="size-3" />
+    </button>
+  )
 }
 
 function StationSelect({
@@ -647,42 +772,6 @@ function StationSelect({
   )
 }
 
-function ClassRange({
-  label,
-  radius,
-  disabled,
-  applyLabel,
-  onApply,
-}: {
-  label: string
-  radius: number
-  disabled: boolean
-  applyLabel: string
-  onApply: (radius: number) => void
-}) {
-  const [text, setText] = useState(String(radius))
-  useEffect(() => {
-    setText(String(radius))
-  }, [radius])
-  return (
-    <div className="flex items-end gap-2">
-      <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <Input value={text} disabled={disabled} onChange={(event) => setText(event.target.value)} />
-      </label>
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        disabled={disabled || !(Number(text) > 0)}
-        onClick={() => onApply(Number(text))}
-      >
-        {applyLabel}
-      </Button>
-    </div>
-  )
-}
-
 function CatalogInput({ value, onCommit }: { value: ParamValue; onCommit: (value: ParamValue) => void }) {
   const [text, setText] = useState(value == null ? '' : String(value))
   useEffect(() => {
@@ -690,7 +779,7 @@ function CatalogInput({ value, onCommit }: { value: ParamValue; onCommit: (value
   }, [value])
   return (
     <Input
-      className="h-7"
+      className="h-7 w-24"
       value={text}
       onChange={(event) => setText(event.target.value)}
       onBlur={() => {

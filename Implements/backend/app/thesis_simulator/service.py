@@ -24,8 +24,10 @@ from app.schemas.thesis_simulator import (
     SectionCreate,
     SectionPatch,
 )
-from app.thesis_simulator.catalog import spec_for
+from app.thesis_simulator.catalog import derive_reader_ranges, spec_for
 from app.thesis_simulator.models import ThesisPlacement, ThesisSection, utcnow
+
+_RANGE_LEGACY_KEYS = ("radius_m",)
 
 INITIALIZING = "initializing"
 INITIALIZED = "initialized"
@@ -48,7 +50,7 @@ def iso(value: datetime) -> str:
 
 
 def placement_out(row: ThesisPlacement) -> dict[str, Any]:
-    return {
+    out: dict[str, Any] = {
         "id": row.id,
         "kind": row.kind,
         "subtype": row.subtype,
@@ -56,6 +58,9 @@ def placement_out(row: ThesisPlacement) -> dict[str, Any]:
         "y_m": row.y_m,
         "params": row.params_json,
     }
+    if row.kind in {"station", "radar"}:
+        out["derived"] = {"effective_range_m": derive_reader_ranges(row.params_json)}
+    return out
 
 
 def section_out(row: ThesisSection) -> dict[str, Any]:
@@ -66,6 +71,7 @@ def section_out(row: ThesisSection) -> dict[str, Any]:
         "height_m": row.height_m,
         "status": row.status,
         "marker_scale": row.marker_scale,
+        "device_marker_scale": row.device_marker_scale,
         "created_at": iso(row.created_at),
         "updated_at": iso(row.updated_at),
         "placements": [placement_out(item) for item in row.placements],
@@ -131,6 +137,8 @@ def update_section(db: Session, section_id: int, body: SectionPatch) -> ThesisSe
         section.status = INITIALIZED
     if body.marker_scale is not None:
         section.marker_scale = float(body.marker_scale)
+    if body.device_marker_scale is not None:
+        section.device_marker_scale = float(body.device_marker_scale)
     section.updated_at = utcnow()
     db.commit()
     db.refresh(section)
@@ -202,10 +210,6 @@ def convert_placements(db: Session, section_id: int, body: PlacementConvertIn) -
         if row.kind == body.kind:
             continue
         raw = dict(row.params_json)
-        if body.kind == "radar":
-            radar_defaults = spec_for("radar", None).defaults()
-            raw.setdefault("radius_m", radar_defaults["radius_m"])
-            raw.setdefault("show_range", False)
         row.kind = body.kind
         row.subtype = None
         row.params_json = _finalize_params(body.kind, None, raw)
@@ -240,10 +244,6 @@ def update_placement(db: Session, section_id: int, placement_id: int, body: Plac
         raw: dict[str, Any] = dict(body.params or {})
     else:
         raw = dict(row.params_json)
-        if row.kind == "station" and new_kind == "radar":
-            radar_defaults = spec_for("radar", None).defaults()
-            raw.setdefault("radius_m", radar_defaults["radius_m"])
-            raw.setdefault("show_range", radar_defaults["show_range"])
         if body.params:
             raw.update(body.params)
 
@@ -345,19 +345,14 @@ def _finalize_params(kind: str, subtype: str | None, raw: dict[str, Any]) -> dic
     for key, value in raw.items():
         if not isinstance(key, str) or not key:
             raise SceneError("bad_param")
+        if kind in {"station", "radar"} and key in _RANGE_LEGACY_KEYS:
+            continue
         if key in defaults:
             cleaned[key] = _coerce_like(defaults[key], value, key)
         else:
             cleaned[key] = _json_value(value, key)
     for key, value in defaults.items():
         cleaned.setdefault(key, value)
-    if "radius_m" in cleaned:
-        radius = cleaned["radius_m"]
-        if isinstance(radius, bool) or not isinstance(radius, (int, float)):
-            raise SceneError("bad_radius")
-        if not math.isfinite(float(radius)) or float(radius) <= 0 or float(radius) > 10_000:
-            raise SceneError("bad_radius")
-        cleaned["radius_m"] = float(radius)
     encoded = json.dumps(cleaned, allow_nan=False)
     if len(encoded) > _MAX_PARAMS_CHARS:
         raise SceneError("bad_param")

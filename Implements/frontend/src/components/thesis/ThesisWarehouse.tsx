@@ -1,11 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Layers } from 'lucide-react'
 import { MarkerShape } from '@/components/thesis/MarkerShape'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { inside } from '@/lib/thesisGeometry'
-import type { Kind, Placement, Scene, Shape } from '@/types/thesis'
+import { DEVICE_SUBTYPES, deriveReaderRanges, rangeFromSensitivityM } from '@/lib/thesisPhysics'
+import type { CatalogEntry, DeviceSubtype, Kind, Placement, Scene, Shape } from '@/types/thesis'
 
 const LAYER_KEYS = ['device1', 'device2a', 'device2b', 'radar', 'station'] as const
 type LayerKey = (typeof LAYER_KEYS)[number]
@@ -27,10 +28,18 @@ const FILL: Record<string, string> = {
   radar: 'fill-[#b91c1c]',
 }
 
+const RANGE_STROKE: Record<DeviceSubtype, string> = {
+  '1': '#1d4ed8',
+  '2a': '#0f766e',
+  '2b': '#c2410c',
+}
+
 export function ThesisWarehouse({
   scene,
+  catalog,
   selectedId,
   markerScale,
+  deviceMarkerScale,
   selecting = false,
   pickedIds = [],
   onTogglePick,
@@ -38,8 +47,10 @@ export function ThesisWarehouse({
   onPlace,
 }: {
   scene: Scene | null
+  catalog: CatalogEntry[]
   selectedId: string | null
   markerScale: number
+  deviceMarkerScale: number
   selecting?: boolean
   pickedIds?: string[]
   onTogglePick?: (id: Placement['id']) => void
@@ -66,6 +77,18 @@ export function ThesisWarehouse({
     radar: true,
     station: true,
   })
+
+  const deviceCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  const sensitivities = useMemo<Partial<Record<DeviceSubtype, number>>>(() => {
+    const out: Partial<Record<DeviceSubtype, number>> = {}
+    for (const subtype of DEVICE_SUBTYPES) {
+      const entry = catalog.find((item) => item.kind === 'device' && item.subtype === subtype)
+      const value = entry?.defaults.rx_sensitivity_dbm
+      if (typeof value === 'number') out[subtype] = value
+    }
+    return out
+  }, [catalog])
 
   useLayoutEffect(() => {
     const node = layersContentRef.current
@@ -144,10 +167,150 @@ export function ThesisWarehouse({
     return () => host.removeEventListener('wheel', onWheel)
   }, [scene, size.vw, size.vh])
 
+  useEffect(() => {
+    if (!scene) return
+    const held = new Set<string>()
+    const PAN_PX_PER_SEC = 600
+    const ZOOM_PER_SEC = 1.6
+    let raf = 0
+    let last = performance.now()
+
+    const isTextTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false
+      const tag = target.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
+      return target.isContentEditable
+    }
+
+    const step = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000)
+      last = now
+      if (held.size === 0) {
+        raf = 0
+        return
+      }
+      const host = hostRef.current
+      if (!host) {
+        raf = requestAnimationFrame(step)
+        return
+      }
+      const rect = host.getBoundingClientRect()
+      const current = viewRef.current
+      let { zoom, panX, panY } = current
+      const panDelta = PAN_PX_PER_SEC * dt
+      if (held.has('w')) panY += panDelta
+      if (held.has('s')) panY -= panDelta
+      if (held.has('a')) panX += panDelta
+      if (held.has('d')) panX -= panDelta
+      const zoomMul = Math.pow(ZOOM_PER_SEC, dt)
+      if (held.has('e') || held.has('q')) {
+        const nextZoom = clamp(held.has('e') ? zoom * zoomMul : zoom / zoomMul, 0.25, 12)
+        const sx = rect.width / 2
+        const sy = rect.height / 2
+        const now = meterScale(rect.width, rect.height, scene.width_m, scene.height_m, zoom)
+        const worldX = (sx - panX) / now
+        const worldY = scene.height_m - (sy - panY) / now
+        const nextScale = meterScale(rect.width, rect.height, scene.width_m, scene.height_m, nextZoom)
+        zoom = nextZoom
+        panX = sx - worldX * nextScale
+        panY = sy - (scene.height_m - worldY) * nextScale
+      }
+      const next = { zoom, panX, panY }
+      viewRef.current = next
+      setView(next)
+      raf = requestAnimationFrame(step)
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      if (isTextTarget(event.target)) return
+      const key = event.key.toLowerCase()
+      if (!'wasdqe'.includes(key)) return
+      event.preventDefault()
+      held.add(key)
+      if (raf === 0) {
+        last = performance.now()
+        raf = requestAnimationFrame(step)
+      }
+    }
+    const onKeyUp = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase()
+      if (held.delete(key) && held.size === 0 && raf !== 0) {
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
+    }
+    const onBlur = () => {
+      held.clear()
+      if (raf !== 0) {
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('blur', onBlur)
+      if (raf !== 0) cancelAnimationFrame(raf)
+    }
+  }, [scene])
+
   const scale = scene ? meterScale(size.vw, size.vh, scene.width_m, scene.height_m, view.zoom) : 1
   const visible = scene
     ? visibleWorld(size.vw, size.vh, scene.height_m, view.panX, view.panY, scale, scale)
     : { x0: 0, x1: 1, y0: 0, y1: 1 }
+
+  useEffect(() => {
+    const canvas = deviceCanvasRef.current
+    if (!canvas) return
+    const dpr = window.devicePixelRatio || 1
+    const vw = Math.max(1, size.vw)
+    const vh = Math.max(1, size.vh)
+    const nextW = Math.round(vw * dpr)
+    const nextH = Math.round(vh * dpr)
+    if (canvas.width !== nextW) canvas.width = nextW
+    if (canvas.height !== nextH) canvas.height = nextH
+    canvas.style.width = `${vw}px`
+    canvas.style.height = `${vh}px`
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.clearRect(0, 0, vw, vh)
+    if (!scene) return
+
+    const panX = view.panX
+    const panY = view.panY
+    const flipY = scene.height_m
+    const radiusPx = Math.max(0.4, 0.42 * deviceMarkerScale * scale)
+    const buckets: Record<string, { color: string; show: boolean; placements: Placement[] }> = {
+      '1': { color: '#1d4ed8', show: layers.device1, placements: [] },
+      '2a': { color: '#0f766e', show: layers.device2a, placements: [] },
+      '2b': { color: '#c2410c', show: layers.device2b, placements: [] },
+    }
+    for (const placement of scene.placements) {
+      if (placement.kind !== 'device') continue
+      const bucket = buckets[placement.subtype ?? '']
+      if (!bucket || !bucket.show) continue
+      bucket.placements.push(placement)
+    }
+    for (const bucket of Object.values(buckets)) {
+      if (bucket.placements.length === 0) continue
+      ctx.fillStyle = bucket.color
+      ctx.beginPath()
+      for (const placement of bucket.placements) {
+        const sx = placement.x_m * scale + panX
+        const sy = (flipY - placement.y_m) * scale + panY
+        ctx.moveTo(sx + radiusPx, sy)
+        ctx.arc(sx, sy, radiusPx, 0, Math.PI * 2)
+      }
+      ctx.fill()
+    }
+  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale])
 
   function screenToWorld(clientX: number, clientY: number) {
     const rect = hostRef.current?.getBoundingClientRect()
@@ -169,9 +332,10 @@ export function ThesisWarehouse({
 
   return (
     <div ref={hostRef} className="relative h-full min-h-0 w-full overflow-hidden bg-background">
+      <canvas ref={deviceCanvasRef} className="pointer-events-none absolute inset-0" aria-hidden />
       {scene ? (
         <svg
-          className="h-full w-full touch-none"
+          className="absolute inset-0 h-full w-full touch-none"
           onPointerDown={(event) => {
             if (event.button !== 0) return
             if ((event.target as Element).closest('[data-placement]')) return
@@ -231,34 +395,91 @@ export function ThesisWarehouse({
                 strokeDasharray="6 4"
                 vectorEffect="non-scaling-stroke"
               />
-              {scene.placements.map((placement) => {
-                if (placement.kind !== 'radar' && placement.kind !== 'station') return null
-                if (placement.kind === 'radar' && !layers.radar) return null
-                if (placement.kind === 'station' && !layers.station) return null
-                if (placement.params.show_range !== true) return null
-                const fallback = placement.kind === 'radar' ? 30 : 20
-                const radius = Number(placement.params.radius_m)
-                const range = Number.isFinite(radius) && radius > 0 ? radius : fallback
-                const radar = placement.kind === 'radar'
+              <defs>
+                <radialGradient id="station-fade">
+                  <stop offset="0%" stopColor="#6d28d9" stopOpacity="0.35" />
+                  <stop offset="60%" stopColor="#6d28d9" stopOpacity="0.12" />
+                  <stop offset="100%" stopColor="#6d28d9" stopOpacity="0" />
+                </radialGradient>
+                <clipPath id="warehouse-clip">
+                  <rect x={0} y={0} width={scene.width_m} height={scene.height_m} />
+                </clipPath>
+              </defs>
+              {([false, true] as const).map((outer) => {
+                const groupProps = outer ? {} : { clipPath: 'url(#warehouse-clip)' }
                 return (
-                  <circle
-                    key={`range-${placement.id}`}
-                    cx={placement.x_m}
-                    cy={placement.y_m}
-                    r={range}
-                    className={radar ? 'fill-[#b91c1c]/15 stroke-[#b91c1c]' : 'fill-[#6d28d9]/12 stroke-[#6d28d9]'}
-                    strokeDasharray={radar ? '6 4' : undefined}
-                    strokeWidth={1.5}
-                    vectorEffect="non-scaling-stroke"
-                  />
+                  <g key={`range-outer-${outer}`} {...groupProps} className="pointer-events-none">
+                    {scene.placements.map((placement) => {
+                      if (placement.kind !== 'station') return null
+                      if (placement.params.show_range !== true) return null
+                      if ((placement.params.show_outer === true) !== outer) return null
+                      const diagonal = Math.hypot(scene.width_m, scene.height_m)
+                      const stationRf = {
+                        tx_power_dbm: toNumber(placement.params.tx_power_dbm, 33),
+                        antenna_gain_dbi: toNumber(placement.params.antenna_gain_dbi, 6),
+                        extra_attenuation_db: toNumber(placement.params.extra_attenuation_db, 0),
+                        carrier_ghz: toNumber(placement.params.carrier_ghz, 0.9),
+                      }
+                      const typicalSens = sensitivities['1'] ?? -36
+                      const base = rangeFromSensitivityM(typicalSens, stationRf)
+                      const r = outer ? Math.max(base * 1.6, 5) : Math.min(Math.max(base * 1.6, 5), diagonal)
+                      return (
+                        <circle
+                          key={`station-fade-${placement.id}`}
+                          cx={placement.x_m}
+                          cy={placement.y_m}
+                          r={r}
+                          fill="url(#station-fade)"
+                          stroke="none"
+                        />
+                      )
+                    })}
+                    {scene.placements.map((placement) => {
+                      if (placement.kind !== 'radar') return null
+                      if (placement.params.show_range !== true) return null
+                      if ((placement.params.show_outer === true) !== outer) return null
+                      const diagonal = Math.hypot(scene.width_m, scene.height_m)
+                      const readerRf = {
+                        tx_power_dbm: toNumber(placement.params.tx_power_dbm, 33),
+                        antenna_gain_dbi: toNumber(placement.params.antenna_gain_dbi, 6),
+                        extra_attenuation_db: toNumber(placement.params.extra_attenuation_db, 0),
+                        carrier_ghz: toNumber(placement.params.carrier_ghz, 0.9),
+                      }
+                      const ranges = deriveReaderRanges(readerRf, sensitivities)
+                      return (
+                        <g key={`reader-range-${placement.id}`}>
+                          {DEVICE_SUBTYPES.map((subtype) => {
+                            const raw = ranges[subtype]
+                            if (!Number.isFinite(raw) || raw <= 0) return null
+                            const r = outer ? raw : Math.min(raw, diagonal)
+                            return (
+                              <circle
+                                key={`r-${placement.id}-${subtype}`}
+                                cx={placement.x_m}
+                                cy={placement.y_m}
+                                r={r}
+                                fill={RANGE_STROKE[subtype]}
+                                fillOpacity={0.08}
+                                stroke={RANGE_STROKE[subtype]}
+                                strokeOpacity={0.55}
+                                strokeWidth={1.25}
+                                vectorEffect="non-scaling-stroke"
+                              />
+                            )
+                          })}
+                        </g>
+                      )
+                    })}
+                  </g>
                 )
               })}
               {scene.placements.map((placement) => {
+                if (placement.kind === 'device') return null
                 if (!layerVisible(placement, layers)) return null
-                const beacon = placement.kind !== 'device'
+                const beacon = true
                 const tone = beaconTone(placement)
                 const picked = pickedIds.includes(String(placement.id))
-                const size = (beacon ? 0.85 : 0.42) * markerScale * (selectedId === String(placement.id) ? 1.15 : 1)
+                const size = 0.85 * markerScale * (selectedId === String(placement.id) ? 1.15 : 1)
                 return (
                   <g
                     key={placement.id}
@@ -510,6 +731,15 @@ function centeredPan(vw: number, vh: number, width: number, height: number, scal
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
+}
+
+function toNumber(value: unknown, fallback: number): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return fallback
 }
 
 function shapeOf(placement: Placement): Shape {

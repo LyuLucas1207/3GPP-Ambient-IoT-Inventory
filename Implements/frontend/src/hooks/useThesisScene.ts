@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   createSection,
   fetchCatalog,
+  fetchScenarioDefaults,
   fetchSection,
   fetchSections,
   patchPlacement,
@@ -23,7 +24,6 @@ import {
   findCatalog,
   inside,
   MAX_BULK,
-  radarGrid,
   intervalGrid,
   randomPoints,
 } from '@/lib/thesisGeometry'
@@ -35,6 +35,7 @@ import type {
   Placement,
   PlacementId,
   PlacementInput,
+  ScenarioDefaults,
   Scene,
   SectionDetail,
   SectionSummary,
@@ -62,7 +63,8 @@ function fromServer(detail: SectionDetail): Scene {
     dirty: false,
     saved: true,
     status: detail.status,
-    markerScale: detail.marker_scale ?? 1,
+    markerScale: detail.marker_scale ?? 0.7,
+    deviceMarkerScale: detail.device_marker_scale ?? 0.3,
     nonce: detail.id,
   }
 }
@@ -70,6 +72,8 @@ function fromServer(detail: SectionDetail): Scene {
 export function useThesisScene() {
   const { t } = useTranslation()
   const [catalog, setCatalog] = useState<CatalogEntry[]>([])
+  const [pristineCatalog, setPristineCatalog] = useState<CatalogEntry[]>([])
+  const [scenarioDefaults, setScenarioDefaults] = useState<ScenarioDefaults | null>(null)
   const [sections, setSections] = useState<SectionSummary[]>([])
   const [scene, setScene] = useState<Scene | null>(() => loadDraft())
   const [busy, setBusy] = useState(false)
@@ -94,10 +98,16 @@ export function useThesisScene() {
     let cancel = false
     void (async () => {
       try {
-        const [nextCatalog, nextSections] = await Promise.all([fetchCatalog(), fetchSections()])
+        const [nextCatalog, nextSections, nextScenario] = await Promise.all([
+          fetchCatalog(),
+          fetchSections(),
+          fetchScenarioDefaults(),
+        ])
         if (cancel) return
         setCatalog(nextCatalog)
+        setPristineCatalog(nextCatalog.map((entry) => ({ ...entry, defaults: { ...entry.defaults } })))
         setSections(nextSections)
+        setScenarioDefaults(nextScenario)
       } catch (err) {
         if (!cancel) fail(err)
       }
@@ -131,8 +141,8 @@ export function useThesisScene() {
       try {
         const detail = await createSection({
           name: trimmed,
-          width_m: DEFAULT_WIDTH_M,
-          height_m: DEFAULT_HEIGHT_M,
+          width_m: scenarioDefaults?.width_m ?? DEFAULT_WIDTH_M,
+          height_m: scenarioDefaults?.height_m ?? DEFAULT_HEIGHT_M,
           placements: [],
         })
         setScene(fromServer(detail))
@@ -146,7 +156,7 @@ export function useThesisScene() {
         setBusy(false)
       }
     },
-    [confirmDiscard, fail, refreshSections, t],
+    [confirmDiscard, fail, refreshSections, scenarioDefaults, t],
   )
 
   const openSection = useCallback(
@@ -284,6 +294,22 @@ export function useThesisScene() {
     [fail],
   )
 
+  const setDeviceMarkerScale = useCallback(
+    async (scale: number) => {
+      const value = Math.min(5, Math.max(0, Math.round(scale * 10) / 10))
+      const current = sceneRef.current
+      if (!current) return
+      setScene({ ...current, deviceMarkerScale: value })
+      if (!current.saved || current.id == null) return
+      try {
+        await patchSection(current.id, { device_marker_scale: value })
+      } catch (err) {
+        fail(err)
+      }
+    },
+    [fail],
+  )
+
   const addOne = useCallback(
     async (input: PlacementInput) => {
       const current = sceneRef.current
@@ -321,20 +347,22 @@ export function useThesisScene() {
         setError(t('thesis.errors.bulk_locked'))
         return
       }
-      if (inputs.length > MAX_BULK) {
-        setError(t('thesis.errors.too_many'))
-        return
-      }
       if (!current.saved || current.id == null) {
         const placements = inputs.map((input) => ({ ...input, id: nextId(), params: cloneParams(input.params) }))
         setScene({ ...current, dirty: true, placements: [...current.placements, ...placements] })
         setError(null)
         return
       }
+      const sectionId = current.id
       setBusy(true)
       setError(null)
       try {
-        const created = await postPlacementBatch(current.id, inputs)
+        const created: Placement[] = []
+        for (let i = 0; i < inputs.length; i += MAX_BULK) {
+          const chunk = inputs.slice(i, i + MAX_BULK)
+          const rows = await postPlacementBatch(sectionId, chunk)
+          created.push(...rows)
+        }
         setScene((prev) => (prev ? { ...prev, placements: [...prev.placements, ...created] } : prev))
         await refreshSections()
       } catch (err) {
@@ -422,7 +450,7 @@ export function useThesisScene() {
       setError(null)
       try {
         const ids = current.placements
-          .filter((item) => !keep(item) && typeof item.id === 'number')
+          .filter((item): item is Placement & { id: number } => !keep(item) && typeof item.id === 'number')
           .map((item) => item.id)
         if (ids.length > 0) await removePlacementBatch(current.id, ids)
         setScene((prev) => (prev ? { ...prev, placements: prev.placements.filter(keep) } : prev))
@@ -485,6 +513,24 @@ export function useThesisScene() {
     [addMany, catalog, t],
   )
 
+  const applyStandardLayout = useCallback(() => {
+    const current = sceneRef.current
+    const entry = findCatalog(catalog, 'station', null)
+    if (!entry || !current || !scenarioDefaults) {
+      setError(t('thesis.errors.network'))
+      return
+    }
+    void addMany(
+      scenarioDefaults.bs_positions.map(([x, y]) => ({
+        kind: 'station' as const,
+        subtype: null,
+        x_m: x,
+        y_m: y,
+        params: cloneParams(entry.defaults),
+      })),
+    )
+  }, [addMany, catalog, scenarioDefaults, t])
+
   const addStationGrid = useCallback(
     (spacingX: number, spacingY: number) => {
       const current = sceneRef.current
@@ -519,40 +565,6 @@ export function useThesisScene() {
     [addMany, catalog, t],
   )
 
-  const addRadarGrid = useCallback(
-    (margin: number, spacing: number, radius: number) => {
-      const current = sceneRef.current
-      const entry = findCatalog(catalog, 'radar', null)
-      if (!entry || !current) {
-        setError(t('thesis.errors.network'))
-        return
-      }
-      if (!(radius > 0) || radius > 10_000) {
-        setError(t('thesis.errors.bad_radius'))
-        return
-      }
-      const grid = radarGrid(current.width_m, current.height_m, margin, spacing)
-      if (grid.capped) {
-        setError(t('thesis.errors.too_many'))
-        return
-      }
-      if (grid.points.length === 0) {
-        setError(t('thesis.errors.grid_empty'))
-        return
-      }
-      addMany(
-        grid.points.map((point) => ({
-          kind: 'radar' as const,
-          subtype: null,
-          x_m: point.x_m,
-          y_m: point.y_m,
-          params: { ...cloneParams(entry.defaults), radius_m: radius },
-        })),
-      )
-    },
-    [addMany, catalog, t],
-  )
-
   const setCatalogValue = useCallback((kind: Kind, subtype: string | null, key: string, value: Params[string]) => {
     setCatalog((prev) =>
       prev.map((entry) =>
@@ -562,6 +574,19 @@ export function useThesisScene() {
       ),
     )
   }, [])
+
+  const resetCatalog = useCallback(
+    (kind: Kind, subtype: string | null) => {
+      const pristine = pristineCatalog.find((entry) => entry.kind === kind && entry.subtype === subtype)
+      if (!pristine) return
+      setCatalog((prev) =>
+        prev.map((entry) =>
+          entry.kind === kind && entry.subtype === subtype ? { ...entry, defaults: { ...pristine.defaults } } : entry,
+        ),
+      )
+    },
+    [pristineCatalog],
+  )
 
   const applyKindParams = useCallback(
     async (kind: Kind, subtype: string | null, params: Params) => {
@@ -607,9 +632,7 @@ export function useThesisScene() {
       const idSet = new Set(ids.map(String))
       const nextOf = (item: Placement): Placement => {
         if (!idSet.has(String(item.id)) || item.kind === 'device' || item.kind === kind) return item
-        const params = { ...item.params }
-        if (kind === 'radar' && params.show_range == null) params.show_range = false
-        return { ...item, kind, subtype: null, params }
+        return { ...item, kind, subtype: null, params: { ...item.params } }
       }
       if (!current.saved || current.id == null) {
         setScene({ ...current, dirty: true, placements: current.placements.map(nextOf) })
@@ -636,6 +659,8 @@ export function useThesisScene() {
 
   return {
     catalog,
+    pristineCatalog,
+    scenarioDefaults,
     sections,
     scene,
     busy,
@@ -648,6 +673,7 @@ export function useThesisScene() {
     removeSection,
     applySize,
     setMarkerScale,
+    setDeviceMarkerScale,
     addOne,
     updatePlacement,
     deletePlacement,
@@ -655,8 +681,9 @@ export function useThesisScene() {
     addRandomDevices,
     addRandomStations,
     addStationGrid,
-    addRadarGrid,
+    applyStandardLayout,
     setCatalogValue,
+    resetCatalog,
     applyKindParams,
     convertPlacements,
   }

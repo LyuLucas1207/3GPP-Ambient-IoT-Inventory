@@ -9,6 +9,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.thesis_simulator.physics import range_from_sensitivity_m
+
+DEVICE_SUBTYPES: tuple[str, ...] = ("1", "2a", "2b")
+
 
 class CatalogSpec:
     """Immutable default card. Instances store their own JSON copy."""
@@ -102,11 +106,7 @@ class StationSpec(CatalogSpec):
     shape = "diamond"
 
     def defaults(self) -> dict[str, Any]:
-        return {
-            **_rf_defaults(),
-            "radius_m": 20.0,
-            "show_range": False,
-        }
+        return {**_rf_defaults(), "show_range": False, "show_outer": False}
 
 
 class RadarSpec(CatalogSpec):
@@ -115,11 +115,7 @@ class RadarSpec(CatalogSpec):
     shape = "hexagon"
 
     def defaults(self) -> dict[str, Any]:
-        return {
-            **_rf_defaults(),
-            "radius_m": 30.0,
-            "show_range": False,
-        }
+        return {**_rf_defaults(), "show_range": False, "show_outer": False}
 
 
 def catalog_specs() -> tuple[CatalogSpec, ...]:
@@ -133,13 +129,44 @@ def spec_for(kind: str, subtype: str | None) -> CatalogSpec:
     raise KeyError((kind, subtype))
 
 
+def device_sensitivity_defaults() -> dict[str, float]:
+    return {subtype: float(spec_for("device", subtype).defaults()["rx_sensitivity_dbm"]) for subtype in DEVICE_SUBTYPES}
+
+
+def derive_reader_ranges(
+    rf_params: dict[str, Any],
+    device_sensitivities: dict[str, float] | None = None,
+) -> dict[str, float]:
+    sens = dict(device_sensitivities or device_sensitivity_defaults())
+    tx = float(rf_params.get("tx_power_dbm", 33.0))
+    gain = float(rf_params.get("antenna_gain_dbi", 6.0))
+    extra = float(rf_params.get("extra_attenuation_db", 0.0))
+    carrier = float(rf_params.get("carrier_ghz", 0.9))
+    out: dict[str, float] = {}
+    for subtype in DEVICE_SUBTYPES:
+        if subtype not in sens:
+            continue
+        out[subtype] = range_from_sensitivity_m(
+            rx_sens_dbm=sens[subtype],
+            tx_power_dbm=tx,
+            antenna_gain_dbi=gain,
+            extra_atten_db=extra,
+            carrier_ghz=carrier,
+        )
+    return out
+
+
 def catalog_payload() -> list[dict[str, Any]]:
-    return [
-        {
+    sens = device_sensitivity_defaults()
+    payload: list[dict[str, Any]] = []
+    for spec in catalog_specs():
+        entry: dict[str, Any] = {
             "kind": spec.kind,
             "subtype": spec.subtype,
             "shape": spec.shape,
             "defaults": spec.defaults(),
         }
-        for spec in catalog_specs()
-    ]
+        if spec.kind in {"station", "radar"}:
+            entry["derived_ranges"] = derive_reader_ranges(entry["defaults"], sens)
+        payload.append(entry)
+    return payload

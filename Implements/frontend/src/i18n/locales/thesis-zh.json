@@ -25,6 +25,16 @@
     "showDevice2b": "显示 Device 2b",
     "showRadar": "显示 Reader",
     "showStation": "显示 Station",
+    "resetToDefault": "恢复默认",
+    "resetAll": "全部恢复",
+    "populationWarnLarge": "超过 {{count}} 个节点时画面可能变慢；后端上限 20000。",
+    "effectiveRange": {
+      "title": "按设备类型的有效作用半径",
+      "device1": "Device 1",
+      "device2a": "Device 2a",
+      "device2b": "Device 2b",
+      "unit": "m"
+    },
     "tabs": {
       "section": "场景",
       "warehouse": "仓库",
@@ -47,23 +57,18 @@
     "stationInterval": "按间隔放置",
     "stationRandom": "随机放置",
     "mixed": "混合类型",
-    "radarGrid": "快捷放置 radar",
-    "margin": "边距 (m)",
-    "spacing": "间距 (m)",
+    "applyStandardLayout": "按 3GPP 标准布局放置({{count}} 个 BS)",
     "spacingX": "X (m)",
     "spacingY": "Y (m)",
-    "placeRadars": "放置 radar",
-    "radarOverlap": "中心距不超过两个半径，范围可以搭接。",
-    "radarGap": "间距大于两个半径，范围可以留空。",
-    "markerScale": "标记大小",
+    "markerScaleInfra": "标记大小 · station + reader",
+    "markerScaleDevice": "标记大小 · device",
     "devices": "Device",
     "stations": "Station",
     "readers": "Reader",
     "group": {
       "floor": "场地",
       "place": "放置",
-      "readers": "Reader",
-      "range": "范围"
+      "readers": "Reader"
     },
     "bulkHint": "当前是 initializing。可以添加 device 和 station，把选中的 station 改成 reader，配置好后点保存，状态才会变成 initialized。",
     "bulkLocked": "当前是 initialized。可以逐个修改或放置，不能再整批生成。",
@@ -118,8 +123,8 @@
       "antenna_gain_dbi": "天线增益 (dBi)",
       "extra_attenuation_db": "额外衰减 (dB)",
       "carrier_ghz": "载频 (GHz)",
-      "radius_m": "半径 (m)",
-      "show_range": "显示范围"
+      "show_range": "只显示这一个的范围",
+      "show_outer": "显示仓库外的部分"
     },
     "errors": {
       "network": "连不上论文仿真服务。请先启动 PostgreSQL 和后端。",

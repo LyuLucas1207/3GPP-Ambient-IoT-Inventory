@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.schemas.thesis_simulator import (
     CatalogEntryOut,
+    DerivedRangesIn,
+    DerivedRangesOut,
     PlacementBatchIn,
     PlacementConvertIn,
     PlacementDeleteIn,
@@ -10,13 +12,15 @@ from app.schemas.thesis_simulator import (
     PlacementKindPatch,
     PlacementOut,
     PlacementPatch,
+    ScenarioDefaultsOut,
     SectionCreate,
     SectionOut,
     SectionPatch,
     SectionSummary,
 )
-from app.thesis_simulator.catalog import catalog_payload
+from app.thesis_simulator.catalog import catalog_payload, derive_reader_ranges
 from app.thesis_simulator.db import get_db
+from app.thesis_simulator.scenario import scenario_defaults_payload
 from app.thesis_simulator.service import (
     SceneError,
     add_placement,
@@ -45,6 +49,22 @@ def _guard(exc: SceneError) -> HTTPException:
 @router.get("/catalog", response_model=list[CatalogEntryOut])
 def read_catalog() -> list[dict]:
     return catalog_payload()
+
+
+@router.get("/scenario-defaults", response_model=ScenarioDefaultsOut)
+def read_scenario_defaults() -> dict:
+    return scenario_defaults_payload()
+
+
+@router.post("/derived-ranges", response_model=DerivedRangesOut)
+def compute_derived_ranges(body: DerivedRangesIn) -> dict:
+    rf = {
+        "tx_power_dbm": body.tx_power_dbm,
+        "antenna_gain_dbi": body.antenna_gain_dbi,
+        "extra_attenuation_db": body.extra_attenuation_db,
+        "carrier_ghz": body.carrier_ghz,
+    }
+    return {"effective_range_m": derive_reader_ranges(rf, body.device_sensitivities)}
 
 
 @router.get("/sections", response_model=list[SectionSummary])

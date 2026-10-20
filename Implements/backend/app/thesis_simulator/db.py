@@ -65,7 +65,13 @@ def init_db() -> None:
         conn.execute(
             text(
                 "ALTER TABLE thesis_sections "
-                "ADD COLUMN IF NOT EXISTS marker_scale DOUBLE PRECISION NOT NULL DEFAULT 1"
+                "ADD COLUMN IF NOT EXISTS marker_scale DOUBLE PRECISION NOT NULL DEFAULT 0.7"
+            )
+        )
+        conn.execute(
+            text(
+                "ALTER TABLE thesis_sections "
+                "ADD COLUMN IF NOT EXISTS device_marker_scale DOUBLE PRECISION NOT NULL DEFAULT 0.3"
             )
         )
         conn.execute(

@@ -88,6 +88,8 @@ export default function ThesisSimulationPage() {
       <div className="flex min-h-0 flex-1">
         <ThesisSidebar
           catalog={studio.catalog}
+          pristineCatalog={studio.pristineCatalog}
+          scenarioDefaults={studio.scenarioDefaults}
           sections={studio.sections}
           scene={scene}
           busy={studio.busy}
@@ -96,12 +98,15 @@ export default function ThesisSimulationPage() {
           onDelete={studio.removeSection}
           onApplySize={(width, height) => void studio.applySize(width, height)}
           onMarkerScale={(scale) => void studio.setMarkerScale(scale)}
+          onDeviceMarkerScale={(scale) => void studio.setDeviceMarkerScale(scale)}
           onAddDevices={studio.addRandomDevices}
           onAddStations={studio.addRandomStations}
           onAddStationGrid={studio.addStationGrid}
+          onApplyStandardLayout={studio.applyStandardLayout}
           onClearDevices={() => studio.clearPlacements('device')}
           onClearInfra={() => studio.clearPlacements('infra')}
           onCatalogValue={studio.setCatalogValue}
+          onResetCatalog={studio.resetCatalog}
           onApplyKind={(kind, subtype, params) => void studio.applyKindParams(kind, subtype, params)}
           selecting={selecting}
           pickedCount={picked.length}
@@ -129,8 +134,10 @@ export default function ThesisSimulationPage() {
         <main className="relative min-w-0 flex-1">
           <ThesisWarehouse
             scene={scene}
+            catalog={studio.catalog}
             selectedId={selected ? String(selected.id) : null}
-            markerScale={scene?.markerScale ?? 1}
+            markerScale={scene?.markerScale ?? 0.7}
+            deviceMarkerScale={scene?.deviceMarkerScale ?? 0.3}
             selecting={selecting}
             pickedIds={picked}
             onTogglePick={(id) => {
@@ -149,6 +156,7 @@ export default function ThesisSimulationPage() {
         <PlacementMenu
           placement={selected}
           catalog={studio.catalog}
+          pristineCatalog={studio.pristineCatalog}
           anchor={{ x: menu.x, y: menu.y }}
           busy={studio.busy}
           onClose={() => setMenu(null)}

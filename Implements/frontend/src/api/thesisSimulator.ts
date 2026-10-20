@@ -1,10 +1,13 @@
 import { deleteOk, getJson, patchJson, postJson } from '@/api/http'
 import type {
   CatalogEntry,
+  DerivedRanges,
+  DeviceSubtype,
   Kind,
   Params,
   Placement,
   PlacementInput,
+  ScenarioDefaults,
   SectionCreate,
   SectionDetail,
   SectionSummary,
@@ -14,6 +17,20 @@ const BASE = '/api/thesis-simulator'
 
 export function fetchCatalog(): Promise<CatalogEntry[]> {
   return getJson(`${BASE}/catalog`)
+}
+
+export function fetchScenarioDefaults(): Promise<ScenarioDefaults> {
+  return getJson(`${BASE}/scenario-defaults`)
+}
+
+export function fetchDerivedRanges(body: {
+  tx_power_dbm: number
+  antenna_gain_dbi: number
+  extra_attenuation_db: number
+  carrier_ghz: number
+  device_sensitivities?: Partial<Record<DeviceSubtype, number>>
+}): Promise<{ effective_range_m: DerivedRanges }> {
+  return postJson(`${BASE}/derived-ranges`, body)
 }
 
 export function fetchSections(): Promise<SectionSummary[]> {
@@ -30,7 +47,14 @@ export function createSection(body: SectionCreate): Promise<SectionDetail> {
 
 export function patchSection(
   id: number,
-  body: { name?: string; width_m?: number; height_m?: number; status?: 'initialized'; marker_scale?: number },
+  body: {
+    name?: string
+    width_m?: number
+    height_m?: number
+    status?: 'initialized'
+    marker_scale?: number
+    device_marker_scale?: number
+  },
 ): Promise<SectionDetail> {
   return patchJson(`${BASE}/sections/${id}`, body)
 }

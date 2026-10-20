@@ -25,6 +25,16 @@
     "showDevice2b": "Show Device 2b",
     "showRadar": "Show reader",
     "showStation": "Show station",
+    "resetToDefault": "Reset to default",
+    "resetAll": "Reset all",
+    "populationWarnLarge": "Beyond {{count}} placements renders slowly; the server caps at 20000.",
+    "effectiveRange": {
+      "title": "Effective range per device type",
+      "device1": "Device 1",
+      "device2a": "Device 2a",
+      "device2b": "Device 2b",
+      "unit": "m"
+    },
     "tabs": {
       "section": "Section",
       "warehouse": "Warehouse",
@@ -47,23 +57,18 @@
     "stationInterval": "Every interval",
     "stationRandom": "Random",
     "mixed": "Mixed types",
-    "radarGrid": "Quick radar grid",
-    "margin": "Margin (m)",
-    "spacing": "Spacing (m)",
+    "applyStandardLayout": "Apply 3GPP standard layout ({{count}} BS)",
     "spacingX": "X (m)",
     "spacingY": "Y (m)",
-    "placeRadars": "Place radars",
-    "radarOverlap": "Centers are within two radii, so the ranges can overlap.",
-    "radarGap": "Spacing is larger than two radii, so the ranges can leave gaps.",
-    "markerScale": "Marker size",
+    "markerScaleInfra": "Marker size · station + reader",
+    "markerScaleDevice": "Marker size · device",
     "devices": "Devices",
     "stations": "Stations",
     "readers": "Readers",
     "group": {
       "floor": "Floor",
       "place": "Place",
-      "readers": "Readers",
-      "range": "Range"
+      "readers": "Readers"
     },
     "bulkHint": "This section is initializing. Add devices and stations, turn some stations into readers, then Save to mark it initialized.",
     "bulkLocked": "This section is initialized. Edit or place one node at a time. Bulk generate stays off.",
@@ -118,8 +123,8 @@
       "antenna_gain_dbi": "Antenna gain (dBi)",
       "extra_attenuation_db": "Extra attenuation (dB)",
       "carrier_ghz": "Carrier (GHz)",
-      "radius_m": "Radius (m)",
-      "show_range": "Show range"
+      "show_range": "Show range for this one",
+      "show_outer": "Show outer warehouse"
     },
     "errors": {
       "network": "Cannot reach the thesis service. Start PostgreSQL and the backend.",

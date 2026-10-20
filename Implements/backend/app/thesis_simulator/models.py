@@ -21,7 +21,8 @@ class ThesisSection(Base):
     width_m: Mapped[float] = mapped_column(Float, nullable=False)
     height_m: Mapped[float] = mapped_column(Float, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="initializing", server_default="initializing")
-    marker_scale: Mapped[float] = mapped_column(Float, nullable=False, default=1, server_default="1")
+    marker_scale: Mapped[float] = mapped_column(Float, nullable=False, default=0.7, server_default="0.7")
+    device_marker_scale: Mapped[float] = mapped_column(Float, nullable=False, default=0.3, server_default="0.3")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 

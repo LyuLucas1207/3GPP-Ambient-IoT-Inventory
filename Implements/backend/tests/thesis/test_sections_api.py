@@ -52,12 +52,16 @@ def test_catalog_lists_five_shapes(client: TestClient):
         ("station", None, "diamond"),
         ("radar", None, "hexagon"),
     ]
-    radar = rows[-1]["defaults"]
-    assert radar["radius_m"] == 30
-    assert radar["show_range"] is False
+    radar = rows[-1]
+    assert "radius_m" not in radar["defaults"]
+    assert radar["defaults"]["show_range"] is False
+    assert set(radar["derived_ranges"]) == {"1", "2a", "2b"}
+    assert radar["derived_ranges"]["1"] > 30
+    assert radar["derived_ranges"]["2a"] > radar["derived_ranges"]["1"]
     station = next(row for row in rows if row["kind"] == "station")
-    assert station["defaults"]["radius_m"] == 20
+    assert "radius_m" not in station["defaults"]
     assert station["defaults"]["show_range"] is False
+    assert station["derived_ranges"]["1"] > 0
     assert rows[0]["defaults"]["rx_sensitivity_dbm"] == -36
     assert rows[2]["defaults"]["uplink"] == "active"
 
@@ -87,18 +91,19 @@ def test_save_then_patch_one_row(client: TestClient):
     radar = converted.json()
     assert radar["id"] == station["id"]
     assert radar["kind"] == "radar"
-    assert radar["params"]["radius_m"] == 20
+    assert "radius_m" not in radar["params"]
     assert radar["params"]["show_range"] is False
     assert radar["params"]["tx_power_dbm"] == 33
+    assert set(radar["derived"]["effective_range_m"]) == {"1", "2a", "2b"}
 
     tuned = client.patch(
         f"/api/thesis-simulator/sections/{body['id']}/placements/{radar['id']}",
-        json={"params": {"extra_attenuation_db": 4.5, "radius_m": 28, "show_range": False}},
+        json={"params": {"extra_attenuation_db": 4.5, "radius_m": 28, "show_range": True}},
     )
     assert tuned.status_code == 200
     assert tuned.json()["params"]["extra_attenuation_db"] == 4.5
-    assert tuned.json()["params"]["radius_m"] == 28
-    assert tuned.json()["params"]["show_range"] is False
+    assert "radius_m" not in tuned.json()["params"]
+    assert tuned.json()["params"]["show_range"] is True
 
     listed = client.get("/api/thesis-simulator/sections")
     assert listed.status_code == 200
@@ -117,7 +122,8 @@ def test_save_then_patch_one_row(client: TestClient):
     assert back.status_code == 200
     assert back.json()["kind"] == "station"
     assert back.json()["id"] == station["id"]
-    assert back.json()["params"]["radius_m"] == 28
+    assert back.json()["params"]["extra_attenuation_db"] == 4.5
+    assert "radius_m" not in back.json()["params"]
 
 
 def test_device_subtype_change_uses_new_defaults(client: TestClient):
@@ -185,10 +191,12 @@ def test_single_add_and_delete_do_not_replace_the_scene(client: TestClient):
     section_id = created.json()["id"]
     added = client.post(
         f"/api/thesis-simulator/sections/{section_id}/placements",
-        json={"kind": "radar", "x_m": 25, "y_m": 25, "params": {"radius_m": 30}},
+        json={"kind": "radar", "x_m": 25, "y_m": 25, "params": {}},
     )
     assert added.status_code == 200
     assert added.json()["kind"] == "radar"
+    assert "radius_m" not in added.json()["params"]
+    assert set(added.json()["derived"]["effective_range_m"]) == {"1", "2a", "2b"}
     removed = client.delete(
         f"/api/thesis-simulator/sections/{section_id}/placements/{created.json()['placements'][0]['id']}"
     )
@@ -280,11 +288,12 @@ def test_kind_patch_updates_one_class(client: TestClient):
     section_id = created.json()["id"]
     patched = client.patch(
         f"/api/thesis-simulator/sections/{section_id}/placements/batch",
-        json={"kind": "station", "subtype": None, "params": {"radius_m": 12, "show_range": True}},
+        json={"kind": "station", "subtype": None, "params": {"tx_power_dbm": 35.0}},
     )
     assert patched.status_code == 200
     assert len(patched.json()) == 2
-    assert {item["params"]["radius_m"] for item in patched.json()} == {12}
+    assert {item["params"]["tx_power_dbm"] for item in patched.json()} == {35.0}
+    assert all("radius_m" not in item["params"] for item in patched.json())
     loaded = client.get(f"/api/thesis-simulator/sections/{section_id}").json()
     device = next(item for item in loaded["placements"] if item["kind"] == "device")
     assert "radius_m" not in device["params"]
@@ -342,3 +351,38 @@ def test_no_bulk_replace_route(client: TestClient):
     assert "/api/thesis-simulator/sections" in paths
     assert "/api/thesis-simulator/sections/{section_id}/placements" in paths
     assert not any("regenerate" in path or "replace" in path or "bulk" in path for path in paths)
+
+
+def test_scenario_defaults_match_inf_dh(client: TestClient):
+    res = client.get("/api/thesis-simulator/scenario-defaults")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["width_m"] == 120.0
+    assert body["height_m"] == 60.0
+    assert body["bs_lattice_spacing_m"] == 20.0
+    assert len(body["bs_positions"]) == 18
+    assert body["default_n_devices"] == 10_000
+    assert body["max_placements"] == 20_000
+    assert body["active_bs_xy"] == [50.0, 30.0]
+
+
+def test_derived_ranges_endpoint_matches_catalog(client: TestClient):
+    res = client.post(
+        "/api/thesis-simulator/derived-ranges",
+        json={"tx_power_dbm": 33.0, "antenna_gain_dbi": 6.0, "extra_attenuation_db": 0.0, "carrier_ghz": 0.9},
+    )
+    assert res.status_code == 200
+    out = res.json()["effective_range_m"]
+    assert set(out) == {"1", "2a", "2b"}
+    assert out["2a"] > out["1"]
+    assert out["2b"] > out["2a"]
+    override = client.post(
+        "/api/thesis-simulator/derived-ranges",
+        json={
+            "tx_power_dbm": 33.0,
+            "antenna_gain_dbi": 6.0,
+            "extra_attenuation_db": 10.0,
+            "carrier_ghz": 0.9,
+        },
+    ).json()["effective_range_m"]
+    assert override["1"] < out["1"]
