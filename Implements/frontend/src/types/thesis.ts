@@ -54,6 +54,7 @@ export type Scene = {
   dirty: boolean
   saved: boolean
   status: SectionStatus
+  locked: boolean
   markerScale: number
   deviceMarkerScale: number
   nonce: number
@@ -88,3 +89,100 @@ export type SectionCreate = {
   height_m: number
   placements: PlacementInput[]
 }
+
+export type RunScheme = 'periodic' | 'aperiodic'
+export type RunStatus = 'pending' | 'running' | 'completed' | 'stopped' | 'failed'
+export type DeviceFinalState = 'identified' | 'died' | 'dropped' | 'survived' | 'unknown'
+
+export type RunCreateInput = {
+  scheme: RunScheme
+  max_time_s: number
+  k_initial?: number | null
+  g?: number | null
+  use_grouping: boolean
+  use_capture: boolean
+  use_ebi: boolean
+  include_d2r: boolean
+  seed?: number | null
+  reader_start_offsets?: Record<string, number>
+}
+
+export type RunSummary = {
+  run_id: number
+  section_id: number
+  scheme: RunScheme
+  status: RunStatus
+  total_devices: number
+  identified_total: number
+  identified_by_subtype: Record<string, number>
+  died_count: number
+  dropped_count: number
+  rounds_total: number
+  wall_duration_s: number
+  created_at: string
+  completed_at: string | null
+  duration_s: number | null
+}
+
+export type RunDetail = {
+  id: number
+  section_id: number
+  scheme: RunScheme
+  status: RunStatus
+  config: Record<string, unknown>
+  scene_snapshot: Record<string, unknown>
+  requested_at: string
+  started_at: string | null
+  completed_at: string | null
+  duration_s: number | null
+  error_detail: string | null
+  summary: RunSummary | null
+}
+
+export type DeviceEvent = {
+  id: number
+  device_id: number
+  reader_id: number | null
+  round_id: number | null
+  t_s: number
+  event_type: string
+  cause: string | null
+  energy_j: number | null
+  payload: Record<string, unknown> | null
+}
+
+export type ReaderEvent = {
+  id: number
+  reader_id: number
+  round_id: number | null
+  t_s: number
+  event_type: string
+  slot_index: number | null
+  payload: Record<string, unknown> | null
+}
+
+export type RunRound = {
+  id: number
+  reader_id: number
+  round_index: number
+  t_start_s: number
+  t_end_s: number
+  k_estimate: number | null
+  g: number | null
+  pstar: number | null
+  slot_count: number
+  success_count: number
+  collision_count: number
+  empty_count: number
+  metadata: Record<string, unknown> | null
+}
+
+export type Timeline = {
+  device_id: number
+  final_state: DeviceFinalState
+  events: DeviceEvent[]
+  rounds_touched: number[]
+  energy_series: [number, number][]
+}
+
+export type DeviceStates = Record<number, DeviceFinalState>

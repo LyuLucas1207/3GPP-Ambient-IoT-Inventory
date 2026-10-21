@@ -76,6 +76,60 @@ def init_db() -> None:
         )
         conn.execute(
             text(
+                "ALTER TABLE thesis_sections "
+                "ADD COLUMN IF NOT EXISTS locked_at TIMESTAMP WITH TIME ZONE"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS thesis_run_rounds_run_reader_idx "
+                "ON thesis_run_rounds (run_id, reader_id, round_index)"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS thesis_run_rounds_run_t_idx "
+                "ON thesis_run_rounds (run_id, t_start_s)"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS thesis_device_events_run_device_t_idx "
+                "ON thesis_device_events (run_id, device_id, t_s)"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS thesis_device_events_run_type_t_idx "
+                "ON thesis_device_events (run_id, event_type, t_s)"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS thesis_device_events_run_reader_t_idx "
+                "ON thesis_device_events (run_id, reader_id, t_s)"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS thesis_reader_events_run_reader_t_idx "
+                "ON thesis_reader_events (run_id, reader_id, t_s)"
+            )
+        )
+        conn.execute(
+            text(
+                "ALTER TABLE thesis_inventory_runs "
+                "ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS thesis_inventory_runs_section_alive_idx "
+                "ON thesis_inventory_runs (section_id, created_at DESC) WHERE deleted_at IS NULL"
+            )
+        )
+        conn.execute(
+            text(
                 """
                 DO $$
                 BEGIN

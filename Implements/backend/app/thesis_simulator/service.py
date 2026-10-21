@@ -125,6 +125,8 @@ def update_section(db: Session, section_id: int, body: SectionPatch) -> ThesisSe
     width = section.width_m if body.width_m is None else body.width_m
     height = section.height_m if body.height_m is None else body.height_m
     if width != section.width_m or height != section.height_m:
+        if section.status == INITIALIZED:
+            raise SceneError("size_locked")
         for item in section.placements:
             _ensure_inside(item.x_m, item.y_m, width, height)
         section.width_m = width
@@ -134,7 +136,9 @@ def update_section(db: Session, section_id: int, body: SectionPatch) -> ThesisSe
     if body.status is not None:
         if body.status != INITIALIZED:
             raise SceneError("bad_status")
-        section.status = INITIALIZED
+        if section.status != INITIALIZED:
+            section.status = INITIALIZED
+            section.locked_at = utcnow()
     if body.marker_scale is not None:
         section.marker_scale = float(body.marker_scale)
     if body.device_marker_scale is not None:
@@ -146,7 +150,7 @@ def update_section(db: Session, section_id: int, body: SectionPatch) -> ThesisSe
 
 
 def add_placement(db: Session, section_id: int, body: PlacementIn) -> ThesisPlacement:
-    rows = add_placements(db, section_id, PlacementBatchIn(placements=[body]), allow_initialized=True)
+    rows = add_placements(db, section_id, PlacementBatchIn(placements=[body]))
     return rows[0]
 
 
@@ -154,12 +158,10 @@ def add_placements(
     db: Session,
     section_id: int,
     body: PlacementBatchIn,
-    *,
-    allow_initialized: bool = False,
 ) -> list[ThesisPlacement]:
     section = get_section(db, section_id)
-    if section.status == INITIALIZED and not allow_initialized:
-        raise SceneError("bulk_locked")
+    if section.status == INITIALIZED:
+        raise SceneError("scene_locked")
     count = db.scalar(
         select(func.count()).select_from(ThesisPlacement).where(ThesisPlacement.section_id == section.id)
     )
@@ -176,6 +178,8 @@ def add_placements(
 
 def update_kind_params(db: Session, section_id: int, body: PlacementKindPatch) -> list[ThesisPlacement]:
     section = get_section(db, section_id)
+    if section.status == INITIALIZED:
+        raise SceneError("scene_locked")
     if body.kind == "device":
         if body.subtype not in {"1", "2a", "2b"}:
             raise SceneError("bad_subtype")
@@ -200,6 +204,8 @@ def update_kind_params(db: Session, section_id: int, body: PlacementKindPatch) -
 
 def convert_placements(db: Session, section_id: int, body: PlacementConvertIn) -> list[ThesisPlacement]:
     section = get_section(db, section_id)
+    if section.status == INITIALIZED:
+        raise SceneError("scene_locked")
     wanted = set(body.ids)
     matched = [row for row in section.placements if row.id in wanted]
     if len(matched) != len(wanted):
@@ -223,6 +229,8 @@ def convert_placements(db: Session, section_id: int, body: PlacementConvertIn) -
 
 def update_placement(db: Session, section_id: int, placement_id: int, body: PlacementPatch) -> ThesisPlacement:
     section = get_section(db, section_id)
+    if section.status == INITIALIZED:
+        raise SceneError("scene_locked")
     row = _find_placement(section, placement_id)
     new_kind = body.kind if body.kind is not None else row.kind
     if (row.kind == "device") != (new_kind == "device"):
@@ -260,19 +268,17 @@ def update_placement(db: Session, section_id: int, placement_id: int, body: Plac
 
 
 def delete_placement(db: Session, section_id: int, placement_id: int) -> None:
-    delete_placements(db, section_id, PlacementDeleteIn(ids=[placement_id]), allow_initialized=True)
+    delete_placements(db, section_id, PlacementDeleteIn(ids=[placement_id]))
 
 
 def delete_placements(
     db: Session,
     section_id: int,
     body: PlacementDeleteIn,
-    *,
-    allow_initialized: bool = False,
 ) -> None:
     section = get_section(db, section_id)
-    if section.status == INITIALIZED and not allow_initialized:
-        raise SceneError("bulk_locked")
+    if section.status == INITIALIZED:
+        raise SceneError("scene_locked")
     wanted = set(body.ids)
     matched = [row for row in section.placements if row.id in wanted]
     if len(matched) != len(wanted):

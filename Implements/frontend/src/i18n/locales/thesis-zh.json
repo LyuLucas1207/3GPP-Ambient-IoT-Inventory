@@ -25,6 +25,68 @@
     "showDevice2b": "显示 Device 2b",
     "showRadar": "显示 Reader",
     "showStation": "显示 Station",
+    "sizeFields": {
+      "locked": "场景已初始化,仓库尺寸已锁定。"
+    },
+    "runsPanel": {
+      "title": "运行记录({{count}})",
+      "empty": "还没有盘点运行。点击「新建运行」开始。",
+      "hint": "每次运行会冻结当前场景并记录全部事件,点击任何 device 可以回放全过程。",
+      "newRun": "新建运行",
+      "working": "处理中…",
+      "workingTitle": "正在运行盘点…",
+      "workingHint": "后端正在生成完整事件日志,大场景可能需要几秒。",
+      "rounds": "{{count}} 轮",
+      "stop": "停止",
+      "delete": "删除",
+      "collapse": "收起运行面板",
+      "expand": "打开运行面板",
+      "status": {
+        "pending": "等待",
+        "running": "进行中",
+        "completed": "完成",
+        "stopped": "已停",
+        "failed": "失败"
+      }
+    },
+    "newRun": {
+      "title": "新建盘点运行",
+      "hint": "选择 paging 方案和参数,运行会用当前已初始化场景。",
+      "scheme": "方案",
+      "schemePeriodic": "周期",
+      "schemeAperiodic": "非周期",
+      "maxTime": "最大时长 (s)",
+      "k": "K (M1 slot 数)",
+      "g": "G (分组数)",
+      "seed": "种子(空=随机)",
+      "useGrouping": "启用分组 (DCM)",
+      "useCapture": "启用捕获效应",
+      "useEbi": "启用 EBI",
+      "includeD2r": "包含 D2R 上行",
+      "start": "开始",
+      "cancel": "取消"
+    },
+    "timeline": {
+      "titleDevice": "Device #{{id}} · {{subtype}}",
+      "titleReader": "Reader #{{id}}",
+      "viewHistory": "查看历史",
+      "close": "关闭",
+      "loading": "加载中…",
+      "noEvents": "本次运行中该设备没有事件。",
+      "unsupported": "此阶段仅支持 device 的时间线。",
+      "col": {
+        "t": "t (s)",
+        "event": "事件",
+        "reader": "reader",
+        "cause": "原因",
+        "energy": "能量 (J)"
+      },
+      "axis": {
+        "t": "时间 (s)",
+        "state": "状态",
+        "energy": "能量 (J)"
+      }
+    },
     "readerFormulas": {
       "title": "Reader 有效覆盖(3GPP TR 38.769)",
       "note": "EH 在参考代码里按充电速率建模,不是硬距离截止。取消 \"启用 D2R\" 会回退到仅 R2D 的老算法。"
@@ -154,7 +216,12 @@
       "bad_count": "请输入整数个节点。",
       "bulk_locked": "场景保存后不能再整批随机生成。",
       "grid_empty": "这个间距在当前仓库里放不下 station。",
-      "request_failed": "请求失败。"
+      "request_failed": "请求失败。",
+      "size_locked": "场景已初始化,仓库尺寸已锁定。",
+      "scene_locked": "场景已初始化,无法修改放置。",
+      "section_not_initialized": "请先保存场景(初始化)再运行盘点。",
+      "run_not_running": "只能停止正在运行或等待中的 run。",
+      "run_not_found": "数据库里已经没有这个 run 了。"
     }
   }
 }

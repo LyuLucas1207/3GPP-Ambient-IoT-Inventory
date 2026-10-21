@@ -3,12 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { PaperNav } from '@/components/PaperNav'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { InventoryRunsPanel } from '@/components/thesis/InventoryRunsPanel'
 import { PlaceMenu, PlacementMenu } from '@/components/thesis/PlacementMenu'
+import { PlacementTimeline } from '@/components/thesis/PlacementTimeline'
 import { ReaderListPanel } from '@/components/thesis/ReaderListPanel'
 import { ThesisSidebar } from '@/components/thesis/ThesisSidebar'
 import { ThesisWarehouse } from '@/components/thesis/ThesisWarehouse'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useInventoryRuns } from '@/hooks/useInventoryRuns'
 import { useThesisScene } from '@/hooks/useThesisScene'
 import { cloneParams, findCatalog } from '@/lib/thesisGeometry'
 import type { Kind, Placement, PlacementId } from '@/types/thesis'
@@ -22,10 +25,13 @@ export default function ThesisSimulationPage() {
   const studio = useThesisScene()
   const scene = studio.scene
   const sceneKey = `${scene?.id ?? 'none'}:${scene?.saved ?? false}:${scene?.nonce ?? 0}`
+  const runs = useInventoryRuns(scene?.id ?? null)
   const [menu, setMenu] = useState<Menu | null>(null)
   const [selecting, setSelecting] = useState(false)
   const [picked, setPicked] = useState<string[]>([])
   const [focusReaderId, setFocusReaderId] = useState<PlacementId | null>(null)
+  const [timelineOpen, setTimelineOpen] = useState(false)
+  const [timelinePlacement, setTimelinePlacement] = useState<Placement | null>(null)
   const [menuKey, setMenuKey] = useState(sceneKey)
   if (menuKey !== sceneKey) {
     setMenuKey(sceneKey)
@@ -33,6 +39,8 @@ export default function ThesisSimulationPage() {
     setPicked([])
     setSelecting(false)
     setFocusReaderId(null)
+    setTimelineOpen(false)
+    setTimelinePlacement(null)
   }
 
   useEffect(() => {
@@ -142,6 +150,7 @@ export default function ThesisSimulationPage() {
             focusReaderId={focusReaderId}
             markerScale={scene?.markerScale ?? 0.7}
             deviceMarkerScale={scene?.deviceMarkerScale ?? 0.3}
+            deviceStates={runs.selectedRunId != null ? runs.deviceStates : null}
             selecting={selecting}
             pickedIds={picked}
             onTogglePick={(id) => {
@@ -153,6 +162,17 @@ export default function ThesisSimulationPage() {
           />
         </main>
         <ReaderListPanel scene={scene} focusReaderId={focusReaderId} onFocus={setFocusReaderId} />
+        {scene?.locked ? (
+          <InventoryRunsPanel
+            runs={runs.runs}
+            selectedRunId={runs.selectedRunId}
+            busy={runs.busy}
+            onSelect={runs.setSelectedRunId}
+            onCreate={runs.createRun}
+            onDelete={runs.deleteRun}
+            onStop={runs.stopRun}
+          />
+        ) : null}
       </div>
       {menu?.type === 'place' ? (
         <PlaceMenu anchor={{ x: menu.x, y: menu.y }} onClose={() => setMenu(null)} onPick={place} />
@@ -164,6 +184,7 @@ export default function ThesisSimulationPage() {
           pristineCatalog={studio.pristineCatalog}
           anchor={{ x: menu.x, y: menu.y }}
           busy={studio.busy}
+          runSelected={runs.selectedRunId != null}
           onClose={() => setMenu(null)}
           onApply={(input) => {
             void studio.updatePlacement(selected.id, input)
@@ -173,8 +194,19 @@ export default function ThesisSimulationPage() {
             void studio.deletePlacement(selected.id)
             setMenu(null)
           }}
+          onViewHistory={() => {
+            setTimelinePlacement(selected)
+            setTimelineOpen(true)
+            setMenu(null)
+          }}
         />
       ) : null}
+      <PlacementTimeline
+        open={timelineOpen && runs.selectedRunId != null}
+        placement={timelinePlacement}
+        loader={runs.loadTimeline}
+        onClose={() => setTimelineOpen(false)}
+      />
     </div>
   )
 }

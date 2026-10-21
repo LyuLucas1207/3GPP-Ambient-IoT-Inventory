@@ -25,6 +25,68 @@
     "showDevice2b": "Afficher Device 2b",
     "showRadar": "Afficher le reader",
     "showStation": "Afficher la station",
+    "sizeFields": {
+      "locked": "Section initialisée — la taille est figée."
+    },
+    "runsPanel": {
+      "title": "Runs ({{count}})",
+      "empty": "Aucun run. Cliquez sur « Nouveau run » pour commencer.",
+      "hint": "Chaque run fige la scène courante et enregistre un journal complet, cliquable par device.",
+      "newRun": "Nouveau run",
+      "working": "en cours…",
+      "workingTitle": "Run en cours…",
+      "workingHint": "Le moteur génère le journal complet. Patientez quelques secondes pour les grandes scènes.",
+      "rounds": "{{count}} tours",
+      "stop": "Arrêter",
+      "delete": "Supprimer",
+      "collapse": "Replier la liste de runs",
+      "expand": "Ouvrir la liste de runs",
+      "status": {
+        "pending": "en attente",
+        "running": "en cours",
+        "completed": "terminé",
+        "stopped": "arrêté",
+        "failed": "échec"
+      }
+    },
+    "newRun": {
+      "title": "Nouveau run d'inventaire",
+      "hint": "Choisissez le schéma de paging et ses paramètres.",
+      "scheme": "Schéma",
+      "schemePeriodic": "Périodique",
+      "schemeAperiodic": "Apériodique",
+      "maxTime": "Durée max (s)",
+      "k": "K (slots M1)",
+      "g": "G (groupes)",
+      "seed": "Graine (vide = aléatoire)",
+      "useGrouping": "Activer le regroupement (DCM)",
+      "useCapture": "Activer l'effet de capture",
+      "useEbi": "Activer EBI",
+      "includeD2r": "Inclure la liaison D2R",
+      "start": "Démarrer",
+      "cancel": "Annuler"
+    },
+    "timeline": {
+      "titleDevice": "Device #{{id}} · {{subtype}}",
+      "titleReader": "Reader #{{id}}",
+      "viewHistory": "Voir l'historique",
+      "close": "Fermer",
+      "loading": "Chargement…",
+      "noEvents": "Aucun événement pour ce device dans ce run.",
+      "unsupported": "La timeline n'est disponible que pour les devices à cette étape.",
+      "col": {
+        "t": "t (s)",
+        "event": "évén.",
+        "reader": "reader",
+        "cause": "cause",
+        "energy": "énergie (J)"
+      },
+      "axis": {
+        "t": "temps (s)",
+        "state": "état",
+        "energy": "énergie (J)"
+      }
+    },
     "readerFormulas": {
       "title": "Couverture effective du reader (3GPP TR 38.769)",
       "note": "EH est modélisé par le taux de collecte d'énergie, pas une coupure stricte. Décocher \"D2R\" revient au modèle R2D seul."
@@ -154,7 +216,12 @@
       "bad_count": "Entrez un nombre entier de nœuds.",
       "bulk_locked": "La génération groupée est désactivée après l'enregistrement.",
       "grid_empty": "Cet espacement ne laisse pas de place à une station.",
-      "request_failed": "La requête a échoué."
+      "request_failed": "La requête a échoué.",
+      "size_locked": "Section initialisée — taille figée.",
+      "scene_locked": "Section initialisée — placements figés.",
+      "section_not_initialized": "Enregistrez d'abord la section pour lancer un run.",
+      "run_not_running": "Seuls les runs en cours ou en attente peuvent être arrêtés.",
+      "run_not_found": "Ce run n'est plus en base."
     }
   }
 }

@@ -63,6 +63,7 @@ function fromServer(detail: SectionDetail): Scene {
     dirty: false,
     saved: true,
     status: detail.status,
+    locked: detail.status === 'initialized',
     markerScale: detail.marker_scale ?? 0.7,
     deviceMarkerScale: detail.device_marker_scale ?? 0.3,
     nonce: detail.id,
@@ -247,6 +248,10 @@ export function useThesisScene() {
     async (width: number, height: number) => {
       const current = sceneRef.current
       if (!current) return false
+      if (current.locked) {
+        setError(t('thesis.errors.size_locked'))
+        return false
+      }
       if (!(width > 0) || !(height > 0) || width > 10_000 || height > 10_000) {
         setError(t('thesis.errors.bad_size'))
         return false
@@ -314,6 +319,10 @@ export function useThesisScene() {
     async (input: PlacementInput) => {
       const current = sceneRef.current
       if (!current) return
+      if (current.locked) {
+        setError(t('thesis.errors.scene_locked'))
+        return
+      }
       if (!inside(input.x_m, input.y_m, current.width_m, current.height_m)) {
         setError(t('thesis.errors.outside_bounds'))
         return
@@ -378,6 +387,10 @@ export function useThesisScene() {
     async (id: PlacementId, input: PlacementInput) => {
       const current = sceneRef.current
       if (!current) return
+      if (current.locked) {
+        setError(t('thesis.errors.scene_locked'))
+        return
+      }
       if (!inside(input.x_m, input.y_m, current.width_m, current.height_m)) {
         setError(t('thesis.errors.outside_bounds'))
         return
@@ -414,6 +427,10 @@ export function useThesisScene() {
     async (id: PlacementId) => {
       const current = sceneRef.current
       if (!current) return
+      if (current.locked) {
+        setError(t('thesis.errors.scene_locked'))
+        return
+      }
       if (!current.saved) {
         setScene({ ...current, dirty: true, placements: current.placements.filter((item) => item.id !== id) })
         return
@@ -592,6 +609,10 @@ export function useThesisScene() {
     async (kind: Kind, subtype: string | null, params: Params) => {
       const current = sceneRef.current
       if (!current) return
+      if (current.locked) {
+        setError(t('thesis.errors.scene_locked'))
+        return
+      }
       const matches = (item: Placement) => item.kind === kind && (kind !== 'device' || item.subtype === subtype)
       if (!current.saved || current.id == null) {
         setScene({
@@ -622,13 +643,17 @@ export function useThesisScene() {
         setBusy(false)
       }
     },
-    [fail],
+    [fail, t],
   )
 
   const convertPlacements = useCallback(
     async (ids: Array<number | string>, kind: 'station' | 'radar') => {
       const current = sceneRef.current
       if (!current || ids.length === 0) return
+      if (current.locked) {
+        setError(t('thesis.errors.scene_locked'))
+        return
+      }
       const idSet = new Set(ids.map(String))
       const nextOf = (item: Placement): Placement => {
         if (!idSet.has(String(item.id)) || item.kind === 'device' || item.kind === kind) return item
@@ -654,7 +679,7 @@ export function useThesisScene() {
         setBusy(false)
       }
     },
-    [fail],
+    [fail, t],
   )
 
   return {

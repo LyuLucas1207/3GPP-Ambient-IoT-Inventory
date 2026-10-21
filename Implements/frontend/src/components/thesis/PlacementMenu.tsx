@@ -24,18 +24,22 @@ export function PlacementMenu({
   pristineCatalog,
   anchor,
   busy,
+  runSelected,
   onClose,
   onApply,
   onDelete,
+  onViewHistory,
 }: {
   placement: Placement
   catalog: CatalogEntry[]
   pristineCatalog: CatalogEntry[]
   anchor: { x: number; y: number }
   busy: boolean
+  runSelected: boolean
   onClose: () => void
   onApply: (input: PlacementInput) => void
   onDelete: () => void
+  onViewHistory: () => void
 }) {
   const { t } = useTranslation()
   const kind = placement.kind
@@ -115,10 +119,17 @@ export function PlacementMenu({
       <Card className="fixed z-50 w-96" style={pos} size="sm">
         <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
           <CardTitle>{t(`thesis.kind.${kind}`)}</CardTitle>
-          <Button type="button" size="xs" variant="ghost" onClick={resetAll} aria-label={t('thesis.resetAll')}>
-            <RotateCcw className="mr-1 size-3" />
-            {t('thesis.resetAll')}
-          </Button>
+          <div className="flex gap-1">
+            {runSelected ? (
+              <Button type="button" size="xs" variant="outline" onClick={onViewHistory}>
+                {t('thesis.timeline.viewHistory')}
+              </Button>
+            ) : null}
+            <Button type="button" size="xs" variant="ghost" onClick={resetAll} aria-label={t('thesis.resetAll')}>
+              <RotateCcw className="mr-1 size-3" />
+              {t('thesis.resetAll')}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-2">
           {kind === 'device' ? (

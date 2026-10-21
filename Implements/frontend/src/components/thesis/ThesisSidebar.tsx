@@ -172,6 +172,7 @@ export function ThesisSidebar({
                   key={`${scene?.nonce ?? 'empty'}:${scene?.width_m ?? 0}:${scene?.height_m ?? 0}`}
                   scene={scene}
                   disabled={!scene || busy}
+                  locked={locked}
                   onApply={onApplySize}
                 />
                 <div className="flex flex-col gap-2">
@@ -526,34 +527,42 @@ function NewSectionRow({ busy, onCreate }: { busy: boolean; onCreate: (name: str
 function SizeFields({
   scene,
   disabled,
+  locked,
   onApply,
 }: {
   scene: Scene | null
   disabled: boolean
+  locked: boolean
   onApply: (width: number, height: number) => void
 }) {
   const { t } = useTranslation()
   const [width, setWidth] = useState(String(scene?.width_m ?? DEFAULT_WIDTH_M))
   const [height, setHeight] = useState(String(scene?.height_m ?? DEFAULT_HEIGHT_M))
+  const inputsDisabled = disabled || locked
   return (
-    <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
-      <label className="flex flex-col gap-1 text-xs">
-        <span className="text-muted-foreground">{t('thesis.length')}</span>
-        <Input value={width} disabled={disabled} onChange={(event) => setWidth(event.target.value)} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs">
-        <span className="text-muted-foreground">{t('thesis.width')}</span>
-        <Input value={height} disabled={disabled} onChange={(event) => setHeight(event.target.value)} />
-      </label>
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        disabled={disabled}
-        onClick={() => onApply(Number(width), Number(height))}
-      >
-        {t('thesis.apply')}
-      </Button>
+    <div className="flex flex-col gap-1">
+      <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-muted-foreground">{t('thesis.length')}</span>
+          <Input value={width} disabled={inputsDisabled} readOnly={locked} onChange={(event) => setWidth(event.target.value)} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-muted-foreground">{t('thesis.width')}</span>
+          <Input value={height} disabled={inputsDisabled} readOnly={locked} onChange={(event) => setHeight(event.target.value)} />
+        </label>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={inputsDisabled}
+          onClick={() => onApply(Number(width), Number(height))}
+        >
+          {t('thesis.apply')}
+        </Button>
+      </div>
+      {locked ? (
+        <p className="text-[11px] text-muted-foreground">🔒 {t('thesis.sizeFields.locked')}</p>
+      ) : null}
     </div>
   )
 }

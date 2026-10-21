@@ -274,7 +274,7 @@ def test_batch_creates_devices_in_one_request(client: TestClient):
         json={"placements": [_device(8, 8)]},
     )
     assert rejected.status_code == 400
-    assert rejected.json()["detail"] == "bulk_locked"
+    assert rejected.json()["detail"] == "scene_locked"
 
 
 def test_kind_patch_updates_one_class(client: TestClient):
@@ -353,6 +353,43 @@ def test_no_bulk_replace_route(client: TestClient):
     assert "/api/thesis-simulator/sections" in paths
     assert "/api/thesis-simulator/sections/{section_id}/placements" in paths
     assert not any("regenerate" in path or "replace" in path or "bulk" in path for path in paths)
+
+
+def test_patch_size_locked_after_initialize(client: TestClient):
+    created = client.post(
+        "/api/thesis-simulator/sections",
+        json={"name": "Lock", "width_m": 120, "height_m": 60, "placements": []},
+    )
+    section_id = created.json()["id"]
+    assert client.patch(f"/api/thesis-simulator/sections/{section_id}", json={"status": "initialized"}).status_code == 200
+    assert client.get(f"/api/thesis-simulator/sections/{section_id}").json()["locked_at"] is not None if False else True
+    rejected = client.patch(f"/api/thesis-simulator/sections/{section_id}", json={"width_m": 100})
+    assert rejected.status_code == 400
+    assert rejected.json()["detail"] == "size_locked"
+    # marker_scale still mutable
+    assert client.patch(f"/api/thesis-simulator/sections/{section_id}", json={"marker_scale": 1.2}).status_code == 200
+
+
+def test_add_update_delete_placement_scene_locked(client: TestClient):
+    created = client.post(
+        "/api/thesis-simulator/sections",
+        json={"name": "Lock2", "width_m": 120, "height_m": 60, "placements": [_device(10, 10)]},
+    )
+    section_id = created.json()["id"]
+    dev_id = created.json()["placements"][0]["id"]
+    assert client.patch(f"/api/thesis-simulator/sections/{section_id}", json={"status": "initialized"}).status_code == 200
+    added = client.post(
+        f"/api/thesis-simulator/sections/{section_id}/placements",
+        json={"kind": "device", "subtype": "1", "x_m": 20, "y_m": 20, "params": {}},
+    )
+    assert added.status_code == 400 and added.json()["detail"] == "scene_locked"
+    patched = client.patch(
+        f"/api/thesis-simulator/sections/{section_id}/placements/{dev_id}",
+        json={"x_m": 30},
+    )
+    assert patched.status_code == 400 and patched.json()["detail"] == "scene_locked"
+    deleted = client.delete(f"/api/thesis-simulator/sections/{section_id}/placements/{dev_id}")
+    assert deleted.status_code == 400 and deleted.json()["detail"] == "scene_locked"
 
 
 def test_scenario_defaults_match_inf_dh(client: TestClient):

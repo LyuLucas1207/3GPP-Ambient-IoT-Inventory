@@ -14,7 +14,9 @@ export function loadDraft(): Scene | null {
       saved: false,
       id: null,
       status: 'initializing',
-      markerScale: parsed.scene.markerScale || 1,
+      locked: false,
+      markerScale: parsed.scene.markerScale || 0.7,
+      deviceMarkerScale: parsed.scene.deviceMarkerScale ?? 0.3,
       nonce: parsed.scene.nonce || Date.now(),
     }
   } catch {

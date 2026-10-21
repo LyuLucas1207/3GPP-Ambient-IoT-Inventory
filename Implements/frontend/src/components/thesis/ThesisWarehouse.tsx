@@ -6,7 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { inside } from '@/lib/thesisGeometry'
 import { DEVICE_SUBTYPES, deriveReaderRanges, effectiveCoverageM, rangeFromSensitivityM } from '@/lib/thesisPhysics'
-import type { CatalogEntry, DeviceSubtype, Kind, Placement, Scene, Shape } from '@/types/thesis'
+import type { CatalogEntry, DeviceFinalState, DeviceStates, DeviceSubtype, Kind, Placement, Scene, Shape } from '@/types/thesis'
+
+const RUN_STATE_COLOR: Record<DeviceFinalState, string> = {
+  identified: '#16a34a',
+  died: '#b91c1c',
+  dropped: '#737373',
+  survived: '#737373',
+  unknown: '#737373',
+}
 
 const LAYER_KEYS = ['device1', 'device2a', 'device2b', 'radar', 'station'] as const
 type LayerKey = (typeof LAYER_KEYS)[number]
@@ -41,6 +49,7 @@ export function ThesisWarehouse({
   focusReaderId,
   markerScale,
   deviceMarkerScale,
+  deviceStates,
   selecting = false,
   pickedIds = [],
   onTogglePick,
@@ -53,6 +62,7 @@ export function ThesisWarehouse({
   focusReaderId: Placement['id'] | null
   markerScale: number
   deviceMarkerScale: number
+  deviceStates: DeviceStates | null
   selecting?: boolean
   pickedIds?: string[]
   onTogglePick?: (id: Placement['id']) => void
@@ -321,26 +331,45 @@ export function ThesisWarehouse({
       }
     }
 
-    type Bucket = { color: string; show: boolean; litInRange: Placement[]; dimOutOfRange: Placement[] }
-    const buckets: Record<string, Bucket> = {
-      '1': { color: '#1d4ed8', show: layers.device1, litInRange: [], dimOutOfRange: [] },
-      '2a': { color: '#0f766e', show: layers.device2a, litInRange: [], dimOutOfRange: [] },
-      '2b': { color: '#c2410c', show: layers.device2b, litInRange: [], dimOutOfRange: [] },
+    const subtypeColor: Record<string, string> = {
+      '1': '#1d4ed8',
+      '2a': '#0f766e',
+      '2b': '#c2410c',
+    }
+    const subtypeShow: Record<string, boolean> = {
+      '1': layers.device1,
+      '2a': layers.device2a,
+      '2b': layers.device2b,
+    }
+    const byColor = new Map<string, Placement[]>()
+    const dimmed: Placement[] = []
+    const push = (color: string, placement: Placement) => {
+      const list = byColor.get(color) ?? []
+      list.push(placement)
+      byColor.set(color, list)
     }
     for (const placement of scene.placements) {
       if (placement.kind !== 'device') continue
-      const bucket = buckets[placement.subtype ?? '']
-      if (!bucket || !bucket.show) continue
+      if (!subtypeShow[placement.subtype ?? '']) continue
+      let outOfRange = false
       if (focusReader) {
         const covSq = coverageSq[placement.subtype as DeviceSubtype]
         const dx = placement.x_m - focusCx
         const dy = placement.y_m - focusCy
-        const inRange = typeof covSq === 'number' && dx * dx + dy * dy <= covSq
-        if (inRange) bucket.litInRange.push(placement)
-        else bucket.dimOutOfRange.push(placement)
-      } else {
-        bucket.litInRange.push(placement)
+        outOfRange = !(typeof covSq === 'number' && dx * dx + dy * dy <= covSq)
       }
+      if (outOfRange) {
+        dimmed.push(placement)
+        continue
+      }
+      let color: string
+      if (deviceStates) {
+        const state = deviceStates[placement.id as number]
+        color = state ? RUN_STATE_COLOR[state] : subtypeColor[placement.subtype ?? ''] ?? '#737373'
+      } else {
+        color = subtypeColor[placement.subtype ?? ''] ?? '#737373'
+      }
+      push(color, placement)
     }
     const drawCircles = (items: Placement[], fillStyle: string) => {
       if (items.length === 0) return
@@ -354,13 +383,11 @@ export function ThesisWarehouse({
       }
       ctx.fill()
     }
-    for (const bucket of Object.values(buckets)) {
-      drawCircles(bucket.dimOutOfRange, 'rgba(120,120,120,0.25)')
+    drawCircles(dimmed, 'rgba(120,120,120,0.25)')
+    for (const [color, items] of byColor) {
+      drawCircles(items, color)
     }
-    for (const bucket of Object.values(buckets)) {
-      drawCircles(bucket.litInRange, bucket.color)
-    }
-  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults])
+  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults, deviceStates])
 
   function screenToWorld(clientX: number, clientY: number) {
     const rect = hostRef.current?.getBoundingClientRect()
