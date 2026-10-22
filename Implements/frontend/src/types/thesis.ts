@@ -91,12 +91,17 @@ export type SectionCreate = {
 }
 
 export type RunScheme = 'periodic' | 'aperiodic'
-export type RunStatus = 'pending' | 'running' | 'completed' | 'stopped' | 'failed'
-export type DeviceFinalState = 'identified' | 'died' | 'dropped' | 'survived' | 'unknown'
+export type RunStatus = 'pending' | 'running' | 'paused' | 'completed' | 'stopped' | 'failed' | 'deleted'
+export type DeviceFinalState = 'identified' | 'dropped' | 'unreachable' | 'pending'
 
 export type RunCreateInput = {
   scheme: RunScheme
-  max_time_s: number
+  /** null = no time cap: runs until every device is done, it stalls, or the user pauses/stops it. */
+  max_time_s: number | null
+  /** simulated seconds per wall-clock second; null = as fast as possible */
+  speed?: number | null
+  /** end automatically after this long (simulated s) without a new identification */
+  stall_timeout_s?: number | null
   k_initial?: number | null
   g?: number | null
   use_grouping: boolean
@@ -105,6 +110,44 @@ export type RunCreateInput = {
   include_d2r: boolean
   seed?: number | null
   reader_start_offsets?: Record<string, number>
+  disabled_reader_ids?: number[]
+}
+
+export type IdentificationPoint = [number, number]
+export type CompletionTimes = Partial<Record<'50' | '90' | '95' | '99' | '100', number | null>>
+export type RoundAggregates = {
+  slots_total: number
+  success_total: number
+  collision_total: number
+  empty_total: number
+  resource_efficiency: number
+  overhead_s: Record<string, number>
+  deaths_by_stage: Record<string, Record<string, number>>
+  energy_j_by_subtype: Record<string, number>
+}
+export type ReaderContribution = Record<number, number>
+export type RoundBreakdown = {
+  reader_id: number
+  round_index: number
+  t_start_s: number
+  t_end_s: number
+  success: number
+  collision: number
+  empty: number
+}
+export type RunAnalysis = {
+  run_id: number
+  scheme: RunScheme
+  status: RunStatus
+  summary: RunSummary
+  config?: Record<string, unknown>
+  identification_curve: IdentificationPoint[]
+  identification_by_subtype?: Record<string, IdentificationPoint[]>
+  completion_times: CompletionTimes
+  population_completion_times?: CompletionTimes
+  reader_contribution: ReaderContribution
+  rounds_breakdown: RoundBreakdown[]
+  aggregates?: RoundAggregates | null
 }
 
 export type RunSummary = {
@@ -122,6 +165,10 @@ export type RunSummary = {
   created_at: string
   completed_at: string | null
   duration_s: number | null
+  sim_time_s: number
+  unreachable_count: number
+  speed: number | null
+  max_time_s: number | null
 }
 
 export type RunDetail = {
@@ -163,6 +210,7 @@ export type ReaderEvent = {
 
 export type RunRound = {
   id: number
+  frame_seq: number | null
   reader_id: number
   round_index: number
   t_start_s: number
@@ -174,7 +222,71 @@ export type RunRound = {
   success_count: number
   collision_count: number
   empty_count: number
+  candidates: number | null
+  joiners: number | null
+  on_at_page: number | null
+  backlog_true: number | null
+  served: number | null
+  s_budget: number | null
+  budget_dropped: number | null
+  n_hat: number | null
+  mnot_prev: number | null
+  mnot_next: number | null
+  n_done_total: number | null
+  identified_by_subtype: Record<string, number> | null
+  timing: RoundTiming | null
+  energy_j: Record<string, number> | null
+  deaths: Record<string, Record<string, number>> | null
   metadata: Record<string, unknown> | null
+}
+
+export type RoundTiming = { paging: number; m1: number; ebi: number; m2: number; m3: number }
+
+/** Per-slot M1 outcome of one round: occupancy + result code (0 idle, 1 single, 2 captured, 3 collision, 4 missed). */
+export type RoundSlots = {
+  id: number
+  reader_id: number
+  round_index: number
+  slots: { f: number; occ: number[]; res: number[] } | null
+}
+
+export type RunCounters = {
+  sim_time_s: number
+  total: number
+  identified: number
+  identified_by_subtype: Record<string, number>
+  dropped: number
+  unreachable: number
+  no_progress: number
+  depletions: number
+  rounds: number
+  frame_seq: number
+}
+
+/** SSE `snapshot` event / GET /runs/{id}/snapshot. */
+export type RunSnapshot = {
+  run_id?: number
+  status?: RunStatus
+  speed?: number | null
+  seq?: number
+  frame_seq?: number
+  sim_time_s: number
+  device_ids: number[]
+  state_labels: string[]
+  state_codes_b64: string
+  energy_b64: string
+  counters?: Partial<RunCounters>
+}
+
+/** SSE `tick` event: every frame since the previous tick, merged. */
+export type RunTick = {
+  seq: number
+  sim_time_s: number
+  changes: [number, number][]
+  rounds: RunRound[]
+  counters: RunCounters
+  frames: number
+  energy_b64?: string
 }
 
 export type Timeline = {
@@ -185,4 +297,4 @@ export type Timeline = {
   energy_series: [number, number][]
 }
 
-export type DeviceStates = Record<number, DeviceFinalState>
+export type DeviceStates = Record<number, string>

@@ -3,9 +3,12 @@ import type {
   DeviceEvent,
   DeviceStates,
   ReaderEvent,
+  RunAnalysis,
   RunCreateInput,
   RunDetail,
+  RoundSlots,
   RunRound,
+  RunSnapshot,
   RunSummary,
   Timeline,
 } from '@/types/thesis'
@@ -30,6 +33,48 @@ export function deleteRun(id: number): Promise<void> {
 
 export function stopRun(id: number): Promise<RunSummary> {
   return postJson(`${BASE}/runs/${id}/stop`, {})
+}
+
+export function pauseRun(id: number): Promise<RunSummary> {
+  return postJson(`${BASE}/runs/${id}/pause`, {})
+}
+
+export function resumeRun(id: number): Promise<RunSummary> {
+  return postJson(`${BASE}/runs/${id}/resume`, {})
+}
+
+export function setRunSpeed(id: number, speed: number | null): Promise<RunSummary> {
+  return postJson(`${BASE}/runs/${id}/speed`, { speed })
+}
+
+/** Server-Sent Events feed of a run; consume with the browser's EventSource. */
+export function runStreamUrl(id: number): string {
+  return `${BASE}/runs/${id}/stream`
+}
+
+export function fetchRoundSlots(runId: number, roundId: number): Promise<RoundSlots> {
+  return getJson(`${BASE}/runs/${runId}/rounds/${roundId}/slots`)
+}
+
+export type DeviceMap = { device_ids: number[]; subtypes: string[]; coverage: Record<string, number[]> }
+export type Identifications = { t: number[]; device: number[]; reader: (number | null)[] }
+
+/** Subtype of every device and, per reader, the device indices inside its coverage (engine's own test). */
+export function fetchDeviceMap(id: number): Promise<DeviceMap> {
+  return getJson(`${BASE}/runs/${id}/device-map`)
+}
+
+/** All identifications so far in time order (device index, time, reader). */
+export function fetchIdentifications(id: number): Promise<Identifications> {
+  return getJson(`${BASE}/runs/${id}/identifications`)
+}
+
+export function fetchSnapshotTimes(id: number): Promise<{ times: number[] }> {
+  return getJson(`${BASE}/runs/${id}/snapshots`)
+}
+
+export function fetchSnapshot(id: number, t?: number): Promise<RunSnapshot> {
+  return getJson(`${BASE}/runs/${id}/snapshot${t != null ? `?t=${t}` : ''}`)
 }
 
 export function fetchRunSummary(id: number): Promise<RunSummary> {
@@ -71,4 +116,12 @@ export function fetchTimeline(id: number, deviceId: number): Promise<Timeline> {
 
 export function fetchDeviceStates(id: number): Promise<{ states: DeviceStates }> {
   return getJson(`${BASE}/runs/${id}/device-states`)
+}
+
+export function fetchRunAnalysis(id: number): Promise<RunAnalysis> {
+  return getJson(`${BASE}/runs/${id}/analysis`)
+}
+
+export function fetchCompareRuns(sectionId: number, runIds: number[]): Promise<{ runs: RunAnalysis[] }> {
+  return postJson(`${BASE}/sections/${sectionId}/runs/compare`, { run_ids: runIds })
 }

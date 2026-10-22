@@ -1,12 +1,12 @@
 import { RotateCcw } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { findCatalog } from '@/lib/thesisGeometry'
-import { DEVICE_SUBTYPES, deriveReaderRanges } from '@/lib/thesisPhysics'
+import { DEFAULT_RING_VISIBLE, DEVICE_SUBTYPES, deriveReaderRanges, ringParamKey } from '@/lib/thesisPhysics'
 import type {
   CatalogEntry,
   DerivedRanges,
@@ -24,6 +24,7 @@ export function PlacementMenu({
   pristineCatalog,
   anchor,
   busy,
+  locked,
   runSelected,
   onClose,
   onApply,
@@ -35,6 +36,7 @@ export function PlacementMenu({
   pristineCatalog: CatalogEntry[]
   anchor: { x: number; y: number }
   busy: boolean
+  locked: boolean
   runSelected: boolean
   onClose: () => void
   onApply: (input: PlacementInput) => void
@@ -46,11 +48,16 @@ export function PlacementMenu({
   const [subtype, setSubtype] = useState<string | null>(placement.subtype)
   const [x, setX] = useState(String(placement.x_m))
   const [y, setY] = useState(String(placement.y_m))
-  const [draft, setDraft] = useState<Record<string, string>>(() => stringifyParams(placement.params))
+  const [draft, setDraft] = useState<Record<string, string>>(() =>
+    stringifyParams({
+      ...(findCatalog(catalog, placement.kind, placement.kind === 'device' ? placement.subtype : null)?.defaults ?? {}),
+      ...placement.params,
+    }),
+  )
   const [formError, setFormError] = useState<string | null>(null)
   const sample = findCatalog(catalog, kind, kind === 'device' ? subtype : null)?.defaults ?? placement.params
   const pristine = findCatalog(pristineCatalog, kind, kind === 'device' ? subtype : null)?.defaults ?? sample
-  const pos = clampAnchor(anchor.x, anchor.y)
+  const { ref: cardRef, pos } = useClampedPosition(anchor)
 
   const deviceDefaults = useMemo(() => catalogDeviceDefaults(catalog), [catalog])
   const derivedRanges = useMemo<DerivedRanges | null>(() => {
@@ -110,13 +117,18 @@ export function PlacementMenu({
   }
 
   const keys = orderedKeys(sample, draft).filter(
-    (key) => !(kind !== 'device' && (key === 'show_range' || key === 'show_outer' || key === 'include_d2r')),
+    (key) => !(kind !== 'device' && (key === 'show_range' || key === 'show_outer' || key === 'include_d2r' || key.startsWith('show_ring_'))),
   )
+
+  function ringChecked(subtype: DeviceSubtype) {
+    const raw = draft[ringParamKey(subtype)]
+    return raw === undefined ? DEFAULT_RING_VISIBLE[subtype] : raw === 'true'
+  }
 
   return (
     <>
       <button type="button" className="fixed inset-0 z-40 cursor-default" aria-label={t('thesis.closeMenu')} onClick={onClose} />
-      <Card className="fixed z-50 w-96" style={pos} size="sm">
+      <Card ref={cardRef} className="fixed z-50 max-h-[calc(100vh-16px)] w-96 overflow-auto" style={pos} size="sm">
         <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
           <CardTitle>{t(`thesis.kind.${kind}`)}</CardTitle>
           <div className="flex gap-1">
@@ -132,6 +144,7 @@ export function PlacementMenu({
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-2">
+          {locked ? <p className="col-span-2 text-[11px] text-muted-foreground">🔒 {t('thesis.placementMenu.locked')}</p> : null}
           {kind === 'device' ? (
             <div className="col-span-2 flex gap-1">
               {['1', '2a', '2b'].map((item) => (
@@ -155,6 +168,20 @@ export function PlacementMenu({
                 />
                 {t('thesis.params.show_range')}
               </label>
+              {kind === 'radar' ? (
+                <div className="col-span-2 ml-6 flex flex-wrap gap-x-4 gap-y-1">
+                  {DEVICE_SUBTYPES.map((ring) => (
+                    <label key={ring} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Checkbox
+                        checked={ringChecked(ring)}
+                        disabled={draft.show_range !== 'true'}
+                        onCheckedChange={(value) => setParam(ringParamKey(ring), value === true ? 'true' : 'false')}
+                      />
+                      {t(`thesis.params.show_ring_${ring}`)}
+                    </label>
+                  ))}
+                </div>
+              ) : null}
               <label className="col-span-2 flex items-center gap-2 text-sm">
                 <Checkbox
                   checked={draft.show_outer === 'true'}
@@ -244,7 +271,7 @@ export function PlaceMenu({
   onPick: (kind: Kind, subtype: string | null) => void
 }) {
   const { t } = useTranslation()
-  const pos = clampAnchor(anchor.x, anchor.y)
+  const { ref: cardRef, pos } = useClampedPosition(anchor)
   const items: Array<{ kind: Kind; subtype: string | null; label: string }> = [
     { kind: 'device', subtype: '1', label: t('thesis.kind.device1') },
     { kind: 'device', subtype: '2a', label: t('thesis.kind.device2a') },
@@ -254,7 +281,7 @@ export function PlaceMenu({
   return (
     <>
       <button type="button" className="fixed inset-0 z-40 cursor-default" aria-label={t('thesis.closeMenu')} onClick={onClose} />
-      <Card className="fixed z-50 w-52" style={pos} size="sm">
+      <Card ref={cardRef} className="fixed z-50 max-h-[calc(100vh-16px)] w-52 overflow-auto" style={pos} size="sm">
         <CardHeader>
           <CardTitle>{t('thesis.placeHere')}</CardTitle>
         </CardHeader>
@@ -358,7 +385,12 @@ function orderedKeys(sample: Params, draft: Record<string, string>) {
 function parseParams(draft: Record<string, string>, sample: Params): Params {
   const out: Params = {}
   for (const key of orderedKeys(sample, draft)) {
-    out[key] = parseValue(draft[key] ?? '', sample[key])
+    const raw = draft[key]
+    if (raw === undefined) {
+      out[key] = sample[key] ?? null
+      continue
+    }
+    out[key] = parseValue(raw, sample[key])
   }
   return out
 }
@@ -402,9 +434,33 @@ function catalogDeviceDefaults(catalog: CatalogEntry[]): Partial<Record<DeviceSu
   return out
 }
 
-function clampAnchor(x: number, y: number) {
+const VIEWPORT_MARGIN = 8
+
+/** Keep a fixed popover inside the viewport using its measured size, not a guess. */
+function useClampedPosition(anchor: { x: number; y: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState(() => clampAnchor(anchor.x, anchor.y, 0, 0))
+  useLayoutEffect(() => {
+    function update() {
+      const el = ref.current
+      setPos(clampAnchor(anchor.x, anchor.y, el?.offsetWidth ?? 0, el?.offsetHeight ?? 0))
+    }
+    update()
+    const el = ref.current
+    const observer = el && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
+    observer?.observe(el as HTMLDivElement)
+    window.addEventListener('resize', update)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [anchor.x, anchor.y])
+  return { ref, pos }
+}
+
+function clampAnchor(x: number, y: number, width: number, height: number) {
   return {
-    left: Math.max(8, Math.min(x, window.innerWidth - 384)),
-    top: Math.max(8, Math.min(y, window.innerHeight - 480)),
+    left: Math.max(VIEWPORT_MARGIN, Math.min(x, window.innerWidth - width - VIEWPORT_MARGIN)),
+    top: Math.max(VIEWPORT_MARGIN, Math.min(y, window.innerHeight - height - VIEWPORT_MARGIN)),
   }
 }

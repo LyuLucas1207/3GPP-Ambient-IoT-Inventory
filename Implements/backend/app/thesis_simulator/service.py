@@ -150,7 +150,9 @@ def update_section(db: Session, section_id: int, body: SectionPatch) -> ThesisSe
 
 
 def add_placement(db: Session, section_id: int, body: PlacementIn) -> ThesisPlacement:
-    rows = add_placements(db, section_id, PlacementBatchIn(placements=[body]))
+    # Single-node edits stay allowed after initialization; only the warehouse-level
+    # configuration (size, bulk layout tools) is frozen.
+    rows = _add_placements(db, section_id, PlacementBatchIn(placements=[body]), single=True)
     return rows[0]
 
 
@@ -159,8 +161,18 @@ def add_placements(
     section_id: int,
     body: PlacementBatchIn,
 ) -> list[ThesisPlacement]:
+    return _add_placements(db, section_id, body, single=False)
+
+
+def _add_placements(
+    db: Session,
+    section_id: int,
+    body: PlacementBatchIn,
+    *,
+    single: bool,
+) -> list[ThesisPlacement]:
     section = get_section(db, section_id)
-    if section.status == INITIALIZED:
+    if section.status == INITIALIZED and not single:
         raise SceneError("scene_locked")
     count = db.scalar(
         select(func.count()).select_from(ThesisPlacement).where(ThesisPlacement.section_id == section.id)
@@ -228,9 +240,9 @@ def convert_placements(db: Session, section_id: int, body: PlacementConvertIn) -
 
 
 def update_placement(db: Session, section_id: int, placement_id: int, body: PlacementPatch) -> ThesisPlacement:
+    # Single-node edits (position, parameters, reader<->station) stay allowed after
+    # initialization; only warehouse-level configuration is frozen.
     section = get_section(db, section_id)
-    if section.status == INITIALIZED:
-        raise SceneError("scene_locked")
     row = _find_placement(section, placement_id)
     new_kind = body.kind if body.kind is not None else row.kind
     if (row.kind == "device") != (new_kind == "device"):
@@ -268,7 +280,7 @@ def update_placement(db: Session, section_id: int, placement_id: int, body: Plac
 
 
 def delete_placement(db: Session, section_id: int, placement_id: int) -> None:
-    delete_placements(db, section_id, PlacementDeleteIn(ids=[placement_id]))
+    _delete_placements(db, section_id, PlacementDeleteIn(ids=[placement_id]), single=True)
 
 
 def delete_placements(
@@ -276,8 +288,18 @@ def delete_placements(
     section_id: int,
     body: PlacementDeleteIn,
 ) -> None:
+    _delete_placements(db, section_id, body, single=False)
+
+
+def _delete_placements(
+    db: Session,
+    section_id: int,
+    body: PlacementDeleteIn,
+    *,
+    single: bool,
+) -> None:
     section = get_section(db, section_id)
-    if section.status == INITIALIZED:
+    if section.status == INITIALIZED and not single:
         raise SceneError("scene_locked")
     wanted = set(body.ids)
     matched = [row for row in section.placements if row.id in wanted]

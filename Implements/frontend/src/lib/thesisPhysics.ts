@@ -15,6 +15,20 @@ export const DEFAULT_READER_TX_DBM = 33.0
 
 export const DEVICE_SUBTYPES: readonly DeviceSubtype[] = ['1', '2a', '2b']
 
+/** Param key that toggles one reader coverage ring (per device type). */
+export function ringParamKey(subtype: DeviceSubtype): string {
+  return `show_ring_${subtype}`
+}
+
+/** Rings drawn by default: the two inner ones; Device 2b is off unless enabled. */
+export const DEFAULT_RING_VISIBLE: Record<DeviceSubtype, boolean> = { '1': true, '2a': true, '2b': false }
+
+/** Whether a reader should draw the ring for one device type (missing param = default). */
+export function readerRingVisible(params: Params, subtype: DeviceSubtype): boolean {
+  const raw = params[ringParamKey(subtype)]
+  return typeof raw === 'boolean' ? raw : DEFAULT_RING_VISIBLE[subtype]
+}
+
 export function plNlos(d_m: number, fc_ghz: number = FC_GHZ): number {
   const d = d_m + 1e-3
   const pl_los = 31.84 + 21.5 * Math.log10(d) + 19.0 * Math.log10(fc_ghz)

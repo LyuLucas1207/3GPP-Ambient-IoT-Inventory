@@ -221,6 +221,7 @@
       "curve": "曲线",
       "simVsPaper": "仿真 / 论文",
       "pin": "入射功率（dBm）",
+      "cdf": "累积分布函数（CDF）",
       "useCached": "使用缓存",
       "run": "加载 / 运行",
       "status": {

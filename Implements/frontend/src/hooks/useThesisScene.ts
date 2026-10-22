@@ -319,10 +319,6 @@ export function useThesisScene() {
     async (input: PlacementInput) => {
       const current = sceneRef.current
       if (!current) return
-      if (current.locked) {
-        setError(t('thesis.errors.scene_locked'))
-        return
-      }
       if (!inside(input.x_m, input.y_m, current.width_m, current.height_m)) {
         setError(t('thesis.errors.outside_bounds'))
         return
@@ -387,10 +383,6 @@ export function useThesisScene() {
     async (id: PlacementId, input: PlacementInput) => {
       const current = sceneRef.current
       if (!current) return
-      if (current.locked) {
-        setError(t('thesis.errors.scene_locked'))
-        return
-      }
       if (!inside(input.x_m, input.y_m, current.width_m, current.height_m)) {
         setError(t('thesis.errors.outside_bounds'))
         return
@@ -427,10 +419,6 @@ export function useThesisScene() {
     async (id: PlacementId) => {
       const current = sceneRef.current
       if (!current) return
-      if (current.locked) {
-        setError(t('thesis.errors.scene_locked'))
-        return
-      }
       if (!current.saved) {
         setScene({ ...current, dirty: true, placements: current.placements.filter((item) => item.id !== id) })
         return

@@ -221,6 +221,7 @@
       "curve": "Courbe",
       "simVsPaper": "sim / article",
       "pin": "Puissance incidente (dBm)",
+      "cdf": "Fonction de répartition (CDF)",
       "useCached": "Utiliser le cache",
       "run": "Charger / lancer",
       "status": {

@@ -1,6 +1,7 @@
 {
   "nav": {
-    "thesisSimulation": "论文仿真"
+    "thesisSimulation": "论文仿真",
+    "thesisAnalysis": "分析"
   },
   "thesis": {
     "documentTitle": "论文仿真",
@@ -25,10 +26,22 @@
     "showDevice2b": "显示 Device 2b",
     "showRadar": "显示 Reader",
     "showStation": "显示 Station",
+    "placementMenu": {
+      "locked": "场景已初始化:仓库尺寸和批量布局工具已锁定,单个节点仍可修改。"
+    },
     "sizeFields": {
       "locked": "场景已初始化,仓库尺寸已锁定。"
     },
+    "subnav": {
+      "scene": "场景",
+      "label": "模拟页面"
+    },
+    "rightPanel": {
+      "collapse": "收起侧栏",
+      "expand": "展开侧栏"
+    },
     "runsPanel": {
+      "needInit": "先保存并初始化场景,才能运行盘点。",
       "title": "运行记录({{count}})",
       "empty": "还没有盘点运行。点击「新建运行」开始。",
       "hint": "每次运行会冻结当前场景并记录全部事件,点击任何 device 可以回放全过程。",
@@ -46,7 +59,9 @@
         "running": "进行中",
         "completed": "完成",
         "stopped": "已停",
-        "failed": "失败"
+        "failed": "失败",
+        "paused": "已暂停",
+        "deleted": "已删除"
       }
     },
     "newRun": {
@@ -55,7 +70,7 @@
       "scheme": "方案",
       "schemePeriodic": "周期",
       "schemeAperiodic": "非周期",
-      "maxTime": "最大时长 (s)",
+      "maxTime": "最大时长 (s，可留空)",
       "k": "K (M1 slot 数)",
       "g": "G (分组数)",
       "seed": "种子(空=随机)",
@@ -63,8 +78,62 @@
       "useCapture": "启用捕获效应",
       "useEbi": "启用 EBI",
       "includeD2r": "包含 D2R 上行",
+      "disableReaders": "禁用 reader",
+      "disableReadersHint": "勾中的 reader 在本次运行中不参与(用于单 reader 基线对照)。",
+      "allReadersDisabledWarning": "全部 reader 都被禁用了,这轮不会识别任何 device。",
       "start": "开始",
-      "cancel": "取消"
+      "cancel": "取消",
+      "unlimited": "不限",
+      "off": "关闭",
+      "stallTimeout": "无进展自动结束 (s)",
+      "endHint": "run 在以下任一情况结束：所有可达 device 都已识别；连续上面设置的时间内没有新识别；你手动暂停或停止。不在任何 reader 覆盖范围内的 device 开局即标为不可达；最终没被识别的 device 在地图上显示为红点。"
+    },
+    "analysis": {
+      "title": "运行分析",
+      "subtitle": "对比不同运行的识别曲线和 reader 贡献。",
+      "sectionLabel": "场景",
+      "runsLabel": "运行",
+      "selectHint": "在左侧勾选最多 8 个 run 查看叠图分析。",
+      "selectedCount": "已选 {{count}}/{{max}}",
+      "clearSelection": "清空",
+      "noRuns": "该场景还没有任何 run。",
+      "loading": "分析加载中…",
+      "unreached": "—",
+      "pendingRun": "尚未完成。",
+      "charts": {
+        "identification": "累计识别曲线",
+        "contribution": "各 reader 识别数",
+        "rounds": "每 reader 每 round 结果",
+        "metrics": "完成时间指标",
+        "bySubtype": "按 device 类型的识别数",
+        "slots": "时隙结果与资源效率",
+        "overhead": "各阶段时间开销",
+        "depletions": "各阶段能量耗尽"
+      },
+      "axis": {
+        "time": "时间 (s)",
+        "count": "已识别",
+        "round": "round",
+        "slots": "slot 数",
+        "overheadS": "总时间 (s)"
+      },
+      "rounds": {
+        "success": "成功",
+        "collision": "冲突",
+        "empty": "空"
+      },
+      "cols": {
+        "run": "run",
+        "scheme": "方案",
+        "t50": "t50 (s)",
+        "t90": "t90 (s)",
+        "t100": "t100 (s)",
+        "identified": "已识别",
+        "died": "耗尽",
+        "dropped": "掉落",
+        "duration": "时长 (s)"
+      },
+      "tNote": "Tx = 场景中 x% 的 device 被识别所需的仿真时间。"
     },
     "timeline": {
       "titleDevice": "Device #{{id}} · {{subtype}}",
@@ -199,6 +268,9 @@
       "carrier_ghz": "载频 (GHz)",
       "show_range": "只显示这一个的范围",
       "show_outer": "显示仓库外的部分",
+      "show_ring_1": "Device 1 范围圈",
+      "show_ring_2a": "Device 2a 范围圈",
+      "show_ring_2b": "Device 2b 范围圈",
       "include_d2r": "启用 D2R 上行链路(取消勾选 = 仅 R2D,老版本)"
     },
     "errors": {
@@ -221,7 +293,219 @@
       "scene_locked": "场景已初始化,无法修改放置。",
       "section_not_initialized": "请先保存场景(初始化)再运行盘点。",
       "run_not_running": "只能停止正在运行或等待中的 run。",
-      "run_not_found": "数据库里已经没有这个 run 了。"
+      "run_not_found": "数据库里已经没有这个 run 了。",
+      "run_section_mismatch": "这些 run 属于不同场景。",
+      "run_not_paused": "只有已暂停的 run 才能继续。",
+      "round_not_found": "该轮次已不存在。",
+      "snapshot_not_found": "该时间点还没有保存的快照。"
+    },
+    "live": {
+      "pause": "暂停",
+      "resume": "继续",
+      "speed": "速度",
+      "max": "最快",
+      "simTime": "仿真时间",
+      "identified": "已识别",
+      "rounds": "轮次",
+      "depletions": "能量耗尽",
+      "unreachable": "不可达",
+      "noProgress": "无进展",
+      "streaming": "实时",
+      "replay": "回放",
+      "state": {
+        "off": "关机（充电中）",
+        "on": "上电",
+        "latched": "已锁定 (DCM)",
+        "tx": "已发 M1",
+        "m1_success": "M1 成功",
+        "collision": "冲突",
+        "identified": "已识别",
+        "depleted": "能量耗尽",
+        "dropped": "掉落",
+        "unreachable": "不可达"
+      },
+      "event": {
+        "dropped": "掉落",
+        "depleted": "能量耗尽",
+        "ungrouped": "取消分组",
+        "missed_page": "未参与寻呼",
+        "paged": "被寻呼",
+        "latched": "锁定",
+        "m1_tx": "发送 M1",
+        "m1_empty": "M1 漏检",
+        "m1_collision": "M1 冲突",
+        "m1_success": "M1 成功",
+        "budget_drop": "无 M2 时隙",
+        "ebi_received": "EBI",
+        "m2_rx": "收到 M2",
+        "m3_tx": "发送 M3",
+        "identified": "识别"
+      },
+      "dock": "运行",
+      "playReplay": "播放回放",
+      "pauseReplay": "暂停回放"
+    },
+    "inspector": {
+      "title": "Device #{{id}} · {{subtype}}",
+      "close": "关闭",
+      "clickHint": "点击查看详情",
+      "live": "实时状态",
+      "noRun": "选择一个 run 后可查看该 device 的实时状态和历史。",
+      "state": "状态",
+      "energy": "能量",
+      "pages": "收到寻呼",
+      "attempts": "M1 尝试",
+      "collisions": "冲突次数",
+      "depletions": "耗尽次数",
+      "identifiedAt": "识别时间",
+      "identifiedBy": "识别 reader",
+      "radio": "各 reader 链路",
+      "reader": "Reader",
+      "distance": "距离",
+      "pin": "接收功率",
+      "coverage": "覆盖内",
+      "params": "Device 参数",
+      "history": "历史（{{count}} 条事件）",
+      "events": "事件"
+    },
+    "charts": {
+      "reader": "Reader",
+      "allReaders": "全部 reader",
+      "all": "全部",
+      "time": "仿真时间 (s)",
+      "identifiedPct": "已识别 (%)",
+      "count": "数量",
+      "nHat": "n̂（估计）",
+      "backlogTrue": "真实积压",
+      "joiners": "参与数",
+      "devices": "device 数",
+      "efficiency": "资源效率",
+      "roundStart": "轮次开始 (s)",
+      "frameMs": "帧时长 (ms)",
+      "energyNow": "当前能量 (µJ)",
+      "energySpent": "协议累计耗能 (µJ)",
+      "energySpentShort": "耗能",
+      "pin": "来自各 reader 的最强接收功率 (dBm)",
+      "noRounds": "还没有轮次。",
+      "roundN": "第 {{n}} 轮",
+      "followLatest": "最新",
+      "candidates": "候选",
+      "budget": "M2 预算",
+      "budgetDropped": "无 M2 时隙",
+      "perType": "按 device 类型",
+      "type": "类型",
+      "deathsByStage": "按阶段的能量耗尽",
+      "stageCol": "阶段",
+      "overhead": "时间开销",
+      "totalTime": "合计",
+      "perReader": "按 reader",
+      "tab": {
+        "ident": "识别曲线",
+        "controller": "K / p* / n̂",
+        "outcome": "时隙结果",
+        "timing": "帧时长",
+        "energy": "能量",
+        "round": "当前轮",
+        "metrics": "指标",
+        "pin": "Pin 分布"
+      },
+      "stage": {
+        "paging": "寻呼",
+        "m1": "M1",
+        "ebi": "EBI",
+        "m2": "M2",
+        "m3": "M3"
+      },
+      "cdf": "累积分布函数（CDF）",
+      "readerItem": "识别 {{identified}} · {{rounds}} 轮",
+      "scopeSize": "覆盖内 {{n}} 个 device",
+      "timeBin": "仿真时间（s，每段汇总全部 reader）",
+      "frameMsMean": "每轮平均帧时长 (ms)",
+      "unidentified": "未被识别",
+      "unitCount": "数量",
+      "identifiedCount": "已识别 device 数",
+      "help": {
+        "open": "这张图是什么？",
+        "legend": "图例说明",
+        "ident": {
+          "lead": "随仿真时间累计被盘点的设备数。",
+          "body": "横轴是仿真时间，纵轴是到该时刻已被某个 reader 成功盘点的设备数（可切换数量/百分比）。选中单个 reader 时只统计它覆盖范围内的设备。曲线越早到顶，盘点越快。T50 / T90 / T99 就是从这条曲线读出的时间。竖线是当前实时/回放时刻。"
+        },
+        "controller": {
+          "lead": "每轮的帧长 K、接入概率 p* 和 backlog 估计 n̂。",
+          "body": "上图：K 是 reader 本轮开放的 M1 时隙数（帧长），p* 是设备参与本轮的概率，两者都由估计器根据上一轮结果调整。下图：n̂ 是估计器认为还没盘点的设备数，true backlog 是真实值，joiners 是本轮实际参与的设备数。n̂ 贴近 true backlog 说明估计准确。全部 reader 视图下只画每个 reader 的 K 和真实 backlog。"
+        },
+        "outcome": {
+          "lead": "每轮 M1 时隙的三种结果，以及有效时隙占比。",
+          "body": "每根柱是一轮（全部 reader 时是一个时间段的汇总），按结果堆叠：success = 恰好一台设备应答，collision = 多台设备同时应答、互相淹没，empty = 没有设备应答。resource efficiency = success / 总时隙数，右轴百分比。纯时隙 ALOHA 的上限约 36.8%。"
+        },
+        "timing": {
+          "lead": "每轮各阶段耗时（毫秒）。",
+          "body": "一轮 = paging（reader 广播寻呼参数）→ M1（设备在 K 个时隙中随机选一个应答）→ EBI（reader 广播一个 K 位的位图，告诉设备哪些 M1 时隙被成功解出）→ M2（reader 逐个确认解出的设备）→ M3（设备回复，完成盘点）。堆叠高度就是整轮时长。K 越大 M1 越长；成功设备越多 M2 / M3 越长。全部 reader 视图下为每段时间内各轮的平均值。"
+        },
+        "energy": {
+          "lead": "设备当前储能分布，以及协议消耗的累计能量。",
+          "body": "左图：此刻范围内每台设备电容储能（µJ）的直方图，最左边的设备快要关机。右图：各类型设备为收发协议消息累计消耗的能量随时间的变化。设备在某阶段能量耗尽会被强制关机充电，之后继续参与，这类事件计入 Metrics 里的 depletions。"
+        },
+        "round": {
+          "lead": "逐轮查看一个 M1 帧里每个时隙的情况。",
+          "body": "每个格子是一个 M1 时隙：空闲、单设备成功、捕获（多台设备中最强的一台被解出）、冲突、漏检。上方数字：candidates = 醒着且允许参与的设备；joiners = 按 p* 抽中、实际参与的设备；budget = 本轮 M2 最多能确认的设备数；budget dropped = 成功了但预算不够未被确认、下轮重来的设备；identified = 本轮最终盘点成功数；true backlog = 该 reader 范围内仍未盘点的设备数。用滑块选轮次，或跟随最新一轮。"
+        },
+        "metrics": {
+          "lead": "本次运行的汇总指标和分表。",
+          "body": "卡片：identified / unidentified / resource efficiency / rounds / depletions / unreachable。按类型表：各设备类型的数量、识别数、T50、T99 和能耗。按阶段耗尽表：设备在哪个阶段没电。时间开销表：各阶段总时长和占比。按 reader 表：各 reader 的轮数、识别数和效率。"
+        },
+        "pin": {
+          "lead": "各设备从 reader 收到的最强功率的累积分布。",
+          "body": "横轴是设备接收功率（dBm），纵轴是接收功率不超过该值的设备比例。曲线越靠右说明设备离 reader 越近、充电越快。按设备类型分线，可对照论文图 4。"
+        }
+      },
+      "terms": {
+        "identified": "已被某个 reader 成功盘点的设备。",
+        "dropped": "运行结束时仍未盘点的设备：不在任何 reader 覆盖内、到达时长上限，或长期无进展（地图上显示为红点）。",
+        "unreachable": "不在任何 reader 覆盖范围内、永远无法被盘点的设备。",
+        "no_progress": "连续一段仿真时间（默认 300 s，可在新建 run 时设置）没有任何新识别，运行自动结束。",
+        "depletions": "设备在一轮中途能量耗尽、被迫关机充电的次数。",
+        "rounds": "所有 reader 已执行的轮数。",
+        "t50": "T50 / T90 / T99：盘点到 50 / 90 / 99% 设备所用的仿真时间。",
+        "K": "帧长：本轮 M1 的时隙数。",
+        "pstar": "p*：醒着的设备参与本轮的概率。",
+        "nHat": "n̂：估计器估计的未盘点设备数。",
+        "backlogTrue": "true backlog：覆盖范围内实际未盘点的设备数。",
+        "joiners": "按 p* 抽中、实际参与本轮的设备。",
+        "candidates": "醒着且允许参与本轮的设备。",
+        "success": "恰好一台设备应答的时隙。",
+        "collision": "多台设备同时应答、都没解出的时隙。",
+        "empty": "没有设备应答的时隙。",
+        "efficiency": "资源效率：成功时隙数 / 总时隙数。",
+        "paging": "paging：reader 广播本轮参数。",
+        "m1": "M1：设备在 K 个时隙中随机选一个应答。",
+        "ebi": "EBI：reader 广播 K 位位图，标出哪些 M1 时隙被成功解出；时长随 K 增长。",
+        "m2": "M2：reader 逐个确认解出的设备。",
+        "m3": "M3：被确认的设备回复，完成盘点。",
+        "budget": "本轮 M2 最多能确认的设备数。",
+        "budgetDropped": "成功但预算不够未被确认的设备，下轮重来。",
+        "energyNow": "设备电容在当前时刻的储能。",
+        "energySpent": "协议消息累计消耗的能量。",
+        "slotCodes": "格子颜色：空闲、单设备、捕获、冲突、漏检。",
+        "pin": "Pin：从任一 reader 收到的最强功率（dBm）。",
+        "cdf": "CDF：接收功率不超过横轴值的设备比例。"
+      }
+    },
+    "readerInspector": {
+      "title": "Reader #{{id}}",
+      "identifiedByMe": "本 reader 识别",
+      "ofAll": "占全部已识别",
+      "covered": "覆盖内 device",
+      "byOthers": "覆盖内、被其他 reader 识别",
+      "pending": "覆盖内、尚未识别",
+      "perType": "按 device 类型",
+      "share": "占覆盖内比例",
+      "slots": "轮次与时隙",
+      "meanK": "平均 K",
+      "meanFrame": "平均帧时长",
+      "curve": "本 reader 累计识别数",
+      "hint": "下方图表已切换到这个 reader。右键 reader 可编辑；关闭后图表回到全部 reader。"
     }
   }
 }

@@ -1,6 +1,7 @@
 {
   "nav": {
-    "thesisSimulation": "Simulation de thèse"
+    "thesisSimulation": "Simulation de thèse",
+    "thesisAnalysis": "Analyse"
   },
   "thesis": {
     "documentTitle": "Simulation de thèse",
@@ -25,10 +26,22 @@
     "showDevice2b": "Afficher Device 2b",
     "showRadar": "Afficher le reader",
     "showStation": "Afficher la station",
+    "placementMenu": {
+      "locked": "Initialisée — la taille et les outils de disposition en masse sont figés. Ce nœud reste modifiable."
+    },
     "sizeFields": {
       "locked": "Section initialisée — la taille est figée."
     },
+    "subnav": {
+      "scene": "Scène",
+      "label": "Pages de la simulation"
+    },
+    "rightPanel": {
+      "collapse": "Replier le panneau latéral",
+      "expand": "Ouvrir le panneau latéral"
+    },
     "runsPanel": {
+      "needInit": "Enregistrez et initialisez d'abord la section pour lancer un inventaire.",
       "title": "Runs ({{count}})",
       "empty": "Aucun run. Cliquez sur « Nouveau run » pour commencer.",
       "hint": "Chaque run fige la scène courante et enregistre un journal complet, cliquable par device.",
@@ -46,7 +59,9 @@
         "running": "en cours",
         "completed": "terminé",
         "stopped": "arrêté",
-        "failed": "échec"
+        "failed": "échec",
+        "paused": "en pause",
+        "deleted": "supprimé"
       }
     },
     "newRun": {
@@ -55,7 +70,7 @@
       "scheme": "Schéma",
       "schemePeriodic": "Périodique",
       "schemeAperiodic": "Apériodique",
-      "maxTime": "Durée max (s)",
+      "maxTime": "Durée max (s, facultatif)",
       "k": "K (slots M1)",
       "g": "G (groupes)",
       "seed": "Graine (vide = aléatoire)",
@@ -63,8 +78,62 @@
       "useCapture": "Activer l'effet de capture",
       "useEbi": "Activer EBI",
       "includeD2r": "Inclure la liaison D2R",
+      "disableReaders": "Désactiver des readers",
+      "disableReadersHint": "Les readers cochés sont ignorés dans ce run (utile pour une baseline mono-reader).",
+      "allReadersDisabledWarning": "Tous les readers sont désactivés — aucun device ne sera identifié.",
       "start": "Démarrer",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "unlimited": "illimitée",
+      "off": "désactivé",
+      "stallTimeout": "Arrêt sans progrès après (s)",
+      "endHint": "Le run s’arrête quand tous les devices atteignables sont identifiés, quand rien de nouveau n’est identifié pendant la durée ci-dessus, ou quand vous le mettez en pause / l’arrêtez. Les devices hors couverture sont marqués injoignables au départ ; ceux jamais identifiés apparaissent en points rouges."
+    },
+    "analysis": {
+      "title": "Analyse des runs",
+      "subtitle": "Comparer les courbes d'identification et la contribution des readers.",
+      "sectionLabel": "Scène",
+      "runsLabel": "Runs",
+      "selectHint": "Choisissez jusqu'à 8 runs à gauche pour voir l'analyse côte à côte.",
+      "selectedCount": "{{count}}/{{max}} sélectionnés",
+      "clearSelection": "Effacer",
+      "noRuns": "Aucun run dans cette scène.",
+      "loading": "Chargement de l'analyse…",
+      "unreached": "—",
+      "pendingRun": "Pas encore terminé.",
+      "charts": {
+        "identification": "Identifications cumulées",
+        "contribution": "Devices identifiés par reader",
+        "rounds": "Résultats par round / reader",
+        "metrics": "Métriques de temps d'achèvement",
+        "bySubtype": "Identifiés par type de device",
+        "slots": "Résultats des slots et efficacité",
+        "overhead": "Coût en temps par étape",
+        "depletions": "Épuisements par étape"
+      },
+      "axis": {
+        "time": "temps (s)",
+        "count": "identifiés",
+        "round": "round",
+        "slots": "slots",
+        "overheadS": "Temps total (s)"
+      },
+      "rounds": {
+        "success": "succès",
+        "collision": "collision",
+        "empty": "vide"
+      },
+      "cols": {
+        "run": "run",
+        "scheme": "schéma",
+        "t50": "t50 (s)",
+        "t90": "t90 (s)",
+        "t100": "t100 (s)",
+        "identified": "identifiés",
+        "died": "éteints",
+        "dropped": "abandonnés",
+        "duration": "durée (s)"
+      },
+      "tNote": "Tx = temps simulé jusqu’à ce que x % de tous les devices soient identifiés."
     },
     "timeline": {
       "titleDevice": "Device #{{id}} · {{subtype}}",
@@ -199,6 +268,9 @@
       "carrier_ghz": "Porteuse (GHz)",
       "show_range": "Afficher la portée (ce nœud)",
       "show_outer": "Afficher hors entrepôt",
+      "show_ring_1": "Anneau Device 1",
+      "show_ring_2a": "Anneau Device 2a",
+      "show_ring_2b": "Anneau Device 2b",
       "include_d2r": "Inclure la liaison D2R (décocher = R2D seul, hérité)"
     },
     "errors": {
@@ -221,7 +293,219 @@
       "scene_locked": "Section initialisée — placements figés.",
       "section_not_initialized": "Enregistrez d'abord la section pour lancer un run.",
       "run_not_running": "Seuls les runs en cours ou en attente peuvent être arrêtés.",
-      "run_not_found": "Ce run n'est plus en base."
+      "run_not_found": "Ce run n'est plus en base.",
+      "run_section_mismatch": "Ces runs appartiennent à des sections différentes.",
+      "run_not_paused": "Seul un run en pause peut reprendre.",
+      "round_not_found": "Ce round n'existe plus.",
+      "snapshot_not_found": "Aucun instantané enregistré pour ce temps."
+    },
+    "live": {
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "speed": "Vitesse",
+      "max": "max",
+      "simTime": "Temps simulé",
+      "identified": "Identifiés",
+      "rounds": "Rounds",
+      "depletions": "Épuisements",
+      "unreachable": "Injoignables",
+      "noProgress": "Sans progrès",
+      "streaming": "direct",
+      "replay": "Relecture",
+      "state": {
+        "off": "éteint (charge)",
+        "on": "allumé",
+        "latched": "verrouillé (DCM)",
+        "tx": "M1 envoyé",
+        "m1_success": "M1 réussi",
+        "collision": "collision",
+        "identified": "identifié",
+        "depleted": "épuisé",
+        "dropped": "abandonné",
+        "unreachable": "injoignable"
+      },
+      "event": {
+        "dropped": "abandonné",
+        "depleted": "épuisé",
+        "ungrouped": "dégroupé",
+        "missed_page": "page manquée",
+        "paged": "pagé",
+        "latched": "verrouillé",
+        "m1_tx": "M1 tx",
+        "m1_empty": "M1 manqué",
+        "m1_collision": "collision M1",
+        "m1_success": "M1 réussi",
+        "budget_drop": "pas de slot M2",
+        "ebi_received": "EBI",
+        "m2_rx": "M2 reçu",
+        "m3_tx": "M3 tx",
+        "identified": "identifié"
+      },
+      "dock": "Run",
+      "playReplay": "Lire la relecture",
+      "pauseReplay": "Mettre la relecture en pause"
+    },
+    "inspector": {
+      "title": "Device #{{id}} · {{subtype}}",
+      "close": "Fermer",
+      "clickHint": "cliquer pour les détails",
+      "live": "État en direct",
+      "noRun": "Sélectionnez un run pour voir l'état et l'historique de ce device.",
+      "state": "État",
+      "energy": "Énergie",
+      "pages": "Pages reçues",
+      "attempts": "Tentatives M1",
+      "collisions": "Collisions",
+      "depletions": "Épuisements",
+      "identifiedAt": "Identifié à",
+      "identifiedBy": "Identifié par",
+      "radio": "Liaison par reader",
+      "reader": "Reader",
+      "distance": "Distance",
+      "pin": "Pin",
+      "coverage": "Couvert",
+      "params": "Paramètres du device",
+      "history": "Historique ({{count}} événements)",
+      "events": "événements"
+    },
+    "charts": {
+      "reader": "Reader",
+      "allReaders": "tous les readers",
+      "all": "tous",
+      "time": "Temps simulé (s)",
+      "identifiedPct": "Identifiés (%)",
+      "count": "devices",
+      "nHat": "n̂ (estimation)",
+      "backlogTrue": "backlog réel",
+      "joiners": "participants",
+      "devices": "devices",
+      "efficiency": "efficacité des ressources",
+      "roundStart": "Début du round (s)",
+      "frameMs": "Durée de trame (ms)",
+      "energyNow": "Énergie actuelle (µJ)",
+      "energySpent": "Énergie protocole cumulée (µJ)",
+      "energySpentShort": "Énergie",
+      "pin": "Pin le plus fort, tous readers (dBm)",
+      "noRounds": "Pas encore de round.",
+      "roundN": "round {{n}}",
+      "followLatest": "dernier",
+      "candidates": "candidats",
+      "budget": "budget M2",
+      "budgetDropped": "sans slot M2",
+      "perType": "Par type de device",
+      "type": "Type",
+      "deathsByStage": "Épuisements par étape",
+      "stageCol": "Étape",
+      "overhead": "Coût en temps",
+      "totalTime": "Total",
+      "perReader": "Par reader",
+      "tab": {
+        "ident": "Identification",
+        "controller": "K / p* / n̂",
+        "outcome": "Slots",
+        "timing": "Durée de trame",
+        "energy": "Énergie",
+        "round": "Carte du round",
+        "metrics": "Indicateurs",
+        "pin": "CDF de Pin"
+      },
+      "stage": {
+        "paging": "Paging",
+        "m1": "M1",
+        "ebi": "EBI",
+        "m2": "M2",
+        "m3": "M3"
+      },
+      "cdf": "Fonction de répartition (CDF)",
+      "readerItem": "{{identified}} identifiés · {{rounds}} rounds",
+      "scopeSize": "{{n}} devices couverts",
+      "timeBin": "Temps simulé (s, tous les readers par tranche)",
+      "frameMsMean": "Durée moyenne de trame par round (ms)",
+      "unidentified": "Jamais identifiés",
+      "unitCount": "Nombre",
+      "identifiedCount": "Devices identifiés",
+      "help": {
+        "open": "Que montre ce graphique ?",
+        "legend": "Légende",
+        "ident": {
+          "lead": "Appareils identifiés en fonction du temps simulé.",
+          "body": "L'axe X est le temps simulé, l'axe Y le nombre d'appareils qu'un reader a inventoriés à cet instant (nombre ou pourcentage). Avec un seul reader sélectionné, seuls les appareils dans sa couverture comptent. Plus la courbe atteint le haut tôt, plus l'inventaire est rapide. T50 / T90 / T99 se lisent sur cette courbe. La ligne verticale est l'instant courant (direct ou relecture)."
+        },
+        "controller": {
+          "lead": "Par tour : taille de trame K, probabilité d'accès p* et estimation n̂.",
+          "body": "Haut : K est le nombre de slots M1 ouverts ce tour (longueur de trame), p* la probabilité qu'un appareil participe ; l'estimateur ajuste les deux d'après le tour précédent. Bas : n̂ est le nombre d'appareils que l'estimateur croit encore non identifiés, « true backlog » la valeur réelle, « joiners » le nombre d'appareils ayant réellement participé. n̂ proche du backlog réel signifie un estimateur précis. Avec tous les readers, seuls K et le backlog réel sont tracés, une ligne par reader."
+        },
+        "outcome": {
+          "lead": "Issue de chaque slot M1 et part de slots utiles.",
+          "body": "Chaque barre est un tour (un intervalle de temps si tous les readers sont affichés), empilée par issue : success = exactement un appareil a répondu, collision = plusieurs ont répondu en même temps, empty = personne. Resource efficiency = success / tous les slots, en pourcentage sur l'axe de droite. L'ALOHA à slots pur plafonne vers 36,8 %."
+        },
+        "timing": {
+          "lead": "Durée de chaque étape d'un tour, en millisecondes.",
+          "body": "Un tour = paging (le reader diffuse les paramètres) → M1 (les appareils répondent dans un des K slots) → EBI (le reader diffuse une carte de K bits des slots M1 décodés) → M2 (le reader acquitte chaque gagnant) → M3 (l'appareil confirme). La hauteur empilée est la durée du tour. Un K plus grand allonge M1 ; plus de succès allongent M2 / M3. Avec tous les readers, les barres sont des moyennes par tour dans chaque intervalle."
+        },
+        "energy": {
+          "lead": "Énergie stockée des appareils maintenant, et énergie dépensée par le protocole.",
+          "body": "Gauche : histogramme de l'énergie (µJ) dans le condensateur de chaque appareil à l'instant courant ; ceux tout à gauche vont s'éteindre. Droite : énergie cumulée dépensée par type d'appareil pour les messages du protocole. Un appareil à court d'énergie en plein tour est forcé à s'éteindre pour recharger et revient ensuite ; ces événements sont les depletions dans Metrics."
+        },
+        "round": {
+          "lead": "Vue slot par slot d'une trame M1.",
+          "body": "Chaque case est un slot M1 : libre, unique (un appareil décodé), capturé (plusieurs appareils, le plus fort décodé), collision, ou manqué. Les nombres au-dessus : candidates = appareils réveillés autorisés à participer ; joiners = ceux qui ont participé après le tirage p* ; budget = nombre de gagnants que M2 peut acquitter ce tour ; budget dropped = gagnants non acquittés faute de budget, qui réessaient au tour suivant ; identified = appareils terminés ce tour ; true backlog = appareils de la couverture encore non identifiés. Le curseur choisit un tour ou suit le dernier."
+        },
+        "metrics": {
+          "lead": "Chiffres résumés et tableaux détaillés de cette exécution.",
+          "body": "Cartes : identified / unidentified / resource efficiency / rounds / depletions / unreachable. Par type : nombre, identifiés, T50, T99 et énergie par type d'appareil. Épuisements par étape : à quelle étape les appareils ont manqué d'énergie. Surcoût temporel : durée totale et part de chaque étape. Par reader : tours, identifiés et efficacité de chaque reader."
+        },
+        "pin": {
+          "lead": "Distribution de la plus forte puissance reçue par chaque appareil.",
+          "body": "L'axe X est la puissance reçue (dBm), l'axe Y la fraction d'appareils recevant au plus cette puissance. Une courbe plus à droite signifie des appareils plus proches d'un reader, qui récoltent plus vite. Une ligne par type d'appareil ; à comparer à la figure 4 de l'article."
+        }
+      },
+      "terms": {
+        "identified": "Appareils inventoriés avec succès par un reader.",
+        "dropped": "Appareils encore non identifiés à la fin : hors de toute couverture, limite de temps ou absence de progrès (points rouges).",
+        "unreachable": "Appareils hors de toute couverture ; jamais inventoriables.",
+        "no_progress": "L’exécution s’est arrêtée seule après la durée sans progrès configurée (300 s simulées par défaut) sans nouvelle identification.",
+        "depletions": "Nombre de fois qu'un appareil a manqué d'énergie en plein tour et a dû recharger.",
+        "rounds": "Tours exécutés, tous readers confondus.",
+        "t50": "T50 / T90 / T99 : temps simulé pour identifier 50 / 90 / 99 % des appareils.",
+        "K": "Taille de trame : nombre de slots M1 de ce tour.",
+        "pstar": "p* : probabilité qu'un appareil réveillé participe à ce tour.",
+        "nHat": "n̂ : estimation du nombre d'appareils encore non identifiés.",
+        "backlogTrue": "True backlog : nombre réel d'appareils non identifiés dans la couverture.",
+        "joiners": "Appareils ayant réellement participé après le tirage p*.",
+        "candidates": "Appareils réveillés autorisés à participer.",
+        "success": "Slot avec exactement un appareil répondant.",
+        "collision": "Slot où plusieurs appareils ont répondu ; aucun décodé.",
+        "empty": "Slot sans réponse.",
+        "efficiency": "Efficacité : slots réussis divisés par tous les slots.",
+        "paging": "Paging : le reader diffuse les paramètres du tour.",
+        "m1": "M1 : les appareils répondent dans un des K slots aléatoires.",
+        "ebi": "EBI : le reader diffuse une carte de K bits des slots M1 décodés ; sa durée croît avec K.",
+        "m2": "M2 : le reader acquitte chaque appareil décodé.",
+        "m3": "M3 : l'appareil acquitté répond et est identifié.",
+        "budget": "Nombre maximal de gagnants que M2 peut acquitter ce tour.",
+        "budgetDropped": "Gagnants non acquittés faute de budget ; ils réessaient au tour suivant.",
+        "energyNow": "Énergie stockée dans le condensateur à l'instant courant.",
+        "energySpent": "Énergie cumulée dépensée en messages du protocole.",
+        "slotCodes": "Couleurs des cases : libre, unique, capturé, collision, manqué.",
+        "pin": "Pin : plus forte puissance reçue d'un reader, en dBm.",
+        "cdf": "CDF : fraction d'appareils au plus égale à la valeur de l'axe X."
+      }
+    },
+    "readerInspector": {
+      "title": "Reader #{{id}}",
+      "identifiedByMe": "Identifiés par ce reader",
+      "ofAll": "de tous les identifiés",
+      "covered": "Devices couverts",
+      "byOthers": "Couverts, identifiés par d’autres readers",
+      "pending": "Couverts, encore en attente",
+      "perType": "Par type de device",
+      "share": "Part des couverts",
+      "slots": "Rounds et slots",
+      "meanK": "K moyen",
+      "meanFrame": "Trame moyenne",
+      "curve": "Identifiés par ce reader dans le temps",
+      "hint": "Les graphiques ci-dessous montrent ce reader. Clic droit pour l’éditer ; fermer pour revenir à tous les readers."
     }
   }
 }

@@ -115,7 +115,17 @@ class RadarSpec(CatalogSpec):
     shape = "hexagon"
 
     def defaults(self) -> dict[str, Any]:
-        return {**_rf_defaults(), "show_range": False, "show_outer": False, "include_d2r": True}
+        return {
+            **_rf_defaults(),
+            "show_range": False,
+            "show_outer": False,
+            # Which coverage rings to draw when show_range is on. The outermost
+            # (Device 2b) ring is off by default because it usually swallows the map.
+            "show_ring_1": True,
+            "show_ring_2a": True,
+            "show_ring_2b": False,
+            "include_d2r": True,
+        }
 
 
 def catalog_specs() -> tuple[CatalogSpec, ...]:

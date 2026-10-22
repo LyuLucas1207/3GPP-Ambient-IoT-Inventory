@@ -151,7 +151,7 @@ export function Figure4View({ result }: { result: ReproResult }) {
     <div className="grid gap-2">
       <Plot
         data={data}
-        layout={baseLayout(plot, { xaxis: axis(plot, t('ap.repro.pin')), yaxis: axis(plot, 'CDF', { range: [0, 1.02] }) })}
+        layout={baseLayout(plot, { xaxis: axis(plot, t('ap.repro.pin')), yaxis: axis(plot, t('ap.repro.cdf'), { range: [0, 1.02] }) })}
         useResizeHandler
         style={{ width: '100%', height: 300 }}
         config={PLOT_CONFIG}

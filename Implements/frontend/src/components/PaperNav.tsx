@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 export const PERIODIC_PAGING_PATH = '/periodic-paging'
 export const APERIODIC_PAGING_PATH = '/aperiodic-paging'
 export const THESIS_SIMULATION_PATH = '/thesis-simulation'
+export const THESIS_ANALYSIS_PATH = '/thesis-simulation/analysis'
 
 const LINKS = [
   { to: PERIODIC_PAGING_PATH, key: 'nav.periodicPaper' },

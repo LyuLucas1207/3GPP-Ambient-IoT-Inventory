@@ -1,20 +1,20 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import KDBush from 'kdbush'
 import { Layers } from 'lucide-react'
 import { MarkerShape } from '@/components/thesis/MarkerShape'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { inside } from '@/lib/thesisGeometry'
-import { DEVICE_SUBTYPES, deriveReaderRanges, effectiveCoverageM, rangeFromSensitivityM } from '@/lib/thesisPhysics'
-import type { CatalogEntry, DeviceFinalState, DeviceStates, DeviceSubtype, Kind, Placement, Scene, Shape } from '@/types/thesis'
+import { DEVICE_SUBTYPES, deriveReaderRanges, effectiveCoverageM, rangeFromSensitivityM, readerRingVisible } from '@/lib/thesisPhysics'
+import { FLAGGED_CODES, RUN_STATE_COLOR_BY_CODE, RUN_STATE_LABELS } from '@/lib/thesisRunStates'
+import type { LiveDevices } from '@/hooks/useLiveRun'
+import type { CatalogEntry, DeviceSubtype, Kind, Placement, Scene, Shape } from '@/types/thesis'
 
-const RUN_STATE_COLOR: Record<DeviceFinalState, string> = {
-  identified: '#16a34a',
-  died: '#b91c1c',
-  dropped: '#737373',
-  survived: '#737373',
-  unknown: '#737373',
-}
+/** Extra screen pixels of slack around a device dot when hit-testing. */
+const HIT_SLOP_PX = 3
+/** Pointer travel (px) above which a press is a pan, not a click. */
+const CLICK_TOLERANCE_PX = 4
 
 const LAYER_KEYS = ['device1', 'device2a', 'device2b', 'radar', 'station'] as const
 type LayerKey = (typeof LAYER_KEYS)[number]
@@ -49,7 +49,10 @@ export function ThesisWarehouse({
   focusReaderId,
   markerScale,
   deviceMarkerScale,
-  deviceStates,
+  live,
+  selectedDeviceId = null,
+  onSelectDevice,
+  onSelectReader,
   selecting = false,
   pickedIds = [],
   onTogglePick,
@@ -62,7 +65,12 @@ export function ThesisWarehouse({
   focusReaderId: Placement['id'] | null
   markerScale: number
   deviceMarkerScale: number
-  deviceStates: DeviceStates | null
+  /** live per-device state of the selected run (null = colour by subtype) */
+  live: LiveDevices | null
+  selectedDeviceId?: number | null
+  onSelectDevice?: (id: number | null) => void
+  /** when set (a run is selected), a left click on a reader inspects it instead of opening the edit menu */
+  onSelectReader?: (id: number) => void
   selecting?: boolean
   pickedIds?: string[]
   onTogglePick?: (id: Placement['id']) => void
@@ -91,6 +99,19 @@ export function ThesisWarehouse({
   })
 
   const deviceCanvasRef = useRef<HTMLCanvasElement>(null)
+  const pressRef = useRef<{ x: number; y: number } | null>(null)
+  const hoverRaf = useRef(0)
+  const [hover, setHover] = useState<{ id: number; sx: number; sy: number } | null>(null)
+
+  // Spatial index over device positions (world metres), rebuilt when the scene changes.
+  const deviceIndex = useMemo(() => {
+    const devices = (scene?.placements ?? []).filter((p) => p.kind === 'device' && typeof p.id === 'number')
+    if (devices.length === 0) return null
+    const index = new KDBush(devices.length)
+    for (const d of devices) index.add(d.x_m, d.y_m)
+    index.finish()
+    return { index, devices }
+  }, [scene])
 
   const deviceDefaults = useMemo<Partial<Record<DeviceSubtype, CatalogEntry['defaults']>>>(() => {
     const out: Partial<Record<DeviceSubtype, CatalogEntry['defaults']>> = {}
@@ -343,6 +364,7 @@ export function ThesisWarehouse({
     }
     const byColor = new Map<string, Placement[]>()
     const dimmed: Placement[] = []
+    const flagged: Placement[] = [] // unidentified at the end of the run
     const push = (color: string, placement: Placement) => {
       const list = byColor.get(color) ?? []
       list.push(placement)
@@ -362,24 +384,29 @@ export function ThesisWarehouse({
         dimmed.push(placement)
         continue
       }
-      let color: string
-      if (deviceStates) {
-        const state = deviceStates[placement.id as number]
-        color = state ? RUN_STATE_COLOR[state] : subtypeColor[placement.subtype ?? ''] ?? '#737373'
-      } else {
-        color = subtypeColor[placement.subtype ?? ''] ?? '#737373'
+      let color = subtypeColor[placement.subtype ?? ''] ?? '#737373'
+      if (live) {
+        const idx = live.indexById.get(placement.id as number)
+        if (idx != null) {
+          const code = live.codes[idx]
+          if (FLAGGED_CODES.has(code)) {
+            flagged.push(placement)
+            continue
+          }
+          color = RUN_STATE_COLOR_BY_CODE[code] ?? color
+        }
       }
       push(color, placement)
     }
-    const drawCircles = (items: Placement[], fillStyle: string) => {
+    const drawCircles = (items: Placement[], fillStyle: string, r = radiusPx) => {
       if (items.length === 0) return
       ctx.fillStyle = fillStyle
       ctx.beginPath()
       for (const placement of items) {
         const sx = placement.x_m * scale + panX
         const sy = (flipY - placement.y_m) * scale + panY
-        ctx.moveTo(sx + radiusPx, sy)
-        ctx.arc(sx, sy, radiusPx, 0, Math.PI * 2)
+        ctx.moveTo(sx + r, sy)
+        ctx.arc(sx, sy, r, 0, Math.PI * 2)
       }
       ctx.fill()
     }
@@ -387,7 +414,21 @@ export function ThesisWarehouse({
     for (const [color, items] of byColor) {
       drawCircles(items, color)
     }
-  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults, deviceStates])
+    // Unidentified devices last and larger, so they are visible among thousands of green dots.
+    drawCircles(flagged, RUN_STATE_COLOR_BY_CODE[RUN_STATE_LABELS.indexOf('dropped')], Math.max(radiusPx * 1.8, 2.5))
+    const ringed = [selectedDeviceId, hover?.id].filter((id): id is number => id != null)
+    for (const id of new Set(ringed)) {
+      const p = scene.placements.find((item) => item.id === id && item.kind === 'device')
+      if (!p) continue
+      const sx = p.x_m * scale + panX
+      const sy = (flipY - p.y_m) * scale + panY
+      ctx.beginPath()
+      ctx.arc(sx, sy, radiusPx + (id === selectedDeviceId ? 4 : 2.5), 0, Math.PI * 2)
+      ctx.lineWidth = id === selectedDeviceId ? 2.5 : 1.5
+      ctx.strokeStyle = id === selectedDeviceId ? '#eab308' : 'rgba(127,127,127,0.9)'
+      ctx.stroke()
+    }
+  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults, live, live?.version, selectedDeviceId, hover?.id])
 
   function screenToWorld(clientX: number, clientY: number) {
     const rect = hostRef.current?.getBoundingClientRect()
@@ -398,6 +439,28 @@ export function ThesisWarehouse({
       x: (sx - view.panX) / scale,
       y: scene.height_m - (sy - view.panY) / scale,
     }
+  }
+
+  /** Nearest visible device under the pointer, within the dot radius plus a few pixels. */
+  function deviceAt(clientX: number, clientY: number): Placement | null {
+    if (!deviceIndex || !scene) return null
+    const world = screenToWorld(clientX, clientY)
+    if (!world) return null
+    const radiusPx = Math.max(0.4, 0.42 * deviceMarkerScale * scale)
+    const r = (radiusPx + HIT_SLOP_PX) / scale
+    const show: Record<string, boolean> = { '1': layers.device1, '2a': layers.device2a, '2b': layers.device2b }
+    let best: Placement | null = null
+    let bestD = Infinity
+    for (const i of deviceIndex.index.within(world.x, world.y, r)) {
+      const d = deviceIndex.devices[i]
+      if (!show[d.subtype ?? '']) continue
+      const dist = Math.hypot(d.x_m - world.x, d.y_m - world.y)
+      if (dist < bestD) {
+        bestD = dist
+        best = d
+      }
+    }
+    return best
   }
 
   function fitView() {
@@ -412,16 +475,35 @@ export function ThesisWarehouse({
       <canvas ref={deviceCanvasRef} className="pointer-events-none absolute inset-0" aria-hidden />
       {scene ? (
         <svg
-          className="absolute inset-0 h-full w-full touch-none"
+          className={`absolute inset-0 h-full w-full touch-none ${hover ? 'cursor-pointer' : ''}`}
           onPointerDown={(event) => {
             if (event.button !== 0) return
+            pressRef.current = { x: event.clientX, y: event.clientY }
             if ((event.target as Element).closest('[data-placement]')) return
             drag.current = { x: event.clientX, y: event.clientY, panX: view.panX, panY: view.panY }
             event.currentTarget.setPointerCapture(event.pointerId)
           }}
           onPointerMove={(event) => {
             const current = drag.current
-            if (!current) return
+            if (!current) {
+              // Hover hit-test, throttled to one query per animation frame.
+              const { clientX, clientY, target } = event
+              if (hoverRaf.current) return
+              hoverRaf.current = requestAnimationFrame(() => {
+                hoverRaf.current = 0
+                const overInfra = (target as Element).closest?.('[data-placement]')
+                const hit = overInfra ? null : deviceAt(clientX, clientY)
+                const rect = hostRef.current?.getBoundingClientRect()
+                setHover((prev) => {
+                  if (!hit || !rect) return prev === null ? prev : null
+                  const id = hit.id as number
+                  const sx = clientX - rect.left
+                  const sy = clientY - rect.top
+                  return prev?.id === id ? prev : { id, sx, sy }
+                })
+              })
+              return
+            }
             setView((prev) => {
               const next = {
                 ...prev,
@@ -435,6 +517,16 @@ export function ThesisWarehouse({
           onPointerUp={() => {
             drag.current = null
           }}
+          onPointerLeave={() => setHover(null)}
+          onClick={(event) => {
+            const press = pressRef.current
+            pressRef.current = null
+            if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > CLICK_TOLERANCE_PX) return
+            if ((event.target as Element).closest('[data-placement]')) return
+            if (selecting) return
+            const hit = deviceAt(event.clientX, event.clientY)
+            onSelectDevice?.(hit ? (hit.id as number) : null)
+          }}
           onContextMenu={(event) => {
             event.preventDefault()
             const hit = (event.target as Element).closest('[data-placement]')
@@ -442,6 +534,11 @@ export function ThesisWarehouse({
               const raw = hit.getAttribute('data-placement')
               const placement = scene.placements.find((item) => String(item.id) === raw)
               if (placement) onEdit(placement.id, event.clientX, event.clientY)
+              return
+            }
+            const device = deviceAt(event.clientX, event.clientY)
+            if (device) {
+              onEdit(device.id, event.clientX, event.clientY)
               return
             }
             const world = screenToWorld(event.clientX, event.clientY)
@@ -526,6 +623,7 @@ export function ThesisWarehouse({
                       return (
                         <g key={`reader-range-${placement.id}`}>
                           {DEVICE_SUBTYPES.map((subtype) => {
+                            if (!readerRingVisible(placement.params, subtype)) return null
                             const raw = ranges[subtype]
                             if (!Number.isFinite(raw) || raw <= 0) return null
                             const r = outer ? raw : Math.min(raw, diagonal)
@@ -572,6 +670,10 @@ export function ThesisWarehouse({
                         onTogglePick?.(placement.id)
                         return
                       }
+                      if (placement.kind === 'radar' && onSelectReader && typeof placement.id === 'number') {
+                        onSelectReader(placement.id)
+                        return
+                      }
                       onEdit(placement.id, event.clientX, event.clientY)
                     }}
                   >
@@ -615,6 +717,21 @@ export function ThesisWarehouse({
           {t('thesis.emptyCanvas')}
         </div>
       )}
+      {hover && scene ? (
+        <DeviceHoverTip
+          left={hover.sx}
+          top={hover.sy}
+          placement={scene.placements.find((p) => p.id === hover.id) ?? null}
+          state={(() => {
+            const idx = live?.indexById.get(hover.id)
+            return idx != null && live ? RUN_STATE_LABELS[live.codes[idx]] : null
+          })()}
+          energyJ={(() => {
+            const idx = live?.indexById.get(hover.id)
+            return idx != null && live ? live.energy[idx] : null
+          })()}
+        />
+      ) : null}
       <div
         ref={layersRef}
         className="absolute top-3 right-14 overflow-hidden bg-background/80 text-foreground shadow-sm ring-1 ring-foreground/10 backdrop-blur-md transition-[width,height,border-radius] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -656,6 +773,36 @@ export function ThesisWarehouse({
           <Layers className="size-4" />
         </button>
       </div>
+    </div>
+  )
+}
+
+function DeviceHoverTip({
+  left,
+  top,
+  placement,
+  state,
+  energyJ,
+}: {
+  left: number
+  top: number
+  placement: Placement | null
+  state: string | null
+  energyJ: number | null
+}) {
+  const { t } = useTranslation()
+  if (!placement) return null
+  return (
+    <div
+      className="pointer-events-none absolute z-10 rounded-md bg-popover/95 px-2 py-1 text-[11px] text-popover-foreground shadow-md ring-1 ring-foreground/10"
+      style={{ left: left + 12, top: top + 12 }}
+    >
+      <div className="font-medium">
+        #{placement.id} · {t(`thesis.kind.device${placement.subtype}`)}
+      </div>
+      {state ? <div>{t(`thesis.live.state.${state}`)}</div> : null}
+      {energyJ != null ? <div className="tabular-nums text-muted-foreground">{(energyJ * 1e6).toFixed(2)} µJ</div> : null}
+      <div className="text-muted-foreground">{t('thesis.inspector.clickHint')}</div>
     </div>
   )
 }

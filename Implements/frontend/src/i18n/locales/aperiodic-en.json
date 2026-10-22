@@ -227,6 +227,7 @@
       "curve": "Curve",
       "simVsPaper": "sim / paper",
       "pin": "Incident power (dBm)",
+      "cdf": "Cumulative distribution function (CDF)",
       "useCached": "Use cached",
       "run": "Load / run",
       "status": {

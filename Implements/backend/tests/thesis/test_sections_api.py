@@ -55,6 +55,11 @@ def test_catalog_lists_five_shapes(client: TestClient):
     radar = rows[-1]
     assert "radius_m" not in radar["defaults"]
     assert radar["defaults"]["show_range"] is False
+    assert (radar["defaults"]["show_ring_1"], radar["defaults"]["show_ring_2a"], radar["defaults"]["show_ring_2b"]) == (
+        True,
+        True,
+        False,
+    )
     assert set(radar["derived_ranges"]) == {"1", "2a", "2b"}
     # effective coverage = min(R2D, D2R). For Device 1 under default RF ~24 m.
     assert 20 < radar["derived_ranges"]["1"] < 30
@@ -370,26 +375,55 @@ def test_patch_size_locked_after_initialize(client: TestClient):
     assert client.patch(f"/api/thesis-simulator/sections/{section_id}", json={"marker_scale": 1.2}).status_code == 200
 
 
-def test_add_update_delete_placement_scene_locked(client: TestClient):
+def test_single_node_ops_allowed_but_bulk_locked_after_init(client: TestClient):
     created = client.post(
         "/api/thesis-simulator/sections",
-        json={"name": "Lock2", "width_m": 120, "height_m": 60, "placements": [_device(10, 10)]},
+        json={"name": "Lock2", "width_m": 120, "height_m": 60, "placements": [_device(10, 10), _station(25, 25)]},
     )
     section_id = created.json()["id"]
     dev_id = created.json()["placements"][0]["id"]
+    station_id = created.json()["placements"][1]["id"]
     assert client.patch(f"/api/thesis-simulator/sections/{section_id}", json={"status": "initialized"}).status_code == 200
+
+    # Single-node operations stay allowed: add one, edit one, convert one, delete one.
     added = client.post(
         f"/api/thesis-simulator/sections/{section_id}/placements",
         json={"kind": "device", "subtype": "1", "x_m": 20, "y_m": 20, "params": {}},
     )
-    assert added.status_code == 400 and added.json()["detail"] == "scene_locked"
+    assert added.status_code == 200
     patched = client.patch(
         f"/api/thesis-simulator/sections/{section_id}/placements/{dev_id}",
-        json={"x_m": 30},
+        json={"x_m": 30, "params": {"show_range": True}},
     )
-    assert patched.status_code == 400 and patched.json()["detail"] == "scene_locked"
+    assert patched.status_code == 200
+    assert patched.json()["x_m"] == 30 and patched.json()["params"]["show_range"] is True
+    converted = client.patch(
+        f"/api/thesis-simulator/sections/{section_id}/placements/{station_id}",
+        json={"kind": "radar", "subtype": None},
+    )
+    assert converted.status_code == 200 and converted.json()["kind"] == "radar"
     deleted = client.delete(f"/api/thesis-simulator/sections/{section_id}/placements/{dev_id}")
-    assert deleted.status_code == 400 and deleted.json()["detail"] == "scene_locked"
+    assert deleted.status_code == 204
+
+    # Warehouse-level operations stay frozen: size, bulk add/convert/delete, apply-to-kind.
+    size = client.patch(f"/api/thesis-simulator/sections/{section_id}", json={"width_m": 200})
+    assert size.status_code == 400 and size.json()["detail"] == "size_locked"
+    batch = client.post(
+        f"/api/thesis-simulator/sections/{section_id}/placements/batch",
+        json={"placements": [_device(8, 8)]},
+    )
+    assert batch.status_code == 400 and batch.json()["detail"] == "scene_locked"
+    bulk_convert = client.post(
+        f"/api/thesis-simulator/sections/{section_id}/placements/convert",
+        json={"ids": [station_id], "kind": "station"},
+    )
+    assert bulk_convert.status_code == 400 and bulk_convert.json()["detail"] == "scene_locked"
+    bulk_delete = client.request(
+        "DELETE",
+        f"/api/thesis-simulator/sections/{section_id}/placements/batch",
+        json={"ids": [station_id]},
+    )
+    assert bulk_delete.status_code == 400 and bulk_delete.json()["detail"] == "scene_locked"
 
 
 def test_scenario_defaults_match_inf_dh(client: TestClient):
