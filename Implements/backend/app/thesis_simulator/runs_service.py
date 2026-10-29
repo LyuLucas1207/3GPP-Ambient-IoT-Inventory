@@ -198,6 +198,8 @@ def run_summary(run: ThesisInventoryRun) -> dict[str, Any]:
         "unreachable_count": int(metrics.get("unreachable") or 0),
         "speed": cfg.get("speed"),
         "max_time_s": cfg.get("max_time_s"),
+        "include_d2r": bool(cfg.get("include_d2r", True)),
+        "disabled_reader_ids": [int(x) for x in (cfg.get("disabled_reader_ids") or [])],
     }
 
 

@@ -169,6 +169,8 @@ export type RunSummary = {
   unreachable_count: number
   speed: number | null
   max_time_s: number | null
+  include_d2r?: boolean
+  disabled_reader_ids?: number[]
 }
 
 export type RunDetail = {

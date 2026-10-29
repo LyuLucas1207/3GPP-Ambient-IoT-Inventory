@@ -231,6 +231,7 @@ export default function ThesisSimulationPage() {
             deviceMarkerScale={scene?.deviceMarkerScale ?? 0.3}
             live={runs.selectedRunId != null ? live.devices : null}
             flagPending={flagPending}
+            run={selectedRun}
             selectedDeviceId={selectedDeviceId}
             onSelectDevice={inspectDevice}
             onSelectReader={selectedRun ? (id) => inspectReader(id) : undefined}
@@ -250,6 +251,7 @@ export default function ThesisSimulationPage() {
               live={runs.selectedRunId != null ? live.devices : null}
               runId={runs.selectedRunId}
               runStatus={live.status ?? selectedRun?.status ?? null}
+              run={selectedRun}
               onClose={() => setSelectedDeviceId(null)}
             />
           ) : null}

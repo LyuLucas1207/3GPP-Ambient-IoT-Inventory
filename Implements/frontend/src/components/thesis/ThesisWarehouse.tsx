@@ -9,7 +9,8 @@ import { inside } from '@/lib/thesisGeometry'
 import { DEVICE_SUBTYPES, deriveReaderRanges, effectiveCoverageM, rangeFromSensitivityM, readerRingVisible } from '@/lib/thesisPhysics'
 import { FLAGGED_CODES, RUN_STATE_COLOR_BY_CODE, RUN_STATE_LABELS } from '@/lib/thesisRunStates'
 import type { LiveDevices } from '@/hooks/useLiveRun'
-import type { CatalogEntry, DeviceSubtype, Kind, Placement, Scene, Shape } from '@/types/thesis'
+import { readerLinksForDevice } from '@/lib/thesisReach'
+import type { CatalogEntry, DeviceSubtype, Kind, Placement, RunSummary, Scene, Shape } from '@/types/thesis'
 
 /** Extra screen pixels of slack around a device dot when hit-testing. */
 const HIT_SLOP_PX = 3
@@ -51,6 +52,7 @@ export function ThesisWarehouse({
   deviceMarkerScale,
   live,
   flagPending = false,
+  run = null,
   selectedDeviceId = null,
   onSelectDevice,
   onSelectReader,
@@ -70,6 +72,8 @@ export function ThesisWarehouse({
   live: LiveDevices | null
   /** flag every device not identified yet, not only the dropped ones */
   flagPending?: boolean
+  /** selected run, used to link the selected device to the readers that cover it */
+  run?: RunSummary | null
   selectedDeviceId?: number | null
   onSelectDevice?: (id: number | null) => void
   /** when set (a run is selected), a left click on a reader inspects it instead of opening the edit menu */
@@ -105,6 +109,19 @@ export function ThesisWarehouse({
   const pressRef = useRef<{ x: number; y: number } | null>(null)
   const hoverRaf = useRef(0)
   const [hover, setHover] = useState<{ id: number; sx: number; sy: number } | null>(null)
+  const selectedDevice = useMemo(
+    () => (selectedDeviceId != null ? scene?.placements.find((p) => p.id === selectedDeviceId && p.kind === 'device') ?? null : null),
+    [scene, selectedDeviceId],
+  )
+  const runD2r = run?.include_d2r
+  const runDisabled = run?.disabled_reader_ids
+  const selectedLinks = useMemo(
+    () =>
+      scene && selectedDevice
+        ? readerLinksForDevice(scene.placements, selectedDevice, { include_d2r: runD2r, disabled_reader_ids: runDisabled })
+        : [],
+    [scene, selectedDevice, runD2r, runDisabled],
+  )
 
   // Spatial index over device positions (world metres), rebuilt when the scene changes.
   const deviceIndex = useMemo(() => {
@@ -652,6 +669,36 @@ export function ThesisWarehouse({
                   </g>
                 )
               })}
+              {selectedDevice ? (
+                <g className="pointer-events-none">
+                  {selectedLinks.map((link) =>
+                    link.inside ? (
+                      <g key={`link-${link.id}`}>
+                        <line
+                          x1={selectedDevice.x_m}
+                          y1={selectedDevice.y_m}
+                          x2={link.x_m}
+                          y2={link.y_m}
+                          stroke={link.disabled ? '#a1a1aa' : '#eab308'}
+                          strokeWidth={link.disabled ? 1.25 : 2}
+                          strokeDasharray={link.disabled ? '4 4' : undefined}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <circle
+                          cx={link.x_m}
+                          cy={link.y_m}
+                          r={1.6 * markerScale}
+                          fill="none"
+                          stroke={link.disabled ? '#a1a1aa' : '#eab308'}
+                          strokeWidth={2}
+                          strokeDasharray={link.disabled ? '3 3' : undefined}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      </g>
+                    ) : null,
+                  )}
+                </g>
+              ) : null}
               {scene.placements.map((placement) => {
                 if (placement.kind === 'device') return null
                 if (!layerVisible(placement, layers)) return null

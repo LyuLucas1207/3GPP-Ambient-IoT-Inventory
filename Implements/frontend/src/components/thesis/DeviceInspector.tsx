@@ -9,10 +9,10 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import type { LiveDevices } from '@/hooks/useLiveRun'
 import { usePlotTheme } from '@/hooks/usePlotTheme'
 import Plot from '@/lib/Plot'
-import { effectiveCoverageM, FIXED_DEV_DB, H_AIOT, H_BS, L_OBJ_DB, plNlos } from '@/lib/thesisPhysics'
 import { thesisKeys } from '@/lib/thesisQueryKeys'
+import { readerLinksForDevice } from '@/lib/thesisReach'
 import { RUN_STATE_COLOR, RUN_STATE_LABELS, type RunStateLabel } from '@/lib/thesisRunStates'
-import type { Placement, RunStatus, Scene, Timeline } from '@/types/thesis'
+import type { Placement, RunStatus, RunSummary, Scene, Timeline } from '@/types/thesis'
 
 /** Device event types in protocol order (rows of the state plot). */
 const EVENT_ORDER = [
@@ -46,6 +46,7 @@ export function DeviceInspector({
   live,
   runId,
   runStatus,
+  run = null,
   onClose,
 }: {
   scene: Scene
@@ -53,6 +54,8 @@ export function DeviceInspector({
   live: LiveDevices | null
   runId: number | null
   runStatus: RunStatus | null
+  /** selected run: skipped readers and the D2R default */
+  run?: RunSummary | null
   onClose: () => void
 }) {
   const { t } = useTranslation()
@@ -62,26 +65,13 @@ export function DeviceInspector({
   const state: RunStateLabel | null = code != null ? (RUN_STATE_LABELS[code] ?? null) : null
   const energyJ = idx != null && live ? live.energy[idx] : null
 
-  const readers = useMemo(() => {
-    const devParams = placement.params
-    return scene.placements
-      .filter((p) => p.kind === 'radar')
-      .map((r) => {
-        const rf = {
-          tx_power_dbm: num(r.params.tx_power_dbm, 33),
-          antenna_gain_dbi: num(r.params.antenna_gain_dbi, 6),
-          extra_attenuation_db: num(r.params.extra_attenuation_db, 0),
-          carrier_ghz: num(r.params.carrier_ghz, 0.9),
-        }
-        const d2 = Math.hypot(r.x_m - placement.x_m, r.y_m - placement.y_m)
-        const d3 = Math.hypot(d2, H_BS - H_AIOT)
-        const pinDbm =
-          rf.tx_power_dbm + rf.antenna_gain_dbi - plNlos(d3, rf.carrier_ghz) - FIXED_DEV_DB - L_OBJ_DB - rf.extra_attenuation_db
-        const coverage = effectiveCoverageM(devParams, rf, r.params.include_d2r !== false)
-        return { id: r.id, d2, pinDbm, coverage, inside: d2 <= coverage }
-      })
-      .sort((a, b) => a.d2 - b.d2)
-  }, [scene, placement])
+  const runD2r = run?.include_d2r
+  const runDisabled = run?.disabled_reader_ids
+  const readers = useMemo(
+    () => readerLinksForDevice(scene.placements, placement, { include_d2r: runD2r, disabled_reader_ids: runDisabled }),
+    [scene, placement, runD2r, runDisabled],
+  )
+  const reachable = readers.filter((r) => r.inside && !r.disabled)
 
   // Event history: polled once a second while the run is live, fetched once otherwise.
   const liveRun = runStatus === 'running' || runStatus === 'pending'
@@ -157,6 +147,14 @@ export function DeviceInspector({
 
           <section className="grid gap-1.5">
             <h3 className="font-medium">{t('thesis.inspector.radio')}</h3>
+            <p className={reachable.length === 0 ? 'text-red-500' : 'text-muted-foreground'}>
+              {reachable.length === 0
+                ? t('thesis.inspector.reachableNone')
+                : t('thesis.inspector.reachableBy', {
+                    count: reachable.length,
+                    ids: reachable.map((r) => `#${r.id}`).join(', '),
+                  })}
+            </p>
             <table className="w-full">
               <thead className="text-left text-muted-foreground">
                 <tr>
@@ -168,8 +166,11 @@ export function DeviceInspector({
               </thead>
               <tbody className="tabular-nums">
                 {readers.map((r) => (
-                  <tr key={String(r.id)} className={`border-t ${r.inside ? '' : 'text-muted-foreground'}`}>
-                    <td className="py-0.5">#{r.id}</td>
+                  <tr key={String(r.id)} className={`border-t ${r.inside && !r.disabled ? '' : 'text-muted-foreground'}`}>
+                    <td className="py-0.5">
+                      #{r.id}
+                      {r.disabled ? <span className="ml-1 text-[10px]">({t('thesis.inspector.skipped')})</span> : null}
+                    </td>
                     <td className="py-0.5">{r.d2.toFixed(1)} m</td>
                     <td className="py-0.5">{r.pinDbm.toFixed(1)} dBm</td>
                     <td className="py-0.5">
@@ -288,9 +289,4 @@ function HistoryPlot({ timeline }: { timeline: Timeline }) {
       useResizeHandler
     />
   )
-}
-
-function num(value: unknown, fallback: number): number {
-  const n = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(n) ? n : fallback
 }
