@@ -4,6 +4,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchDeviceMap, fetchIdentifications } from '@/api/thesisRuns'
 import { axis, baseLayout, MATLAB, PLOT_CONFIG } from '@/components/aperiodic/plotLayout'
+import { ReaderTimeFreq } from '@/components/thesis/timefreq/ReaderTimeFreq'
+import { TimeFreqSection } from '@/components/thesis/timefreq/TimeFreqSection'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { LiveDevices } from '@/hooks/useLiveRun'
@@ -149,6 +151,10 @@ export function ReaderInspector({
             </Stat>
             <Stat label={t('thesis.live.depletions')}>{stats.depletions}</Stat>
           </div>
+
+          <TimeFreqSection title={t('thesis.tf.readerTitle', { id: rid })}>
+            {(wide) => <ReaderTimeFreq runId={runId} readerId={rid} live={isLive} wide={wide} />}
+          </TimeFreqSection>
 
           <section className="grid gap-1">
             <h3 className="font-medium">{t('thesis.readerInspector.perType')}</h3>

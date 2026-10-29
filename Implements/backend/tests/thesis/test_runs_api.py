@@ -84,6 +84,38 @@ def test_create_periodic_run_populates_summary(client: TestClient):
     assert body["summary"]["rounds_total"] >= 1
 
 
+def test_run_name_create_and_rename(client: TestClient):
+    section_id = _init_section(client)
+    res = client.post(
+        f"/api/thesis-simulator/sections/{section_id}/runs",
+        json={
+            "sync": True,
+            "scheme": "periodic",
+            "max_time_s": 2,
+            "seed": 1,
+            "name": "  baseline-A  ",
+        },
+    )
+    assert res.status_code == 201, res.text
+    body = res.json()
+    assert body["name"] == "baseline-A"
+    assert body["summary"]["name"] == "baseline-A"
+    run_id = body["id"]
+
+    renamed = client.post(f"/api/thesis-simulator/runs/{run_id}/name", json={"name": "nightly"})
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()["name"] == "nightly"
+
+    cleared = client.post(f"/api/thesis-simulator/runs/{run_id}/name", json={"name": "   "})
+    assert cleared.status_code == 200, cleared.text
+    assert cleared.json()["name"] is None
+
+    listed = client.get(f"/api/thesis-simulator/sections/{section_id}/runs")
+    assert listed.status_code == 200
+    assert listed.json()[0]["run_id"] == run_id
+    assert listed.json()[0]["name"] is None
+
+
 def test_run_scheme_validation(client: TestClient):
     section_id = _init_section(client)
     res = client.post(

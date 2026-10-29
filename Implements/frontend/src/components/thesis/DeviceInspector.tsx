@@ -4,6 +4,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchTimeline } from '@/api/thesisRuns'
 import { axis, baseLayout, PLOT_CONFIG } from '@/components/aperiodic/plotLayout'
+import { DeviceTimeline } from '@/components/thesis/timefreq/DeviceTimeline'
+import { TimeFreqSection } from '@/components/thesis/timefreq/TimeFreqSection'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { LiveDevices } from '@/hooks/useLiveRun'
@@ -144,6 +146,12 @@ export function DeviceInspector({
               </div>
             )}
           </section>
+
+          {runId != null ? (
+            <TimeFreqSection title={t('thesis.tf.deviceTitle', { id: deviceId })}>
+              {(wide) => <DeviceTimeline runId={runId} deviceId={deviceId} live={liveRun} wide={wide} />}
+            </TimeFreqSection>
+          ) : null}
 
           <section className="grid gap-1.5">
             <h3 className="font-medium">{t('thesis.inspector.radio')}</h3>

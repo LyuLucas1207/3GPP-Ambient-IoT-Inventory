@@ -1,11 +1,13 @@
-import { Loader2, PanelRightClose, PanelRightOpen, Pause, Play, Plus, Square, Trash2, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Loader2, PanelRightClose, PanelRightOpen, Pause, Pencil, Play, Plus, Square, Trash2, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NewRunDialog } from '@/components/thesis/NewRunDialog'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogBackdrop, DialogDescription, DialogPopup, DialogPortal, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { runDisplayName } from '@/lib/thesisRunStates'
 import type { Placement, PlacementId, RunCreateInput, RunStatus, RunSummary, Scene } from '@/types/thesis'
 
 /** Right-hand sidebar of the simulation page: one collapsible panel with Readers / Runs tabs. */
@@ -19,6 +21,7 @@ export function ThesisRightPanel({
   onSelectRun,
   onCreateRun,
   onDeleteRun,
+  onRenameRun,
   onStopRun,
   onPauseRun,
   onResumeRun,
@@ -32,6 +35,7 @@ export function ThesisRightPanel({
   onSelectRun: (id: number | null) => void
   onCreateRun: (config: RunCreateInput) => Promise<void> | void
   onDeleteRun: (id: number) => Promise<void> | void
+  onRenameRun: (id: number, name: string | null) => Promise<void> | void
   onStopRun: (id: number) => Promise<void> | void
   onPauseRun: (id: number) => Promise<void> | void
   onResumeRun: (id: number) => Promise<void> | void
@@ -44,7 +48,7 @@ export function ThesisRightPanel({
     () =>
       readers
         .filter((p) => typeof p.id === 'number')
-        .map((p) => ({ id: p.id as number, label: `#${p.id} (${p.x_m.toFixed(1)}, ${p.y_m.toFixed(1)})` })),
+        .map((p) => ({ id: p.id as number, label: `#${p.id} (${p.x_m.toFixed(1)}, ${p.y_m.toFixed(1)})`, x_m: p.x_m, y_m: p.y_m })),
     [readers],
   )
   const canRun = scene?.locked === true
@@ -154,15 +158,22 @@ export function ThesisRightPanel({
                         >
                           <Trash2 className="size-3" />
                         </Button>
+                        <div className="flex w-full items-center justify-between gap-2 pr-6">
+                          <RunNameLabel
+                            run={run}
+                            busy={runsBusy}
+                            onSelect={() => onSelectRun(active ? null : run.run_id)}
+                            onRename={(name) => onRenameRun(run.run_id, name)}
+                          />
+                          <button type="button" onClick={() => onSelectRun(active ? null : run.run_id)}>
+                            <StatusChip status={run.status} />
+                          </button>
+                        </div>
                         <button
                           type="button"
-                          className="flex w-full flex-col items-start gap-1"
+                          className="mt-1 flex w-full flex-col items-start gap-1"
                           onClick={() => onSelectRun(active ? null : run.run_id)}
                         >
-                          <div className="flex w-full items-center justify-between gap-2 pr-6">
-                            <span className="font-medium">#{run.run_id}</span>
-                            <StatusChip status={run.status} />
-                          </div>
                           <div className="flex w-full justify-between text-muted-foreground">
                             <span>{t(`thesis.newRun.scheme${run.scheme === 'periodic' ? 'Periodic' : 'Aperiodic'}`)}</span>
                             <span className="tabular-nums">
@@ -229,6 +240,7 @@ export function ThesisRightPanel({
         open={dialogOpen}
         busy={runsBusy}
         readers={readerOptions}
+        floor={scene ? { width: scene.width_m, height: scene.height_m } : null}
         onClose={() => setDialogOpen(false)}
         onCreate={(cfg) => {
           setDialogOpen(false)
@@ -246,6 +258,90 @@ export function ThesisRightPanel({
         </DialogPortal>
       </Dialog>
     </div>
+  )
+}
+
+function RunNameLabel({
+  run,
+  busy,
+  onSelect,
+  onRename,
+}: {
+  run: RunSummary
+  busy: boolean
+  onSelect: () => void
+  onRename: (name: string | null) => Promise<void> | void
+}) {
+  const { t } = useTranslation()
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(run.name ?? '')
+
+  useEffect(() => {
+    if (!editing) setDraft(run.name ?? '')
+  }, [run.name, editing])
+
+  async function commit() {
+    const next = draft.trim() || null
+    const current = run.name?.trim() || null
+    setEditing(false)
+    if (next === current) return
+    await onRename(next)
+  }
+
+  if (editing) {
+    return (
+      <Input
+        autoFocus
+        value={draft}
+        maxLength={80}
+        className="h-6 min-w-0 flex-1 px-1 text-xs font-medium"
+        aria-label={t('thesis.runsPanel.rename')}
+        onClick={(event) => event.stopPropagation()}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => void commit()}
+        onKeyDown={(event) => {
+          event.stopPropagation()
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            void commit()
+          } else if (event.key === 'Escape') {
+            event.preventDefault()
+            setDraft(run.name ?? '')
+            setEditing(false)
+          }
+        }}
+      />
+    )
+  }
+
+  const label = runDisplayName(run)
+  return (
+    <span className="flex min-w-0 items-center gap-0.5">
+      <button
+        type="button"
+        className="truncate font-medium text-left"
+        title={run.name?.trim() ? `#${run.run_id}` : undefined}
+        onClick={onSelect}
+        onDoubleClick={(event) => {
+          event.preventDefault()
+          if (!busy) setEditing(true)
+        }}
+      >
+        {label}
+      </button>
+      <Button
+        type="button"
+        size="icon-xs"
+        variant="ghost"
+        className="size-5 shrink-0 text-muted-foreground"
+        aria-label={t('thesis.runsPanel.rename')}
+        title={t('thesis.runsPanel.rename')}
+        disabled={busy}
+        onClick={() => setEditing(true)}
+      >
+        <Pencil className="size-2.5" />
+      </Button>
+    </span>
   )
 }
 

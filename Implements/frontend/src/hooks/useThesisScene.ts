@@ -109,6 +109,14 @@ export function useThesisScene() {
         setPristineCatalog(nextCatalog.map((entry) => ({ ...entry, defaults: { ...entry.defaults } })))
         setSections(nextSections)
         setScenarioDefaults(nextScenario)
+        // No unsaved draft and nothing open → open the newest section (list is updated_at desc).
+        if (!sceneRef.current && nextSections.length > 0) {
+          const detail = await fetchSection(nextSections[0].id)
+          if (!cancel) {
+            setScene(fromServer(detail))
+            clearDraft()
+          }
+        }
       } catch (err) {
         if (!cancel) fail(err)
       }
@@ -233,15 +241,23 @@ export function useThesisScene() {
       setError(null)
       try {
         await deleteSection(id)
-        if (sceneRef.current?.id === id) setScene(null)
-        await refreshSections()
+        const wasOpen = sceneRef.current?.id === id
+        if (wasOpen) setScene(null)
+        const nextSections = await fetchSections()
+        setSections(nextSections)
+        // After deleting the open section, fall through to the newest remaining one.
+        if (wasOpen && nextSections.length > 0) {
+          const detail = await fetchSection(nextSections[0].id)
+          setScene(fromServer(detail))
+          clearDraft()
+        }
       } catch (err) {
         fail(err)
       } finally {
         setBusy(false)
       }
     },
-    [fail, refreshSections],
+    [fail],
   )
 
   const applySize = useCallback(

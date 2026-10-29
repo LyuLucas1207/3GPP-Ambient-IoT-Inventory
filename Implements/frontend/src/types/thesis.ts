@@ -96,6 +96,8 @@ export type DeviceFinalState = 'identified' | 'dropped' | 'unreachable' | 'pendi
 
 export type RunCreateInput = {
   scheme: RunScheme
+  /** Optional display label; omit / empty → UI shows #id. */
+  name?: string | null
   /** null = no time cap: runs until every device is done, it stalls, or the user pauses/stops it. */
   max_time_s: number | null
   /** simulated seconds per wall-clock second; null = as fast as possible */
@@ -103,6 +105,8 @@ export type RunCreateInput = {
   /** end automatically after this long (simulated s) without a new identification */
   stall_timeout_s?: number | null
   k_initial?: number | null
+  /** Schoute DFSA after round 1; k_initial is then only the first-round K. */
+  adaptive_k?: boolean
   g?: number | null
   use_grouping: boolean
   use_capture: boolean
@@ -110,6 +114,9 @@ export type RunCreateInput = {
   include_d2r: boolean
   seed?: number | null
   reader_start_offsets?: Record<string, number>
+  /** reader ids per start group, group i starting i × reader_start_interval_s after the first */
+  reader_start_groups?: number[][]
+  reader_start_interval_s?: number | null
   disabled_reader_ids?: number[]
 }
 
@@ -155,6 +162,7 @@ export type RunSummary = {
   section_id: number
   scheme: RunScheme
   status: RunStatus
+  name?: string | null
   total_devices: number
   identified_total: number
   identified_by_subtype: Record<string, number>
@@ -171,6 +179,8 @@ export type RunSummary = {
   max_time_s: number | null
   include_d2r?: boolean
   disabled_reader_ids?: number[]
+  reader_start_groups?: number[][]
+  reader_start_interval_s?: number | null
 }
 
 export type RunDetail = {
@@ -178,6 +188,7 @@ export type RunDetail = {
   section_id: number
   scheme: RunScheme
   status: RunStatus
+  name?: string | null
   config: Record<string, unknown>
   scene_snapshot: Record<string, unknown>
   requested_at: string
@@ -300,3 +311,56 @@ export type Timeline = {
 }
 
 export type DeviceStates = Record<number, string>
+
+/** Engine timing constants (s) and the number of frequency subbands F. */
+export type FrameConsts = { t_paging: number; t_m1: number; t_m2: number; t_m3: number; f: number }
+
+/** One reader frame laid out on the time-frequency grid. */
+export type TimeFreqFrame = {
+  id: number
+  round_index: number
+  t_start_s: number
+  t_end_s: number
+  k: number
+  group: number | null
+  pstar: number | null
+  timing: Partial<RoundTiming>
+  f: number
+  /** per Msg1 slot: devices that transmitted / result code (0 idle, 1 single, 2 captured, 3 collision, 4 missed) */
+  occ: number[]
+  res: number[]
+  /** slot -> [device id, captured] for decoded slots */
+  winners: Record<string, [number, boolean]>
+  /** device ids in Msg2 order */
+  m2: number[]
+  /** [t_s, subband, device id, identified] per Msg3 */
+  m3: [number, number, number, boolean][]
+  budget_dropped: number
+}
+
+export type ReaderTimeFreq = {
+  reader_id: number
+  scheme: RunScheme
+  t_first: number
+  t_end: number
+  consts: FrameConsts
+  truncated: boolean
+  frames: TimeFreqFrame[]
+}
+
+/** [t_a, t_b, E_a, E_b, kind]: ON drains, OFF harvests (rebuilt with the engine's energy model). */
+export type EnergySegment = [number, number, number, number, 'on' | 'off']
+
+export type DeviceTrace = {
+  device_id: number
+  scheme: RunScheme
+  t_end: number
+  consts: FrameConsts
+  energy: { ecap: number; eoff: number; p_on: number; ph: number; t_on: number }
+  /** false for runs recorded before the on timer was logged: gaps are only known at the events */
+  energy_exact: boolean
+  events: DeviceEvent[]
+  rounds: { id: number; reader_id: number; round_index: number; t_start_s: number; t_end_s: number; k: number; timing: Partial<RoundTiming> }[]
+  segments: EnergySegment[]
+  truncated: boolean
+}

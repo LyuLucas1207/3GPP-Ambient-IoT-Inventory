@@ -2,7 +2,9 @@ import { deleteOk, getJson, postJson } from '@/api/http'
 import type {
   DeviceEvent,
   DeviceStates,
+  DeviceTrace,
   ReaderEvent,
+  ReaderTimeFreq,
   RunAnalysis,
   RunCreateInput,
   RunDetail,
@@ -45,6 +47,10 @@ export function resumeRun(id: number): Promise<RunSummary> {
 
 export function setRunSpeed(id: number, speed: number | null): Promise<RunSummary> {
   return postJson(`${BASE}/runs/${id}/speed`, { speed })
+}
+
+export function setRunName(id: number, name: string | null): Promise<RunSummary> {
+  return postJson(`${BASE}/runs/${id}/name`, { name })
 }
 
 /** Server-Sent Events feed of a run; consume with the browser's EventSource. */
@@ -112,6 +118,14 @@ export function fetchRounds(id: number, readerId?: number): Promise<RunRound[]> 
 
 export function fetchTimeline(id: number, deviceId: number): Promise<Timeline> {
   return getJson(`${BASE}/runs/${id}/device/${deviceId}/timeline`)
+}
+
+export function fetchReaderTimeFreq(id: number, readerId: number, t0: number, t1: number): Promise<ReaderTimeFreq> {
+  return getJson(`${BASE}/runs/${id}/readers/${readerId}/timefreq?t0=${t0}&t1=${t1}`)
+}
+
+export function fetchDeviceTrace(id: number, deviceId: number): Promise<DeviceTrace> {
+  return getJson(`${BASE}/runs/${id}/device/${deviceId}/trace`)
 }
 
 export function fetchDeviceStates(id: number): Promise<{ states: DeviceStates }> {

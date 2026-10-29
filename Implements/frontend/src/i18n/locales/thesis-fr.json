@@ -26,6 +26,7 @@
     "showDevice2b": "Afficher Device 2b",
     "showRadar": "Afficher le reader",
     "showStation": "Afficher la station",
+    "showIdentified": "Afficher identifiés (verts)",
     "placementMenu": {
       "locked": "Initialisée — la taille et les outils de disposition en masse sont figés. Ce nœud reste modifiable."
     },
@@ -52,6 +53,7 @@
       "rounds": "{{count}} tours",
       "stop": "Arrêter",
       "delete": "Supprimer",
+      "rename": "Renommer",
       "collapse": "Replier la liste de runs",
       "expand": "Ouvrir la liste de runs",
       "status": {
@@ -67,13 +69,18 @@
     "newRun": {
       "title": "Nouveau run d'inventaire",
       "hint": "Choisissez le schéma de paging et ses paramètres.",
+      "name": "Nom (facultatif)",
+      "namePlaceholder": "ex. baseline · sans EBI",
       "scheme": "Schéma",
       "schemePeriodic": "Périodique",
       "schemeAperiodic": "Apériodique",
       "maxTime": "Durée max (s, facultatif)",
       "k": "K (slots M1)",
+      "kInitial": "K initial (1ʳᵉ ronde)",
       "g": "N_g (groupes)",
       "seed": "Graine (vide = aléatoire)",
+      "adaptiveK": "K adaptatif (DFSA Schoute)",
+      "adaptiveKHint": "DFSA classique (pas Recurrent PPO). La 1ʳᵉ ronde utilise le $K$ initial (ex. 256) ; ensuite $K \\approx 2\\hat{N}$ via Schoute / slots vides. Désactivé : chaque ronde garde ce même $K$ fixe. Le PPO est sur la page Aperiodic Paging Paper, pas branché aux runs Thesis multi-lecteurs.",
       "useGrouping": "Activer le regroupement (paging périodique)",
       "useCapture": "Activer l'effet de capture",
       "useEbi": "Activer EBI",
@@ -90,7 +97,11 @@
       "unlimited": "illimitée",
       "off": "désactivé",
       "stallTimeout": "Arrêt sans progrès après (s)",
-      "endHint": "Le run s’arrête quand tous les devices atteignables sont identifiés, quand rien de nouveau n’est identifié pendant la durée ci-dessus, ou quand vous le mettez en pause / l’arrêtez. Les devices hors couverture sont marqués injoignables au départ ; ceux jamais identifiés apparaissent en points rouges."
+      "endHint": "Le run s’arrête quand tous les devices atteignables sont identifiés, quand rien de nouveau n’est identifié pendant la durée ci-dessus, ou quand vous le mettez en pause / l’arrêtez. Les devices hors couverture sont marqués injoignables au départ ; ceux jamais identifiés apparaissent en points rouges.",
+      "stagger": "Décaler le démarrage des readers",
+      "staggerHint": "Désactivé : tous les readers démarrent leur première trame à t = 0. Activé : les readers démarrent par groupes, chaque groupe un intervalle fixe après le précédent. Le regroupement est une stratégie enregistrée avec le run.",
+      "staggerInterval": "Intervalle (ms)",
+      "staggerAssign": "Définir les groupes…"
     },
     "analysis": {
       "title": "Analyse des runs",
@@ -347,7 +358,20 @@
       },
       "dock": "Run",
       "playReplay": "Lire la relecture",
-      "pauseReplay": "Mettre la relecture en pause"
+      "pauseReplay": "Mettre la relecture en pause",
+      "config": "Configuration du run",
+      "configAdaptiveK": "K adaptatif · départ {{k}}",
+      "configAdaptiveKDefault": "K adaptatif · départ 128",
+      "configFixedK": "K fixe={{k}}",
+      "configGroups": "Groupes N_g={{g}}",
+      "configNoGrouping": "Sans regroupement",
+      "configOn": "{{name}} activé",
+      "configOff": "{{name}} désactivé",
+      "configStall": "Stall {{s}} s",
+      "configStallOff": "Stall off",
+      "configSeed": "Graine {{seed}}",
+      "configStagger": "Décalage {{groups}} groupes · {{ms}} ms",
+      "configDisabledReaders": "{{count}} readers désactivés"
     },
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
@@ -514,6 +538,82 @@
       "meanFrame": "Trame moyenne",
       "curve": "Identifiés par ce reader dans le temps",
       "hint": "Les graphiques ci-dessous montrent ce reader. Clic droit pour l’éditer ; fermer pour revenir à tous les readers."
+    },
+    "tf": {
+      "deviceTitle": "Chronologie du device #{{id}}",
+      "readerTitle": "Temps–fréquence du reader #{{id}}",
+      "expand": "Agrandir",
+      "start": "Début",
+      "prev": "Trame précédente",
+      "next": "Trame suivante",
+      "end": "Fin",
+      "zoomOut": "Dézoomer",
+      "zoomIn": "Zoomer",
+      "scrollHint": "Molette ou ← / → pour avancer dans le temps (Maj = un écran) · Ctrl + molette ou + / − pour zoomer · [ / ] trame précédente / suivante · Début / Fin",
+      "frame": "Trame",
+      "noFrames": "Aucune trame pour ce run",
+      "frameSummary": "{{success}} décodés · {{collisions}} collisions · {{idle}} libres · {{served}} servis · {{dropped}} écartés (budget)",
+      "part": {
+        "paging": "Paging (DL)",
+        "ei": "Indication précoce (DL)",
+        "m2": "Msg2 {{i}} → device #{{dev}}",
+        "m2Unused": "Temps Msg2/Msg3 inutilisé",
+        "m3": "Msg3 de #{{dev}} sur f{{f}}",
+        "m3Identified": "Msg3 de #{{dev}} sur f{{f}} · identifié"
+      },
+      "slot": {
+        "idle": "Slot {{s}} (f{{f}}) : libre",
+        "single": "Slot {{s}} (f{{f}}) : unique → #{{dev}}",
+        "captured": "Slot {{s}} (f{{f}}) : {{n}} devices, capture de #{{dev}}",
+        "collision": "Slot {{s}} (f{{f}}) : collision de {{n}}",
+        "missed": "Slot {{s}} (f{{f}}) : {{n}} devices, non décodé"
+      },
+      "legend": {
+        "dl": "Descendant (paging / EI / Msg2)",
+        "single": "Msg1 unique",
+        "captured": "Msg1 capturé",
+        "collision": "Msg1 collision",
+        "missed": "Msg1 manqué",
+        "idle": "Msg1 libre",
+        "m2Unused": "Temps de slot inutilisé"
+      },
+      "state": "État",
+      "messages": "Messages",
+      "on": "ON (consomme)",
+      "off": "OFF (récolte)",
+      "sleep": "Veille",
+      "onShort": "ON",
+      "offShort": "OFF",
+      "readerFrame": "Trame du reader",
+      "energyApprox": "Courbe d'énergie approximative (run antérieur à l'enregistrement exact du minuteur ON ; lancez un nouveau run).",
+      "act": {
+        "paged": "Paging reçu",
+        "missedPage": "Paging manqué (OFF)",
+        "m1": "Msg1 au slot {{slot}} (f{{f}}) : {{result}}",
+        "ei": "Indication précoce reçue",
+        "m2": "Msg2 n°{{i}} reçu",
+        "m3": "Msg3 envoyé",
+        "sleep": "Veille (attente)"
+      },
+      "collapse": "Replier les temps morts",
+      "collapsedTip": "Temps mort replié\n{{a}} ~ {{b}} ({{d}})\nDécochez « Replier les temps morts » pour le voir à l’échelle."
+    },
+    "stagger": {
+      "title": "Groupes de démarrage des readers",
+      "hint": "Le groupe 1 démarre à t = 0 ; chaque groupe suivant démarre {{ms}} ms après le précédent.",
+      "preset": "Stratégie :",
+      "presets": {
+        "together": "Tous ensemble",
+        "checkerboard": "Damier",
+        "rows": "Par ligne",
+        "columns": "Par colonne",
+        "sequential": "Un par un"
+      },
+      "group": "Groupe {{n}}",
+      "addGroup": "Ajouter un groupe",
+      "clickHint": "Cliquez sur les readers (carte ou liste) pour les placer dans le groupe {{n}}.",
+      "map": "Disposition des readers",
+      "apply": "Appliquer"
     }
   }
 }

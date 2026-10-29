@@ -104,6 +104,8 @@ export function ThesisWarehouse({
     radar: true,
     station: true,
   })
+  // Identified (green) devices dominate late-run draws; off skips them entirely.
+  const [showIdentified, setShowIdentified] = useState(true)
 
   const deviceCanvasRef = useRef<HTMLCanvasElement>(null)
   const pressRef = useRef<{ x: number; y: number } | null>(null)
@@ -410,6 +412,15 @@ export function ThesisWarehouse({
         const idx = live.indexById.get(placement.id as number)
         if (idx != null) {
           const code = live.codes[idx]
+          // Skip green identified dots when the layer filter is off (keeps selection/hover).
+          if (
+            !showIdentified &&
+            code === identifiedCode &&
+            placement.id !== selectedDeviceId &&
+            placement.id !== hover?.id
+          ) {
+            continue
+          }
           if (FLAGGED_CODES.has(code) || (flagPending && code !== identifiedCode)) {
             flagged.push(placement)
             continue
@@ -449,7 +460,7 @@ export function ThesisWarehouse({
       ctx.strokeStyle = id === selectedDeviceId ? '#eab308' : 'rgba(127,127,127,0.9)'
       ctx.stroke()
     }
-  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults, live, live?.version, flagPending, selectedDeviceId, hover?.id])
+  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, showIdentified, deviceMarkerScale, focusReaderId, deviceDefaults, live, live?.version, flagPending, selectedDeviceId, hover?.id])
 
   function screenToWorld(clientX: number, clientY: number) {
     const rect = hostRef.current?.getBoundingClientRect()
@@ -470,11 +481,16 @@ export function ThesisWarehouse({
     const radiusPx = Math.max(0.4, 0.42 * deviceMarkerScale * scale)
     const r = (radiusPx + HIT_SLOP_PX) / scale
     const show: Record<string, boolean> = { '1': layers.device1, '2a': layers.device2a, '2b': layers.device2b }
+    const identifiedCode = RUN_STATE_LABELS.indexOf('identified')
     let best: Placement | null = null
     let bestD = Infinity
     for (const i of deviceIndex.index.within(world.x, world.y, r)) {
       const d = deviceIndex.devices[i]
       if (!show[d.subtype ?? '']) continue
+      if (!showIdentified && live) {
+        const idx = live.indexById.get(d.id as number)
+        if (idx != null && live.codes[idx] === identifiedCode) continue
+      }
       const dist = Math.hypot(d.x_m - world.x, d.y_m - world.y)
       if (dist < bestD) {
         bestD = dist
@@ -633,6 +649,8 @@ export function ThesisWarehouse({
                       if (placement.kind !== 'radar') return null
                       if (placement.params.show_range !== true) return null
                       if ((placement.params.show_outer === true) !== outer) return null
+                      // Focus mode: only the focused reader's coverage rings stay visible.
+                      if (focusReaderId != null && placement.id !== focusReaderId) return null
                       const diagonal = Math.hypot(scene.width_m, scene.height_m)
                       const readerRf = {
                         tx_power_dbm: toNumber(placement.params.tx_power_dbm, 33),
@@ -809,6 +827,11 @@ export function ThesisWarehouse({
                 onChange={(checked) => setLayers((prev) => ({ ...prev, [key]: checked }))}
               />
             ))}
+            <LayerToggle
+              checked={showIdentified}
+              label={t('thesis.showIdentified')}
+              onChange={setShowIdentified}
+            />
           </div>
         </div>
         <button

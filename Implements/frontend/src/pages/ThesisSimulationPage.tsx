@@ -281,6 +281,7 @@ export default function ThesisSimulationPage() {
               <div className="flex h-full min-h-0 flex-col gap-2 p-2 pt-3">
                 <RunControlBar
                   run={selectedRun}
+                  config={runs.activeRun?.id === selectedRun.run_id ? runs.activeRun.config : null}
                   live={live}
                   busy={runs.busy}
                   onPause={() => void runs.pauseRun(selectedRun.run_id)}
@@ -313,6 +314,7 @@ export default function ThesisSimulationPage() {
           onSelectRun={runs.setSelectedRunId}
           onCreateRun={runs.createRun}
           onDeleteRun={runs.deleteRun}
+          onRenameRun={runs.renameRun}
           onStopRun={runs.stopRun}
           onPauseRun={runs.pauseRun}
           onResumeRun={runs.resumeRun}

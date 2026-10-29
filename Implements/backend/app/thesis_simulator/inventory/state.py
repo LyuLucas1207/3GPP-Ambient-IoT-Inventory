@@ -171,6 +171,9 @@ class EpisodeConfig:
     reader_start_offsets: dict[str, float]
     disabled_reader_ids: list[int] = field(default_factory=list)
     stall_timeout_s: float | None = DEFAULT_STALL_TIMEOUT_S
+    # When True, k_initial is only the cold-start frame length; later rounds
+    # follow the Schoute / empty-slot backlog rule (K ≈ 2 N̂).
+    adaptive_k: bool = False
 
     consts: EngineConstants = field(default_factory=lambda: CONSTANTS)
 
@@ -181,10 +184,14 @@ class EpisodeConfig:
         # Grouping is a periodic-paging mechanism; aperiodic devices never stay
         # aligned to a group's paging times.
         grouped = scheme == "periodic" and bool(cfg.get("use_grouping", False))
+        k_initial = cfg.get("k_initial")
+        adaptive_raw = cfg.get("adaptive_k")
+        # Legacy configs used ``k_initial: null`` to mean adaptive DFSA.
+        adaptive_k = bool(adaptive_raw) if adaptive_raw is not None else k_initial is None
         return cls(
             scheme=scheme,
             max_time_s=None if max_time in (None, "") else float(max_time),
-            k_initial=cfg.get("k_initial"),
+            k_initial=k_initial,
             g=int(cfg.get("g") or 1) if grouped else 1,
             use_grouping=grouped,
             use_capture=bool(cfg.get("use_capture", True)),
@@ -194,5 +201,6 @@ class EpisodeConfig:
             reader_start_offsets=dict(cfg.get("reader_start_offsets") or {}),
             disabled_reader_ids=list(cfg.get("disabled_reader_ids") or []),
             stall_timeout_s=None if stall in (None, "") else float(stall),
+            adaptive_k=adaptive_k,
             consts=CONSTANTS,
         )

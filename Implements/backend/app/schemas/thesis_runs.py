@@ -2,14 +2,23 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 RunScheme = Literal["periodic", "aperiodic"]
 RunStatus = Literal["pending", "running", "paused", "completed", "stopped", "failed", "deleted"]
 
 
+def _normalize_run_name(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
+
 class RunCreateIn(BaseModel):
     scheme: RunScheme = "periodic"
+    # Optional display label; empty/whitespace becomes None (UI falls back to #id).
+    name: str | None = Field(default=None, max_length=80)
     # None = no time cap: the run ends when every device is identified (or
     # unreachable), or when the user pauses / stops it.
     max_time_s: float | None = Field(default=None, gt=0.0, le=86400.0)
@@ -19,6 +28,9 @@ class RunCreateIn(BaseModel):
     # identification (None disables the guard; max_time_s still applies).
     stall_timeout_s: float | None = Field(default=300.0, gt=0.0, le=86400.0)
     k_initial: int | None = Field(default=None, ge=4, le=4096)
+    # True: Schoute/empty-slot DFSA after round 1; k_initial is only the cold-start K.
+    # False / omitted with a set k_initial: every round uses that fixed K (legacy).
+    adaptive_k: bool = False
     g: int | None = Field(default=None, ge=1, le=64)
     use_grouping: bool = False
     use_capture: bool = True
@@ -26,13 +38,31 @@ class RunCreateIn(BaseModel):
     include_d2r: bool = True
     seed: int | None = None
     reader_start_offsets: dict[str, float] = Field(default_factory=dict)
+    # Staggered start, recorded for analysis: reader ids per start group (group i
+    # starts i * reader_start_interval_s after the first). Offsets above are what the engine uses.
+    reader_start_groups: list[list[int]] = Field(default_factory=list)
+    reader_start_interval_s: float | None = Field(default=None, ge=0.0, le=3600.0)
     disabled_reader_ids: list[int] = Field(default_factory=list)
     # Run to completion inside the request (tests / scripted sweeps).
     sync: bool = False
 
+    @field_validator("name")
+    @classmethod
+    def _name(cls, value: str | None) -> str | None:
+        return _normalize_run_name(value)
+
 
 class RunSpeedIn(BaseModel):
     speed: float | None = Field(default=None, gt=0.0, le=1000.0)
+
+
+class RunNameIn(BaseModel):
+    name: str | None = Field(default=None, max_length=80)
+
+    @field_validator("name")
+    @classmethod
+    def _name(cls, value: str | None) -> str | None:
+        return _normalize_run_name(value)
 
 
 class RunSummaryOut(BaseModel):
@@ -40,6 +70,7 @@ class RunSummaryOut(BaseModel):
     section_id: int
     scheme: RunScheme
     status: RunStatus
+    name: str | None = None
     total_devices: int
     identified_total: int
     identified_by_subtype: dict[str, int]
@@ -61,6 +92,7 @@ class RunDetailOut(BaseModel):
     section_id: int
     scheme: RunScheme
     status: RunStatus
+    name: str | None = None
     config: dict[str, Any]
     scene_snapshot: dict[str, Any]
     requested_at: str

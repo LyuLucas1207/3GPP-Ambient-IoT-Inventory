@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import type { LiveRunState } from '@/hooks/useLiveRun'
-import { RUN_STATE_COLOR, RUN_STATE_LABELS, SPEED_OPTIONS } from '@/lib/thesisRunStates'
+import { RUN_STATE_COLOR, RUN_STATE_LABELS, SPEED_OPTIONS, runDisplayName } from '@/lib/thesisRunStates'
 import type { RunStatus, RunSummary } from '@/types/thesis'
 
 const LIVE: ReadonlySet<RunStatus> = new Set(['pending', 'running'])
@@ -17,6 +17,7 @@ const IDENTIFIED_CODE = RUN_STATE_LABELS.indexOf('identified')
 /** Bottom HUD of the simulation page for the selected run. */
 export function RunControlBar({
   run,
+  config = null,
   live,
   busy,
   onPause,
@@ -25,6 +26,8 @@ export function RunControlBar({
   onSpeed,
 }: {
   run: RunSummary
+  /** Frozen create-run settings from GET /runs/{id} (null while loading). */
+  config?: Record<string, unknown> | null
   live: LiveRunState
   busy: boolean
   onPause: () => void
@@ -35,6 +38,7 @@ export function RunControlBar({
   const { t } = useTranslation()
   const status: RunStatus = live.status ?? run.status
   const isLive = LIVE.has(status)
+  const configChips = useMemo(() => runConfigChips(run, config, t), [run, config, t])
   // null speed means "as fast as possible", so only trust the stream once it has reported.
   const speed = live.status != null ? live.speed : run.speed
   const c = live.counters
@@ -103,7 +107,9 @@ export function RunControlBar({
   return (
     <div className="flex shrink-0 flex-col gap-2 text-xs">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-medium">#{run.run_id}</span>
+        <span className="font-medium" title={`#${run.run_id}`}>
+          {runDisplayName(run)}
+        </span>
         <StatusChip status={status} />
         {isLive && live.connected ? (
           <span className="inline-flex items-center gap-1 text-[10px] text-blue-600">
@@ -132,6 +138,20 @@ export function RunControlBar({
           ) : null}
         </div>
       </div>
+
+      {configChips.length > 0 ? (
+        <div className="flex flex-wrap gap-1" aria-label={t('thesis.live.config')}>
+          {configChips.map((chip) => (
+            <span
+              key={chip.key}
+              className="rounded-md border bg-muted/50 px-1.5 py-0.5 text-[10px] text-muted-foreground"
+              title={chip.title}
+            >
+              {chip.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 tabular-nums">
         <span>
@@ -244,4 +264,114 @@ function countStates(codes: Uint8Array): number[] {
   const out = new Array<number>(RUN_STATE_LABELS.length).fill(0)
   for (const c of codes) out[c] = (out[c] ?? 0) + 1
   return out
+}
+
+type ConfigChip = { key: string; label: string; title?: string }
+
+/** Compact chips mirroring the New Run dialog fields frozen on the run. */
+function runConfigChips(
+  run: RunSummary,
+  config: Record<string, unknown> | null | undefined,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): ConfigChip[] {
+  const cfg = config ?? {}
+  const bool = (key: string, fallback = false) => {
+    const v = cfg[key]
+    return typeof v === 'boolean' ? v : fallback
+  }
+  const num = (key: string): number | null => {
+    const v = cfg[key]
+    return typeof v === 'number' && Number.isFinite(v) ? v : null
+  }
+
+  const scheme = run.scheme
+  const adaptive =
+    typeof cfg.adaptive_k === 'boolean' ? cfg.adaptive_k : cfg.k_initial == null
+  const k0 = num('k_initial')
+  const g = num('g')
+  const grouping = bool('use_grouping') && scheme === 'periodic'
+  const stall = num('stall_timeout_s')
+  const seed = num('seed')
+  const disabled = Array.isArray(cfg.disabled_reader_ids)
+    ? (cfg.disabled_reader_ids as unknown[]).map(Number).filter((n) => Number.isFinite(n))
+    : (run.disabled_reader_ids ?? [])
+  const startGroups = Array.isArray(cfg.reader_start_groups)
+    ? (cfg.reader_start_groups as unknown[])
+    : (run.reader_start_groups ?? [])
+  const startInterval =
+    num('reader_start_interval_s') ??
+    (typeof run.reader_start_interval_s === 'number' ? run.reader_start_interval_s : null)
+
+  const chips: ConfigChip[] = [
+    {
+      key: 'scheme',
+      label: t(`thesis.newRun.scheme${scheme === 'periodic' ? 'Periodic' : 'Aperiodic'}`),
+    },
+  ]
+
+  if (adaptive) {
+    chips.push({
+      key: 'k',
+      label: k0 != null ? t('thesis.live.configAdaptiveK', { k: k0 }) : t('thesis.live.configAdaptiveKDefault'),
+      title: t('thesis.newRun.adaptiveKHint'),
+    })
+  } else {
+    chips.push({
+      key: 'k',
+      label: t('thesis.live.configFixedK', { k: k0 ?? 128 }),
+    })
+  }
+
+  if (grouping) {
+    chips.push({
+      key: 'g',
+      label: t('thesis.live.configGroups', { g: g ?? 1 }),
+      title: t('thesis.newRun.useGroupingHint'),
+    })
+  } else if (scheme === 'periodic') {
+    chips.push({ key: 'g', label: t('thesis.live.configNoGrouping') })
+  }
+
+  chips.push({
+    key: 'capture',
+    label: bool('use_capture', true) ? t('thesis.live.configOn', { name: 'Capture' }) : t('thesis.live.configOff', { name: 'Capture' }),
+  })
+  chips.push({
+    key: 'ebi',
+    label: bool('use_ebi', true) ? t('thesis.live.configOn', { name: 'EBI' }) : t('thesis.live.configOff', { name: 'EBI' }),
+  })
+  chips.push({
+    key: 'd2r',
+    label: bool('include_d2r', run.include_d2r !== false)
+      ? t('thesis.live.configOn', { name: 'D2R' })
+      : t('thesis.live.configOff', { name: 'D2R' }),
+  })
+
+  if (stall != null && stall > 0) {
+    chips.push({ key: 'stall', label: t('thesis.live.configStall', { s: stall }) })
+  } else if (cfg.stall_timeout_s === null) {
+    chips.push({ key: 'stall', label: t('thesis.live.configStallOff') })
+  }
+
+  if (seed != null) chips.push({ key: 'seed', label: t('thesis.live.configSeed', { seed }) })
+
+  if (startGroups.length > 1 && startInterval != null) {
+    chips.push({
+      key: 'stagger',
+      label: t('thesis.live.configStagger', {
+        groups: startGroups.length,
+        ms: Math.round(startInterval * 1000),
+      }),
+    })
+  }
+
+  if (disabled.length > 0) {
+    chips.push({
+      key: 'disabled',
+      label: t('thesis.live.configDisabledReaders', { count: disabled.length }),
+      title: disabled.map((id) => `#${id}`).join(', '),
+    })
+  }
+
+  return chips
 }

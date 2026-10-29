@@ -26,6 +26,7 @@
     "showDevice2b": "显示 Device 2b",
     "showRadar": "显示 Reader",
     "showStation": "显示 Station",
+    "showIdentified": "显示已识别（绿色）",
     "placementMenu": {
       "locked": "场景已初始化:仓库尺寸和批量布局工具已锁定,单个节点仍可修改。"
     },
@@ -52,6 +53,7 @@
       "rounds": "{{count}} 轮",
       "stop": "停止",
       "delete": "删除",
+      "rename": "重命名",
       "collapse": "收起运行面板",
       "expand": "打开运行面板",
       "status": {
@@ -67,13 +69,18 @@
     "newRun": {
       "title": "新建盘点运行",
       "hint": "选择 paging 方案和参数,运行会用当前已初始化场景。",
+      "name": "名称（可选）",
+      "namePlaceholder": "例如：基线 · 关闭 EBI",
       "scheme": "方案",
       "schemePeriodic": "周期",
       "schemeAperiodic": "非周期",
       "maxTime": "最大时长 (s，可留空)",
       "k": "K (M1 slot 数)",
+      "kInitial": "首轮 K（初始）",
       "g": "N_g (分组数)",
       "seed": "种子(空=随机)",
+      "adaptiveK": "自适应 K（Schoute DFSA）",
+      "adaptiveKHint": "经典 DFSA（不是 Recurrent PPO）。第 1 轮用你填的首轮 $K$（例如 256），之后按 Schoute / 空时隙估计 $K \\approx 2\\hat{N}$。关闭时每轮都用同一个固定 $K$。PPO 在「Aperiodic Paging Paper」页，未接到 Thesis 多阅读器。",
       "useGrouping": "启用分组（周期寻呼）",
       "useCapture": "启用捕获效应",
       "useEbi": "启用 EBI",
@@ -90,7 +97,11 @@
       "unlimited": "不限",
       "off": "关闭",
       "stallTimeout": "无进展自动结束 (s)",
-      "endHint": "run 在以下任一情况结束：所有可达 device 都已识别；连续上面设置的时间内没有新识别；你手动暂停或停止。不在任何 reader 覆盖范围内的 device 开局即标为不可达；最终没被识别的 device 在地图上显示为红点。"
+      "endHint": "run 在以下任一情况结束：所有可达 device 都已识别；连续上面设置的时间内没有新识别；你手动暂停或停止。不在任何 reader 覆盖范围内的 device 开局即标为不可达；最终没被识别的 device 在地图上显示为红点。",
+      "stagger": "错开 reader 启动",
+      "staggerHint": "关闭：所有 reader 在 t = 0 同时开始第一帧。开启：reader 按组启动，每组比上一组晚固定间隔。分组本身是一种策略，会随 run 一起记录。",
+      "staggerInterval": "间隔 (ms)",
+      "staggerAssign": "设置分组…"
     },
     "analysis": {
       "title": "运行分析",
@@ -347,7 +358,20 @@
       },
       "dock": "运行",
       "playReplay": "播放回放",
-      "pauseReplay": "暂停回放"
+      "pauseReplay": "暂停回放",
+      "config": "运行配置",
+      "configAdaptiveK": "自适应 K · 首轮 {{k}}",
+      "configAdaptiveKDefault": "自适应 K · 首轮 128",
+      "configFixedK": "固定 K={{k}}",
+      "configGroups": "分组 N_g={{g}}",
+      "configNoGrouping": "未分组",
+      "configOn": "{{name}} 开",
+      "configOff": "{{name}} 关",
+      "configStall": "无进展 {{s}} s",
+      "configStallOff": "无进展关闭",
+      "configSeed": "种子 {{seed}}",
+      "configStagger": "错峰 {{groups}} 组 · {{ms}} ms",
+      "configDisabledReaders": "禁用 {{count}} 个 reader"
     },
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
@@ -514,6 +538,82 @@
       "meanFrame": "平均帧时长",
       "curve": "本 reader 累计识别数",
       "hint": "下方图表已切换到这个 reader。右键 reader 可编辑；关闭后图表回到全部 reader。"
+    },
+    "tf": {
+      "deviceTitle": "Device #{{id}} 时间线",
+      "readerTitle": "Reader #{{id}} 时频图",
+      "expand": "展开",
+      "start": "开始",
+      "prev": "上一帧",
+      "next": "下一帧",
+      "end": "结束",
+      "zoomOut": "缩小",
+      "zoomIn": "放大",
+      "scrollHint": "滚轮或 ← / → 平移时间（Shift = 一屏）· Ctrl + 滚轮或 + / − 缩放 · [ / ] 上一帧 / 下一帧 · Home / End",
+      "frame": "帧",
+      "noFrames": "该 run 暂无帧",
+      "frameSummary": "解码 {{success}} · 碰撞 {{collisions}} · 空闲 {{idle}} · 服务 {{served}} · 预算丢弃 {{dropped}}",
+      "part": {
+        "paging": "寻呼 (DL)",
+        "ei": "早期指示 EI (DL)",
+        "m2": "Msg2 {{i}} → device #{{dev}}",
+        "m2Unused": "未使用的 Msg2/Msg3 时间",
+        "m3": "#{{dev}} 在 f{{f}} 发送 Msg3",
+        "m3Identified": "#{{dev}} 在 f{{f}} 发送 Msg3 · 已识别"
+      },
+      "slot": {
+        "idle": "时隙 {{s}} (f{{f}})：空闲",
+        "single": "时隙 {{s}} (f{{f}})：单个 → #{{dev}}",
+        "captured": "时隙 {{s}} (f{{f}})：{{n}} 个 device，捕获 #{{dev}}",
+        "collision": "时隙 {{s}} (f{{f}})：{{n}} 个碰撞",
+        "missed": "时隙 {{s}} (f{{f}})：{{n}} 个 device，未解码"
+      },
+      "legend": {
+        "dl": "下行 (寻呼 / EI / Msg2)",
+        "single": "Msg1 单个",
+        "captured": "Msg1 捕获",
+        "collision": "Msg1 碰撞",
+        "missed": "Msg1 未解码",
+        "idle": "Msg1 空闲",
+        "m2Unused": "未使用的时隙时间"
+      },
+      "state": "状态",
+      "messages": "消息",
+      "on": "ON（耗能）",
+      "off": "OFF（采能）",
+      "sleep": "休眠",
+      "onShort": "ON",
+      "offShort": "OFF",
+      "readerFrame": "Reader 帧",
+      "energyApprox": "能量曲线为近似值（该 run 早于精确 ON 计时记录；新建 run 可得到精确曲线）。",
+      "act": {
+        "paged": "收到寻呼",
+        "missedPage": "错过寻呼（OFF）",
+        "m1": "在时隙 {{slot}} (f{{f}}) 发送 Msg1：{{result}}",
+        "ei": "收到早期指示",
+        "m2": "收到 Msg2 #{{i}}",
+        "m3": "发送 Msg3",
+        "sleep": "休眠（等待）"
+      },
+      "collapse": "折叠空闲时间",
+      "collapsedTip": "已折叠的空闲时间\n{{a}} ~ {{b}}（{{d}}）\n取消勾选“折叠空闲时间”可按真实比例查看。"
+    },
+    "stagger": {
+      "title": "Reader 启动分组",
+      "hint": "组 1 在 t = 0 启动；之后每组比上一组晚 {{ms}} ms 启动。",
+      "preset": "策略：",
+      "presets": {
+        "together": "全部同时",
+        "checkerboard": "棋盘交错",
+        "rows": "按行",
+        "columns": "按列",
+        "sequential": "逐个"
+      },
+      "group": "组 {{n}}",
+      "addGroup": "新增组",
+      "clickHint": "在图上或列表中点击 reader，把它放入组 {{n}}。",
+      "map": "Reader 布局",
+      "apply": "应用"
     }
   }
 }

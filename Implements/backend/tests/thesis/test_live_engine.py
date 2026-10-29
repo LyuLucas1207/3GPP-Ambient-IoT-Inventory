@@ -131,3 +131,25 @@ def test_unservable_device_in_coverage_ends_by_stall_guard():
     assert state.world.all_terminal()
     assert state.world.dropped[stuck]
     assert state.counters()["no_progress"] >= 1
+
+
+def test_staggered_start_group_waits_for_its_offset():
+    scene = _scene(n_near=12, far=False)
+    scene["placements"].append({"id": 1001, "kind": "radar", "subtype": None, "x_m": 12.0, "y_m": 10.0, "params": {}})
+    cfg = _config(
+        max_time_s=None,
+        reader_start_groups=[[1000], [1001]],
+        reader_start_interval_s=0.1,
+        reader_start_offsets={"1000": 0.0, "1001": 0.1},
+    )
+    state = build_episode(scene, cfg, np.random.default_rng(11))
+    emit = EventEmitter(run_id=0)
+    first_start: dict[int, float] = {}
+    for _ in range(MAX_STEPS):
+        if step_episode(state, emit) is None or len(first_start) == 2:
+            break
+        for row in emit._rounds:
+            first_start.setdefault(row.reader_id, row.t_start_s)
+        emit.discard()
+    assert first_start[1000] == 0.0
+    assert math.isclose(first_start[1001], 0.1)

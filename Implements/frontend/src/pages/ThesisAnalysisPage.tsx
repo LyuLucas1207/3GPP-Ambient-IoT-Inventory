@@ -33,7 +33,12 @@ const STAGE_COLOR: Record<string, string> = { paging: '#4dbeee', m1: '#0072bd', 
 const LEVELS = [50, 90, 95, 99]
 
 function runLabel(a: RunAnalysis) {
-  return `#${a.run_id} · ${a.scheme}`
+  const name = a.summary?.name?.trim()
+  return name ? `${name} · ${a.scheme}` : `#${a.run_id} · ${a.scheme}`
+}
+
+function runShortLabel(a: RunAnalysis) {
+  return a.summary?.name?.trim() || `#${a.run_id}`
 }
 
 export default function ThesisAnalysisPage() {
@@ -158,7 +163,9 @@ export default function ThesisAnalysisPage() {
                         disabled={atCap}
                         onCheckedChange={() => toggleRun(run.run_id)}
                       />
-                      <span className="font-medium">#{run.run_id}</span>
+                      <span className="font-medium truncate" title={`#${run.run_id}`}>
+                        {run.name?.trim() || `#${run.run_id}`}
+                      </span>
                       <StatusChip status={run.status} />
                     </div>
                     <div className="flex justify-between text-muted-foreground">
@@ -294,7 +301,7 @@ function SubtypeChart({ analyses }: { analyses: RunAnalysis[] }) {
         y: [0, ...pts.map((p) => p[1])],
         type: 'scattergl' as const,
         mode: 'lines' as const,
-        name: `#${a.run_id} · ${t(`thesis.kind.device${s}`)}`,
+        name: `${runShortLabel(a)} · ${t(`thesis.kind.device${s}`)}`,
         line: { shape: 'hv' as const, color: RUN_COLORS[i % RUN_COLORS.length], dash: SUBTYPE_DASH[s] },
       }
     }),
@@ -317,7 +324,7 @@ function SubtypeChart({ analyses }: { analyses: RunAnalysis[] }) {
 function SlotsChart({ analyses }: { analyses: RunAnalysis[] }) {
   const { t } = useTranslation()
   const plot = usePlotTheme()
-  const x = analyses.map((a) => `#${a.run_id}`)
+  const x = analyses.map(runShortLabel)
   const agg = analyses.map((a) => a.aggregates)
   return (
     <Plot
@@ -351,7 +358,7 @@ function SlotsChart({ analyses }: { analyses: RunAnalysis[] }) {
 function OverheadChart({ analyses }: { analyses: RunAnalysis[] }) {
   const { t } = useTranslation()
   const plot = usePlotTheme()
-  const x = analyses.map((a) => `#${a.run_id}`)
+  const x = analyses.map(runShortLabel)
   return (
     <Plot
       data={STAGES.map((st) => ({
@@ -376,7 +383,7 @@ function OverheadChart({ analyses }: { analyses: RunAnalysis[] }) {
 function DepletionChart({ analyses }: { analyses: RunAnalysis[] }) {
   const { t } = useTranslation()
   const plot = usePlotTheme()
-  const x = analyses.map((a) => `#${a.run_id}`)
+  const x = analyses.map(runShortLabel)
   return (
     <Plot
       data={STAGES.map((st) => ({
@@ -409,7 +416,7 @@ function ContributionChart({ analyses }: { analyses: RunAnalysis[] }) {
   const data = readerIds.map((rid) => ({
     type: 'bar' as const,
     name: `R#${rid}`,
-    x: analyses.map((a) => `#${a.run_id}`),
+    x: analyses.map(runShortLabel),
     y: analyses.map((a) => Number(a.reader_contribution[rid] ?? 0)),
   }))
   return (
@@ -460,8 +467,8 @@ function MetricsTable({ analyses }: { analyses: RunAnalysis[] }) {
             return (
               <tr key={a.run_id} className="border-t tabular-nums">
                 <td className="px-2 py-1">
-                  <span className="mr-1 inline-block size-2 rounded-full" style={{ background: RUN_COLORS[i % RUN_COLORS.length] }} />#
-                  {a.run_id}
+                  <span className="mr-1 inline-block size-2 rounded-full" style={{ background: RUN_COLORS[i % RUN_COLORS.length] }} />
+                  <span title={`#${a.run_id}`}>{runShortLabel(a)}</span>
                 </td>
                 <td className="px-2 py-1">{a.scheme}</td>
                 <td className="px-2 py-1">{fmt(pt['50'])}</td>

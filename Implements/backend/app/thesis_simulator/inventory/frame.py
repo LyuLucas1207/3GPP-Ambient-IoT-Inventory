@@ -92,11 +92,14 @@ def run_one_frame(
     candidates = np.where(awake & gate_ok)[0]
 
     # ---------- K, p* and the join coin ----------
-    if config.k_initial is not None:
-        k = max(8, int(config.k_initial))
-    else:
+    # Fixed: every round uses k_initial (default 128). Adaptive: k_initial is only
+    # the cold-start length; later rounds set K ≈ 2 N̂ from the backlog estimate.
+    cold = max(8, int(config.k_initial)) if config.k_initial is not None else 128
+    if config.adaptive_k:
         est = reader.estimator.mnot_next[cur_group]
-        k = 128 if est is None or est <= 0 else max(16, min(consts.k_max, int(2 * est)))
+        k = cold if est is None or est <= 0 else max(16, min(consts.k_max, int(2 * est)))
+    else:
+        k = cold
     pstar = reader.estimator.p_star(k, cur_group)
     join_mask = rng.random(candidates.size) < pstar
     joiners = candidates[join_mask]
@@ -405,7 +408,8 @@ def _dev_event(
         event_type=event_type,
         cause=cause,
         energy_j=float(world.E[dev]),
-        payload=payload,
+        # Remaining on timer: with E it pins the device's energy evolution until its next event.
+        payload={**(payload or {}), "on_s": float(world.on[dev])},
     )
 
 

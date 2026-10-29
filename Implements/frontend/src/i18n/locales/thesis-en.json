@@ -26,6 +26,7 @@
     "showDevice2b": "Show Device 2b",
     "showRadar": "Show reader",
     "showStation": "Show station",
+    "showIdentified": "Show identified (green)",
     "placementMenu": {
       "locked": "Initialized — warehouse size and bulk layout tools are frozen. This node can still be edited."
     },
@@ -52,6 +53,7 @@
       "rounds": "{{count}} rounds",
       "stop": "Stop",
       "delete": "Delete",
+      "rename": "Rename run",
       "collapse": "Collapse runs panel",
       "expand": "Open runs panel",
       "status": {
@@ -67,13 +69,18 @@
     "newRun": {
       "title": "New inventory run",
       "hint": "Pick a paging scheme and parameters. The run uses the currently initialized scene.",
+      "name": "Name (optional)",
+      "namePlaceholder": "e.g. baseline · no EBI",
       "scheme": "Scheme",
       "schemePeriodic": "Periodic",
       "schemeAperiodic": "Aperiodic",
       "maxTime": "Max time (s, optional)",
       "k": "K (M1 slots)",
+      "kInitial": "Initial K (first round)",
       "g": "N_g (groups)",
       "seed": "Seed (empty = random)",
+      "adaptiveK": "Adaptive K (Schoute DFSA)",
+      "adaptiveKHint": "Classic DFSA (not Recurrent PPO). Round 1 uses the Initial $K$ you set (e.g. 256); later rounds set $K \\approx 2\\hat{N}$ from the Schoute / empty-slot backlog estimate. Off: every round uses that same fixed $K$. PPO lives on the Aperiodic Paging Paper page, not in Thesis multi-reader runs.",
       "useGrouping": "Use grouping (periodic paging)",
       "useCapture": "Use capture effect",
       "useEbi": "Use EBI",
@@ -90,7 +97,11 @@
       "unlimited": "unlimited",
       "off": "off",
       "stallTimeout": "Stop after no progress for (s)",
-      "endHint": "The run ends when every reachable device is identified, when nothing new is identified for the time above, or when you pause / stop it. Devices outside every reader’s coverage are marked unreachable at start; devices never identified are shown as red dots."
+      "endHint": "The run ends when every reachable device is identified, when nothing new is identified for the time above, or when you pause / stop it. Devices outside every reader’s coverage are marked unreachable at start; devices never identified are shown as red dots.",
+      "stagger": "Stagger reader start",
+      "staggerHint": "Off: every reader starts its first frame at t = 0. On: readers start in groups, each group a fixed interval after the previous one. The grouping is a strategy and is stored with the run.",
+      "staggerInterval": "Interval (ms)",
+      "staggerAssign": "Assign groups…"
     },
     "analysis": {
       "title": "Run Analysis",
@@ -347,7 +358,20 @@
       },
       "dock": "Run",
       "playReplay": "Play replay",
-      "pauseReplay": "Pause replay"
+      "pauseReplay": "Pause replay",
+      "config": "Run configuration",
+      "configAdaptiveK": "Adaptive K · start {{k}}",
+      "configAdaptiveKDefault": "Adaptive K · start 128",
+      "configFixedK": "Fixed K={{k}}",
+      "configGroups": "Groups N_g={{g}}",
+      "configNoGrouping": "No grouping",
+      "configOn": "{{name}} on",
+      "configOff": "{{name}} off",
+      "configStall": "Stall {{s}} s",
+      "configStallOff": "Stall off",
+      "configSeed": "Seed {{seed}}",
+      "configStagger": "Stagger {{groups}} groups · {{ms}} ms",
+      "configDisabledReaders": "{{count}} readers disabled"
     },
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
@@ -514,6 +538,82 @@
       "meanFrame": "Mean frame",
       "curve": "Identified by this reader over time",
       "hint": "Charts below now show this reader. Right-click the reader to edit it; close to go back to all readers."
+    },
+    "tf": {
+      "deviceTitle": "Device #{{id}} timeline",
+      "readerTitle": "Reader #{{id}} time–frequency",
+      "expand": "Expand",
+      "start": "Start",
+      "prev": "Previous frame",
+      "next": "Next frame",
+      "end": "End",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "scrollHint": "Wheel or ← / → to move in time (Shift = one screen) · Ctrl + wheel or + / − to zoom · [ / ] previous / next frame · Home / End",
+      "frame": "Frame",
+      "noFrames": "No frames in this run yet",
+      "frameSummary": "{{success}} decoded · {{collisions}} collisions · {{idle}} idle · {{served}} served · {{dropped}} dropped by budget",
+      "part": {
+        "paging": "Paging (DL)",
+        "ei": "Early indication (DL)",
+        "m2": "Msg2 {{i}} → device #{{dev}}",
+        "m2Unused": "Unused Msg2/Msg3 time",
+        "m3": "Msg3 from #{{dev}} on f{{f}}",
+        "m3Identified": "Msg3 from #{{dev}} on f{{f}} · identified"
+      },
+      "slot": {
+        "idle": "Slot {{s}} (f{{f}}): idle",
+        "single": "Slot {{s}} (f{{f}}): single → #{{dev}}",
+        "captured": "Slot {{s}} (f{{f}}): {{n}} devices, captured #{{dev}}",
+        "collision": "Slot {{s}} (f{{f}}): collision of {{n}}",
+        "missed": "Slot {{s}} (f{{f}}): {{n}} devices, not decoded"
+      },
+      "legend": {
+        "dl": "Downlink (paging / EI / Msg2)",
+        "single": "Msg1 single",
+        "captured": "Msg1 captured",
+        "collision": "Msg1 collision",
+        "missed": "Msg1 missed",
+        "idle": "Msg1 idle",
+        "m2Unused": "Unused slot time"
+      },
+      "state": "State",
+      "messages": "Messages",
+      "on": "ON (draining)",
+      "off": "OFF (harvesting)",
+      "sleep": "Sleep",
+      "onShort": "ON",
+      "offShort": "OFF",
+      "readerFrame": "Reader frame",
+      "energyApprox": "Energy curve is approximate (this run predates exact ON-timer logging; start a new run for an exact curve).",
+      "act": {
+        "paged": "Received paging",
+        "missedPage": "Missed paging (OFF)",
+        "m1": "Msg1 in slot {{slot}} (f{{f}}): {{result}}",
+        "ei": "Received early indication",
+        "m2": "Received Msg2 #{{i}}",
+        "m3": "Sent Msg3",
+        "sleep": "Sleeping (waiting)"
+      },
+      "collapse": "Collapse idle time",
+      "collapsedTip": "Collapsed idle time\n{{a}} ~ {{b}} ({{d}})\nUntick \"Collapse idle time\" to see it to scale."
+    },
+    "stagger": {
+      "title": "Reader start groups",
+      "hint": "Group 1 starts at t = 0; each next group starts {{ms}} ms after the previous one.",
+      "preset": "Strategy:",
+      "presets": {
+        "together": "All together",
+        "checkerboard": "Checkerboard",
+        "rows": "By row",
+        "columns": "By column",
+        "sequential": "One by one"
+      },
+      "group": "Group {{n}}",
+      "addGroup": "Add group",
+      "clickHint": "Click readers on the map or in the list to move them into group {{n}}.",
+      "map": "Reader layout",
+      "apply": "Apply"
     }
   }
 }

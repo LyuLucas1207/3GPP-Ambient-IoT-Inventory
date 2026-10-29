@@ -17,6 +17,7 @@ from app.schemas.thesis_runs import (
     RoundSlotsOut,
     RunCreateIn,
     RunDetailOut,
+    RunNameIn,
     RunSpeedIn,
     RunSummaryOut,
     SnapshotIndexOut,
@@ -43,6 +44,7 @@ from app.thesis_simulator.runs_service import (
     round_slots,
     run_detail,
     run_summary,
+    set_run_name,
     set_run_speed,
     snapshot_at,
     snapshot_times,
@@ -51,6 +53,7 @@ from app.thesis_simulator.runs_service import (
 )
 from app.thesis_simulator.service import get_section
 from app.thesis_simulator.service import SceneError
+from app.thesis_simulator.timefreq import device_trace, reader_timefreq
 
 router = APIRouter(tags=["thesis-simulator-runs"])
 
@@ -129,6 +132,14 @@ def post_resume(run_id: int, db: Session = Depends(get_db)) -> dict:
 def post_speed(run_id: int, body: RunSpeedIn, db: Session = Depends(get_db)) -> dict:
     try:
         return run_summary(set_run_speed(db, run_id, body.speed))
+    except SceneError as exc:
+        raise _guard(exc) from exc
+
+
+@router.post("/runs/{run_id}/name", response_model=RunSummaryOut)
+def post_name(run_id: int, body: RunNameIn, db: Session = Depends(get_db)) -> dict:
+    try:
+        return run_summary(set_run_name(db, run_id, body.name))
     except SceneError as exc:
         raise _guard(exc) from exc
 
@@ -221,6 +232,30 @@ def read_rounds(
 def read_timeline(run_id: int, device_id: int, db: Session = Depends(get_db)) -> dict:
     try:
         return device_timeline(db, run_id, device_id)
+    except SceneError as exc:
+        raise _guard(exc) from exc
+
+
+@router.get("/runs/{run_id}/readers/{reader_id}/timefreq")
+def read_reader_timefreq(
+    run_id: int,
+    reader_id: int,
+    t0: float = Query(default=0.0, ge=0.0),
+    t1: float = Query(default=10.0, ge=0.0),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Frames of one reader overlapping [t0, t1] with the resource each device used."""
+    try:
+        return reader_timefreq(db, run_id, reader_id, t0, max(t0, t1))
+    except SceneError as exc:
+        raise _guard(exc) from exc
+
+
+@router.get("/runs/{run_id}/device/{device_id}/trace")
+def read_device_trace(run_id: int, device_id: int, db: Session = Depends(get_db)) -> dict:
+    """One device from start to end: protocol events, its frames and its energy between them."""
+    try:
+        return device_trace(db, run_id, device_id)
     except SceneError as exc:
         raise _guard(exc) from exc
 

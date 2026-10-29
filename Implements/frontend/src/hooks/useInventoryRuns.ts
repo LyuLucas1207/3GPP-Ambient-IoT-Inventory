@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   createRun as apiCreateRun,
@@ -8,6 +8,7 @@ import {
   fetchRuns,
   pauseRun as apiPauseRun,
   resumeRun as apiResumeRun,
+  setRunName as apiSetRunName,
   setRunSpeed as apiSetRunSpeed,
   stopRun as apiStopRun,
 } from '@/api/thesisRuns'
@@ -33,11 +34,14 @@ export function useInventoryRuns(sectionId: number | null, options: { pollWhileL
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [selectedRunId, setSelectedRunId] = useState<number | null>(null)
+  // When true, pick the newest run as soon as the list is non-empty.
+  const autoSelectNewest = useRef(true)
   const [error, setError] = useState<string | null>(null)
   const fail = useCallback((err: unknown) => setError(explain(err, t)), [t])
 
   useEffect(() => {
     setSelectedRunId(null)
+    autoSelectNewest.current = true
   }, [sectionId])
 
   const runsKey = thesisKeys.runs(sectionId)
@@ -50,6 +54,25 @@ export function useInventoryRuns(sectionId: number | null, options: { pollWhileL
       options.pollWhileLive && query.state.data?.some((r) => r.status === 'running' || r.status === 'pending') ? 2000 : false,
   })
   const runs = useMemo(() => runsQuery.data ?? [], [runsQuery.data])
+
+  const selectRun = useCallback((id: number | null) => {
+    // Clearing selection is intentional; don't force the newest back on.
+    autoSelectNewest.current = id != null
+    setSelectedRunId(id)
+  }, [])
+
+  useEffect(() => {
+    if (!autoSelectNewest.current || selectedRunId != null || runs.length === 0) return
+    setSelectedRunId(runs[0].run_id)
+  }, [runs, selectedRunId])
+
+  useEffect(() => {
+    if (selectedRunId == null) return
+    if (runs.some((r) => r.run_id === selectedRunId)) return
+    // Selected run vanished (delete / section change race): fall back to newest if allowed.
+    if (autoSelectNewest.current && runs.length > 0) setSelectedRunId(runs[0].run_id)
+    else setSelectedRunId(null)
+  }, [runs, selectedRunId])
 
   const runQuery = useQuery({
     queryKey: thesisKeys.run(selectedRunId),
@@ -117,13 +140,17 @@ export function useInventoryRuns(sectionId: number | null, options: { pollWhileL
   const pauseRun = useCallback((id: number) => control(id, () => apiPauseRun(id)), [control])
   const resumeRun = useCallback((id: number) => control(id, () => apiResumeRun(id)), [control])
   const setSpeed = useCallback((id: number, speed: number | null) => control(id, () => apiSetRunSpeed(id, speed)), [control])
+  const renameRun = useCallback(
+    (id: number, name: string | null) => control(id, () => apiSetRunName(id, name)),
+    [control],
+  )
 
   const selectedRun = useMemo(() => runs.find((r) => r.run_id === selectedRunId) ?? null, [runs, selectedRunId])
 
   return {
     runs,
     selectedRunId,
-    setSelectedRunId,
+    setSelectedRunId: selectRun,
     selectedRun,
     activeRun: runQuery.data ?? null,
     busy: createMutation.isPending || controlMutation.isPending,
@@ -135,6 +162,7 @@ export function useInventoryRuns(sectionId: number | null, options: { pollWhileL
     pauseRun,
     resumeRun,
     setSpeed,
+    renameRun,
     refreshRuns,
   }
 }

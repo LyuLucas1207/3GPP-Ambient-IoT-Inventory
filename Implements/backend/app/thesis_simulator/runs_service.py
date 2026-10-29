@@ -175,6 +175,28 @@ def set_run_speed(db: Session, run_id: int, speed: float | None) -> ThesisInvent
     return run
 
 
+def set_run_name(db: Session, run_id: int, name: str | None) -> ThesisInventoryRun:
+    run = get_run(db, run_id)
+    cfg = {**(run.config_json or {})}
+    if name is None:
+        cfg.pop("name", None)
+    else:
+        cfg["name"] = name
+    run.config_json = cfg
+    run.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(run)
+    return run
+
+
+def _run_name(cfg: dict[str, Any]) -> str | None:
+    raw = cfg.get("name")
+    if not isinstance(raw, str):
+        return None
+    cleaned = raw.strip()
+    return cleaned or None
+
+
 def run_summary(run: ThesisInventoryRun) -> dict[str, Any]:
     summary = run.summary
     cfg = run.config_json or {}
@@ -184,6 +206,7 @@ def run_summary(run: ThesisInventoryRun) -> dict[str, Any]:
         "section_id": run.section_id,
         "scheme": run.scheme,
         "status": run.status,
+        "name": _run_name(cfg),
         "total_devices": summary.total_devices if summary else len(scene_device_ids(run)),
         "identified_total": summary.identified_total if summary else 0,
         "identified_by_subtype": summary.identified_by_subtype_json if summary else {},
@@ -200,15 +223,19 @@ def run_summary(run: ThesisInventoryRun) -> dict[str, Any]:
         "max_time_s": cfg.get("max_time_s"),
         "include_d2r": bool(cfg.get("include_d2r", True)),
         "disabled_reader_ids": [int(x) for x in (cfg.get("disabled_reader_ids") or [])],
+        "reader_start_groups": [[int(x) for x in g] for g in (cfg.get("reader_start_groups") or [])],
+        "reader_start_interval_s": cfg.get("reader_start_interval_s"),
     }
 
 
 def run_detail(run: ThesisInventoryRun) -> dict[str, Any]:
+    cfg = run.config_json or {}
     return {
         "id": run.id,
         "section_id": run.section_id,
         "scheme": run.scheme,
         "status": run.status,
+        "name": _run_name(cfg),
         "config": run.config_json,
         "scene_snapshot": run.scene_snapshot_json,
         "requested_at": iso(run.requested_at),

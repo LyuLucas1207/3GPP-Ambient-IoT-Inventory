@@ -46,3 +46,9 @@ export function decodeBase64(b64: string): ArrayBuffer {
 }
 
 export const SPEED_OPTIONS: (number | null)[] = [1, 2, 5, 10, 50, null]
+
+/** Custom name when set; otherwise the stable `#id` fallback. */
+export function runDisplayName(run: { run_id: number; name?: string | null }): string {
+  const name = run.name?.trim()
+  return name || `#${run.run_id}`
+}
