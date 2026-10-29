@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ParamHint } from '@/components/ParamHint'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogBackdrop, DialogDescription, DialogPopup, DialogPortal, DialogTitle } from '@/components/ui/dialog'
@@ -34,6 +35,8 @@ export function NewRunDialog({
   const [seed, setSeed] = useState('')
   const [disabledReaders, setDisabledReaders] = useState<Set<number>>(new Set())
 
+  const periodic = scheme === 'periodic'
+
   async function submit() {
     const config: RunCreateInput = {
       scheme,
@@ -43,8 +46,8 @@ export function NewRunDialog({
       speed: speed === 'max' ? null : Number(speed),
       stall_timeout_s: positiveOrNull(stallTimeout),
       k_initial: Number(kInitial) || null,
-      g: Number(g) || null,
-      use_grouping: useGrouping,
+      g: periodic ? Number(g) || null : 1,
+      use_grouping: periodic && useGrouping,
       use_capture: useCapture,
       use_ebi: useEbi,
       include_d2r: includeD2r,
@@ -115,30 +118,42 @@ export function NewRunDialog({
               <span className="text-muted-foreground">{t('thesis.newRun.k')}</span>
               <Input value={kInitial} onChange={(e) => setKInitial(e.target.value)} />
             </label>
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="text-muted-foreground">{t('thesis.newRun.g')}</span>
-              <Input value={g} onChange={(e) => setG(e.target.value)} />
-            </label>
+            {periodic ? (
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-muted-foreground">{t('thesis.newRun.g')}</span>
+                <Input value={g} onChange={(e) => setG(e.target.value)} disabled={!useGrouping} />
+              </label>
+            ) : null}
             <label className="flex flex-col gap-1 text-xs">
               <span className="text-muted-foreground">{t('thesis.newRun.seed')}</span>
               <Input value={seed} onChange={(e) => setSeed(e.target.value)} placeholder="auto" />
             </label>
-            <label className="col-span-2 flex items-center gap-2 text-sm">
-              <Checkbox checked={useGrouping} onCheckedChange={(v) => setUseGrouping(v === true)} />
-              {t('thesis.newRun.useGrouping')}
-            </label>
-            <label className="col-span-2 flex items-center gap-2 text-sm">
-              <Checkbox checked={useCapture} onCheckedChange={(v) => setUseCapture(v === true)} />
-              {t('thesis.newRun.useCapture')}
-            </label>
-            <label className="col-span-2 flex items-center gap-2 text-sm">
-              <Checkbox checked={useEbi} onCheckedChange={(v) => setUseEbi(v === true)} />
-              {t('thesis.newRun.useEbi')}
-            </label>
-            <label className="col-span-2 flex items-center gap-2 text-sm">
-              <Checkbox checked={includeD2r} onCheckedChange={(v) => setIncludeD2r(v === true)} />
-              {t('thesis.newRun.includeD2r')}
-            </label>
+            {periodic ? (
+              <OptionToggle
+                checked={useGrouping}
+                onChange={setUseGrouping}
+                label={t('thesis.newRun.useGrouping')}
+                hint={t('thesis.newRun.useGroupingHint')}
+              />
+            ) : null}
+            <OptionToggle
+              checked={useCapture}
+              onChange={setUseCapture}
+              label={t('thesis.newRun.useCapture')}
+              hint={t('thesis.newRun.useCaptureHint')}
+            />
+            <OptionToggle
+              checked={useEbi}
+              onChange={setUseEbi}
+              label={t('thesis.newRun.useEbi')}
+              hint={t('thesis.newRun.useEbiHint')}
+            />
+            <OptionToggle
+              checked={includeD2r}
+              onChange={setIncludeD2r}
+              label={t('thesis.newRun.includeD2r')}
+              hint={t('thesis.newRun.includeD2rHint')}
+            />
             {readers.length > 0 ? (
               <fieldset className="col-span-2 flex flex-col gap-1 rounded-md border p-2 text-xs">
                 <legend className="px-1 text-muted-foreground">{t('thesis.newRun.disableReaders')}</legend>
@@ -171,6 +186,28 @@ export function NewRunDialog({
         </DialogPopup>
       </DialogPortal>
     </Dialog>
+  )
+}
+
+function OptionToggle({
+  checked,
+  onChange,
+  label,
+  hint,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label: string
+  hint: string
+}) {
+  return (
+    <div className="col-span-2 flex items-center gap-1.5 text-sm">
+      <label className="flex items-center gap-2">
+        <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} />
+        {label}
+      </label>
+      <ParamHint text={hint} title={label} />
+    </div>
   )
 }
 

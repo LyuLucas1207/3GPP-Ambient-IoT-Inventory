@@ -178,12 +178,15 @@ class EpisodeConfig:
     def from_json(cls, scheme: str, cfg: dict[str, Any]) -> "EpisodeConfig":
         max_time = cfg.get("max_time_s")
         stall = cfg.get("stall_timeout_s", DEFAULT_STALL_TIMEOUT_S)
+        # Grouping is a periodic-paging mechanism; aperiodic devices never stay
+        # aligned to a group's paging times.
+        grouped = scheme == "periodic" and bool(cfg.get("use_grouping", False))
         return cls(
             scheme=scheme,
             max_time_s=None if max_time in (None, "") else float(max_time),
             k_initial=cfg.get("k_initial"),
-            g=int(cfg.get("g") or 1),
-            use_grouping=bool(cfg.get("use_grouping", False)),
+            g=int(cfg.get("g") or 1) if grouped else 1,
+            use_grouping=grouped,
             use_capture=bool(cfg.get("use_capture", True)),
             use_ebi=bool(cfg.get("use_ebi", True)),
             include_d2r=bool(cfg.get("include_d2r", True)),

@@ -50,6 +50,7 @@ export function ThesisWarehouse({
   markerScale,
   deviceMarkerScale,
   live,
+  flagPending = false,
   selectedDeviceId = null,
   onSelectDevice,
   onSelectReader,
@@ -67,6 +68,8 @@ export function ThesisWarehouse({
   deviceMarkerScale: number
   /** live per-device state of the selected run (null = colour by subtype) */
   live: LiveDevices | null
+  /** flag every device not identified yet, not only the dropped ones */
+  flagPending?: boolean
   selectedDeviceId?: number | null
   onSelectDevice?: (id: number | null) => void
   /** when set (a run is selected), a left click on a reader inspects it instead of opening the edit menu */
@@ -364,7 +367,8 @@ export function ThesisWarehouse({
     }
     const byColor = new Map<string, Placement[]>()
     const dimmed: Placement[] = []
-    const flagged: Placement[] = [] // unidentified at the end of the run
+    const flagged: Placement[] = [] // unidentified at the end of the run, or so far when paused / stopped
+    const identifiedCode = RUN_STATE_LABELS.indexOf('identified')
     const push = (color: string, placement: Placement) => {
       const list = byColor.get(color) ?? []
       list.push(placement)
@@ -389,7 +393,7 @@ export function ThesisWarehouse({
         const idx = live.indexById.get(placement.id as number)
         if (idx != null) {
           const code = live.codes[idx]
-          if (FLAGGED_CODES.has(code)) {
+          if (FLAGGED_CODES.has(code) || (flagPending && code !== identifiedCode)) {
             flagged.push(placement)
             continue
           }
@@ -428,7 +432,7 @@ export function ThesisWarehouse({
       ctx.strokeStyle = id === selectedDeviceId ? '#eab308' : 'rgba(127,127,127,0.9)'
       ctx.stroke()
     }
-  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults, live, live?.version, selectedDeviceId, hover?.id])
+  }, [scene, view.panX, view.panY, scale, size.vw, size.vh, layers.device1, layers.device2a, layers.device2b, deviceMarkerScale, focusReaderId, deviceDefaults, live, live?.version, flagPending, selectedDeviceId, hover?.id])
 
   function screenToWorld(clientX: number, clientY: number) {
     const rect = hostRef.current?.getBoundingClientRect()

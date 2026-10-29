@@ -117,6 +117,9 @@ export default function ThesisSimulationPage() {
       : r
   const panelRuns = runs.runs.map(liveSummary)
   const selectedRun = runs.selectedRun ? liveSummary(runs.selectedRun) : null
+  // Paused / stopped runs leave unfinished devices un-dropped; flag them so they stand out at the latest frame.
+  const selectedStatus = live.status ?? selectedRun?.status
+  const flagPending = live.viewTime == null && (selectedStatus === 'paused' || selectedStatus === 'stopped')
   const inspectedReader =
     inspectedReaderId != null && selectedRun
       ? scene?.placements.find((p) => p.id === inspectedReaderId && p.kind === 'radar') ?? null
@@ -227,6 +230,7 @@ export default function ThesisSimulationPage() {
             markerScale={scene?.markerScale ?? 0.7}
             deviceMarkerScale={scene?.deviceMarkerScale ?? 0.3}
             live={runs.selectedRunId != null ? live.devices : null}
+            flagPending={flagPending}
             selectedDeviceId={selectedDeviceId}
             onSelectDevice={inspectDevice}
             onSelectReader={selectedRun ? (id) => inspectReader(id) : undefined}

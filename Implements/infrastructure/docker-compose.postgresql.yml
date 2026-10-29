@@ -1,6 +1,6 @@
 # Local PostgreSQL for the thesis scene store.
 # From this directory:
-#   docker compose -f docker-compose.postgresql.yml up -d
+#   ./start.sh
 #
 # Defaults match THESIS_DATABASE_URL in the backend:
 #   postgresql+psycopg://thesis:thesis@127.0.0.1:5432/thesis
