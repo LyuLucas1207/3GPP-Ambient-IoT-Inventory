@@ -1,0 +1,10 @@
+{
+  "name": "mappo",
+  "algo": "mappo",
+  "description": "MAPPO: shared actor on local observations, centralized critic that also sees the global state (CTDE), same randomization as ps_ppo_randomized.",
+  "alphas": [0.5],
+  "betas": [0.5],
+  "seeds": [0],
+  "env": {"readers": [1, 18], "subset": "random", "offsets": ["none", "random", "groups"], "resource_modes": ["independent", "fdma", "tdma", "hybrid"], "schemes": ["aperiodic"], "subtype_mix": "random"},
+  "hyperparameters": {"learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.005, "hidden": [128, 128]}
+}

@@ -3,25 +3,37 @@
 Timing follows the reference ``grouping_logic.py`` (``T_pre + T_post``)::
 
     T_frame = T_paging
-            + ceil(K / F) * T_M1                 # K M1 slots spread over F subbands
+            + ceil(K / F_r) * T_M1               # K M1 resources spread over the F_r granted subbands
             + T_EBI(K)
             + S_M2 * T_M2                         # periodic: ceil(K * ratio); aperiodic: S
-            + ceil(S_M2 / F) * T_M3
+            + ceil(S_M2 / F_r) * T_M3
+
+``F_r`` is the number of subbands the coordination policy grants the reader
+(``F`` in the ideal ``independent`` mode). ``K`` and ``p*`` come from the
+reader's controller (``inventory/controller.py``).
 
 Energy depletion mirrors the reference ``_kill``: a device whose energy falls
 to ``Eoff`` during a stage is forced OFF and ungrouped, counted in
 ``deaths[stage]`` and keeps competing once it has recharged. Only
 ``identified`` and ``dropped`` are terminal.
+
+With inter-reader interference (``ictx`` given) four losses are added: a
+device that cannot decode the page (R2D SIR), a Msg1 the reader cannot decode
+(D2R SINR), a Msg2 the device cannot decode and a Msg3 the reader cannot
+decode. Without interference the random stream and every outcome are the
+same as the ideal engine's.
 """
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from app.thesis_simulator.inventory.aloha import simulate_frame
+from app.thesis_simulator.inventory.aloha import draw_slots, simulate_frame
+from app.thesis_simulator.inventory.controller import build_controller
 from app.thesis_simulator.inventory.events import EventEmitter
 from app.thesis_simulator.inventory.state import (
     STATE_COLLISION,
@@ -35,6 +47,9 @@ from app.thesis_simulator.inventory.state import (
     ReaderState,
 )
 
+if TYPE_CHECKING:
+    from app.thesis_simulator.coordination.coordinator import Coordinator, FrameActivityBuilder, FrameInterference
+
 STAGES: tuple[str, ...] = ("paging", "m1", "ebi", "m2", "m3")
 
 
@@ -44,6 +59,16 @@ class FrameResult:
     touched: dict[int, int] = field(default_factory=dict)  # device idx -> transient STATE_*
     identified: int = 0
     depleted: int = 0
+    k: int = 0
+    pstar: float = 0.0
+    success: int = 0
+    collision: int = 0
+    empty: int = 0
+    joiners: int = 0
+    f_r: int = 0
+    activity: "FrameActivityBuilder | None" = None
+    interference: dict[str, int] = field(default_factory=dict)
+    new_by_subtype: tuple[int, ...] = (0, 0, 0)  # this frame's new IDs per subtype code
 
 
 @dataclass
@@ -64,16 +89,30 @@ def run_one_frame(
     config: EpisodeConfig,
     rng: np.random.Generator,
     emit: EventEmitter,
+    *,
+    coord: "Coordinator | None" = None,
+    ictx: "FrameInterference | None" = None,
 ) -> FrameResult:
     consts = config.consts
     F = max(1, int(consts.f_freq))
+    subbands = reader.subbands or tuple(range(F))
+    F_r = len(subbands)
+    sb_set = frozenset(subbands)
     g = max(1, config.g if config.use_grouping else 1)
     cur_group = reader.round_index % g
     periodic = config.scheme == "periodic"
     t0 = reader.clock_s
     stats = _FrameStats()
-    result = FrameResult(t_frame=0.0)
+    result = FrameResult(t_frame=0.0, f_r=F_r)
     rid = reader.reader_id
+    ix = {"r2d_lost": 0, "m1_lost": 0, "m2_lost": 0, "m3_lost": 0}
+    interfering = ictx is not None and not ictx.empty
+    built = None
+    if coord is not None and (ictx is not None or coord.spec.mode == "lbt"):
+        from app.thesis_simulator.coordination.coordinator import CW, R2D, FrameActivityBuilder
+
+        built = FrameActivityBuilder()
+    a_idx = coord.index[rid] if coord is not None else -1
 
     # ---------- candidate pool ----------
     alive = ~world.terminal_mask()
@@ -92,15 +131,11 @@ def run_one_frame(
     candidates = np.where(awake & gate_ok)[0]
 
     # ---------- K, p* and the join coin ----------
-    # Fixed: every round uses k_initial (default 128). Adaptive: k_initial is only
-    # the cold-start length; later rounds set K ≈ 2 N̂ from the backlog estimate.
-    cold = max(8, int(config.k_initial)) if config.k_initial is not None else 128
-    if config.adaptive_k:
-        est = reader.estimator.mnot_next[cur_group]
-        k = cold if est is None or est <= 0 else max(16, min(consts.k_max, int(2 * est)))
-    else:
-        k = cold
-    pstar = reader.estimator.p_star(k, cur_group)
+    if reader.controller is None:
+        reader.controller = build_controller(config)
+    decision = reader.controller.decide(reader, config, cur_group, F_r)
+    k = max(1, int(decision.k))
+    pstar = float(decision.pstar)
     join_mask = rng.random(candidates.size) < pstar
     joiners = candidates[join_mask]
     skippers = candidates[~join_mask]
@@ -111,7 +146,7 @@ def run_one_frame(
     T_m2 = consts.t_m2()
     T_m3 = consts.t_m3()
     T_ebi = consts.t_ebi(k) if config.use_ebi else 0.0
-    T_m1_phase = math.ceil(k / F) * T_m1
+    T_m1_phase = math.ceil(k / F_r) * T_m1
     t_m1_start = t0 + T_pg
     t_ebi_start = t_m1_start + T_m1_phase
     t_m2_start = t_ebi_start + T_ebi
@@ -125,7 +160,11 @@ def run_one_frame(
         g=float(g),
         pstar=pstar,
         slot_count=k,
-        metadata={"scheme": config.scheme, "group": cur_group, "freq_subbands": F},
+        metadata={
+            "scheme": config.scheme, "group": cur_group, "freq_subbands": F, "f_r": F_r,
+            "subbands": list(subbands), "color": int(reader.color), "controller": reader.controller.name,
+            **({"controller_info": decision.info} if decision.info else {}),
+        },
     )
     emit.emit_reader(
         reader_id=rid, round_handle=handle, t_s=t0, event_type="round_start",
@@ -133,10 +172,24 @@ def run_one_frame(
     )
     emit.emit_reader(reader_id=rid, round_handle=handle, t_s=t0, event_type="page_sent", payload={"group": cur_group, "k": k})
 
+    # ---------- paging under interference: devices that cannot decode the page ----------
+    if interfering and candidates.size:
+        lost = _r2d_lost(ictx, reader, candidates, t0, t0 + T_pg, sb_set, coord.sir_lin)
+        if lost.any():
+            lost_idx = candidates[lost]
+            _debit(world, lost_idx, T_pg, world.p_rx, stats)
+            for dev in lost_idx:
+                _dev_event(emit, world, rid, handle, t0 + T_pg, int(dev), "missed_page", cause="r2d_interference")
+            ix["r2d_lost"] += int(lost_idx.size)
+            keep = ~np.isin(joiners, lost_idx)
+            joiners = joiners[keep]
+            skippers = skippers[~np.isin(skippers, lost_idx)]
+
     # ---------- paging: skippers pay RX and switch OFF (reference "Skippers") ----------
     if skippers.size:
         _debit(world, skippers, T_pg, world.p_rx, stats)
         world.on[skippers] = 0.0
+        world.went_off[skippers] = True
         for dev in skippers:
             _dev_event(emit, world, rid, handle, t0 + T_pg, int(dev), "missed_page", cause="coin")
 
@@ -144,6 +197,7 @@ def run_one_frame(
     _debit(world, joiners, T_pg, world.p_rx, stats)
     for dev in joiners:
         _dev_event(emit, world, rid, handle, t0 + T_pg, int(dev), "paged", payload={"k": k, "pstar": float(pstar)})
+    _paging_acquired(world, joiners, rid, t0 + T_pg)
     if config.use_grouping and joiners.size:
         first = joiners[world.grp[joiners] < 0]
         world.grp[first] = cur_group
@@ -152,12 +206,24 @@ def run_one_frame(
             _dev_event(emit, world, rid, handle, t0 + T_pg, int(dev), "latched", payload={"group": cur_group})
     joiners = _deplete(world, joiners, "paging", t0 + T_pg, rid, handle, emit, stats, result)
     world.attempts[joiners] += 1
+    attempted = joiners.copy()
+    result.joiners = int(joiners.size)
 
     if joiners.size == 0:
         emit.emit_reader(reader_id=rid, round_handle=handle, t_s=t_m1_start, event_type="idle", payload={"group": cur_group})
 
-    # ---------- M1 (framed ALOHA over K slots / F subbands) ----------
+    # ---------- M1 (framed ALOHA over K resources / F_r subbands) ----------
     rx_power = _rx_power_at_reader(world, reader, joiners)
+    slots = None
+    decodable = None
+    if interfering and joiners.size:
+        slots = draw_slots(rng, k, joiners.size)
+        decodable = _d2r_decodable(
+            ictx, coord, a_idx, joiners, slots, t_m1_start, T_m1, subbands, reader, slot_period=True,
+        )
+        ix["m1_lost"] += int((~decodable).sum())
+    elif built is not None and joiners.size:
+        slots = draw_slots(rng, k, joiners.size)
     aloha = simulate_frame(
         joiner_indices=joiners,
         rx_power_dbm=rx_power,
@@ -166,17 +232,22 @@ def run_one_frame(
         use_energy_detect=config.use_ebi,
         rng=rng,
         consts=consts,
+        decodable=decodable,
+        slots=slots,
     )
     for i, dev in enumerate(joiners):
         slot = int(aloha.slot_of_device[i])
+        t_tx = _slot_time(t_m1_start, slot, F_r, T_m1)
         _dev_event(
-            emit, world, rid, handle, _slot_time(t_m1_start, slot, F, T_m1), int(dev), "m1_tx",
+            emit, world, rid, handle, t_tx, int(dev), "m1_tx",
             payload={"slot": slot, "rx_power_dbm": float(rx_power[i])},
         )
+        if built is not None:
+            built.add_tx(t_tx, t_tx + T_m1, subbands[slot % F_r], int(dev))
     _debit(world, joiners, T_m1, world.p_tx, stats)
     for s in np.nonzero(aloha.occupancy)[0]:
         occ = int(aloha.occupancy[s])
-        t_slot = _slot_time(t_m1_start, int(s), F, T_m1) + 0.5 * T_m1
+        t_slot = _slot_time(t_m1_start, int(s), F_r, T_m1) + 0.5 * T_m1
         in_slot = np.nonzero(aloha.slot_of_device == s)[0]
         won = in_slot[aloha.winners[in_slot]]
         if won.size:
@@ -194,13 +265,16 @@ def run_one_frame(
     for i, dev in enumerate(joiners):
         dev = int(dev)
         slot = int(aloha.slot_of_device[i])
-        t_ev = _slot_time(t_m1_start, slot, F, T_m1) + T_m1
+        t_ev = _slot_time(t_m1_start, slot, F_r, T_m1) + T_m1
         if dev in dead_m1:
             continue
         if aloha.winners[i]:
             _dev_event(emit, world, rid, handle, t_ev, dev, "m1_success", payload={"slot": slot})
             result.touched[dev] = STATE_M1_SUCCESS
             winner_order.append((slot, dev))
+        elif decodable is not None and not decodable[i] and aloha.occupancy[slot] == 1:
+            _dev_event(emit, world, rid, handle, t_ev, dev, "m1_interfered", cause="d2r_interference", payload={"slot": slot})
+            result.touched[dev] = STATE_TX
         elif aloha.occupancy[slot] == 1:
             _dev_event(emit, world, rid, handle, t_ev, dev, "m1_empty", cause="detector_miss", payload={"slot": slot})
             result.touched[dev] = STATE_TX
@@ -241,19 +315,40 @@ def run_one_frame(
         emit.emit_reader(
             reader_id=rid, round_handle=handle, t_s=t_m2_start, event_type="m2_sent", payload={"served": int(served.size)},
         )
+        if interfering:
+            ok = np.ones(served.size, dtype=bool)
+            for i, dev in enumerate(served):
+                t_a = t_m2_start + i * T_m2
+                lost = _r2d_lost(ictx, reader, np.array([dev]), t_a, t_a + T_m2, sb_set, coord.sir_lin)
+                if lost[0]:
+                    ok[i] = False
+                    _dev_event(emit, world, rid, handle, t_a + T_m2, int(dev), "m2_interfered", cause="r2d_interference")
+            ix["m2_lost"] += int((~ok).sum())
+            served = served[ok]
         served = _deplete(world, served, "m2", t_m2_start + s_m2_time * T_m2, rid, handle, emit, stats, result)
 
-    # ---------- M3 (device -> reader final response, F in parallel) ----------
+    # ---------- M3 (device -> reader final response, F_r in parallel) ----------
     t_m3_start = t_m2_start + s_m2_time * T_m2
-    n_m3_slots = int(math.ceil(s_m2_time / F)) if s_m2_time else 0
+    n_m3_slots = int(math.ceil(s_m2_time / F_r)) if s_m2_time else 0
     if served.size:
         _debit(world, served, T_m3, world.p_tx, stats)
         order = {int(dev): i for i, dev in enumerate(served)}
         for dev in served:
-            _dev_event(emit, world, rid, handle, t_m3_start + (order[int(dev)] // F) * T_m3, int(dev), "m3_tx")
+            t_tx = t_m3_start + (order[int(dev)] // F_r) * T_m3
+            _dev_event(emit, world, rid, handle, t_tx, int(dev), "m3_tx")
+            if built is not None:
+                built.add_tx(t_tx, t_tx + T_m3, subbands[order[int(dev)] % F_r], int(dev))
         served = _deplete(world, served, "m3", t_m3_start + n_m3_slots * T_m3, rid, handle, emit, stats, result)
+        if interfering and served.size:
+            pos = np.array([order[int(d)] for d in served], dtype=np.int64)
+            ok = _d2r_decodable(ictx, coord, a_idx, served, pos, t_m3_start, T_m3, subbands, reader, slot_period=True)
+            for dev in served[~ok]:
+                t_ev = t_m3_start + (order[int(dev)] // F_r + 1) * T_m3
+                _dev_event(emit, world, rid, handle, t_ev, int(dev), "m3_interfered", cause="d2r_interference")
+            ix["m3_lost"] += int((~ok).sum())
+            served = served[ok]
         for dev in served:
-            t_id = t_m3_start + (order[int(dev)] // F + 1) * T_m3
+            t_id = t_m3_start + (order[int(dev)] // F_r + 1) * T_m3
             world.identified[dev] = True
             world.identified_t[dev] = t_id
             world.identified_by[dev] = rid
@@ -266,9 +361,16 @@ def run_one_frame(
             payload={"identified": int(served.size)},
         )
     result.identified = int(served.size)
+    result.new_by_subtype = tuple(int((world.subtype_code[served] == c).sum()) for c in range(len(SUBTYPE_LABEL)))
 
     t_frame = T_pg + T_m1_phase + T_ebi + s_m2_time * T_m2 + n_m3_slots * T_m3
     t_end = t0 + t_frame
+
+    # ---------- per-device CBRA failure bookkeeping ----------
+    if attempted.size:
+        failed = attempted[~world.identified[attempted]]
+        world.cbra_failures[failed] += 1
+        world.t_last_fail[failed] = t_end
 
     # ---------- ungroup low-energy latched members (not terminal) ----------
     if config.use_grouping and consts.ungroup_when_off:
@@ -280,12 +382,25 @@ def run_one_frame(
         world.grp[ungroup] = -1
         world.latched_reader[ungroup] = -1
 
+    # ---------- air-time record for the coordinator ----------
+    if built is not None:
+        built.add(t0, t0 + T_pg, R2D)
+        built.add(t_m1_start, t_ebi_start, CW)
+        built.add(t_ebi_start, t_m2_start, R2D)
+        built.add(t_m2_start, t_m3_start, R2D)
+        built.add(t_m3_start, t_end, CW)
+        result.activity = built
+    ix_total = sum(ix.values())
+    result.interference = {**ix, "interferers": 0 if ictx is None else len(ictx.acts)}
+
     # ---------- estimator + round bookkeeping ----------
     mnot_prev = reader.estimator.mnot_next[cur_group]
     n_hat = reader.estimator.update(cur_group, k, aloha.successes, aloha.collisions, aloha.empties, max(1e-8, pstar))
     by_sub = {
         SUBTYPE_LABEL[c]: int((world.identified & (world.subtype_code == c)).sum()) for c in range(len(SUBTYPE_LABEL))
     }
+    if ictx is not None or ix_total:
+        emit._rounds[handle].metadata_json["interference"] = result.interference
     emit.finish_round(
         handle,
         t_end_s=t_end,
@@ -315,7 +430,8 @@ def run_one_frame(
             "energy_json": stats.energy_json(),
             "deaths_json": stats.deaths_json(),
             "slots_json": {
-                "f": F,
+                "f": F_r,
+                "subbands": list(subbands),
                 "occ": aloha.occupancy.astype(int).tolist(),
                 "res": aloha.slot_result.astype(int).tolist(),
             },
@@ -326,6 +442,11 @@ def run_one_frame(
         payload={"success": aloha.successes, "collision": aloha.collisions, "empty": aloha.empties},
     )
     result.t_frame = t_frame
+    result.k = k
+    result.pstar = pstar
+    result.success = int(aloha.successes)
+    result.collision = int(aloha.collisions)
+    result.empty = int(aloha.empties)
     return result
 
 
@@ -335,6 +456,74 @@ def run_one_frame(
 def _slot_time(t_m1_start: float, slot: int, F: int, T_m1: float) -> float:
     """Start time of an M1 slot: K slots are laid out F per T_M1 period."""
     return t_m1_start + (slot // F) * T_m1
+
+
+def _paging_acquired(world: DeviceWorld, joiners: np.ndarray, rid: int, t: float) -> None:
+    """Per-device metrics at a successful paging acquisition (the device joins ``rid``)."""
+    if joiners.size == 0:
+        return
+    pending = np.isfinite(world.t_last_fail[joiners])
+    if pending.any():
+        idx = joiners[pending]
+        gap = t - world.t_last_fail[idx]
+        world.fail_to_page_sum[idx] += gap
+        world.fail_to_page_max[idx] = np.maximum(world.fail_to_page_max[idx], gap)
+        world.fail_to_page_count[idx] += 1
+        world.t_last_fail[idx] = np.nan
+    prev = world.last_reader[joiners]
+    changed = (prev >= 0) & (prev != rid) & world.went_off[joiners]
+    world.reader_changes[joiners[changed]] += 1
+    world.last_reader[joiners] = rid
+    world.went_off[joiners] = False
+
+
+def _r2d_lost(
+    ictx: "FrameInterference",
+    reader: ReaderState,
+    devs: np.ndarray,
+    t_a: float,
+    t_b: float,
+    subbands: frozenset[int],
+    sir_lin: float,
+) -> np.ndarray:
+    """Devices whose SIR for this reader's R2D signal falls below the target."""
+    interference = ictx.device_interference_w(devs, t_a, t_b, subbands)
+    signal = reader.Ph_contrib[devs]
+    return (interference > 0) & (signal < sir_lin * interference)
+
+
+def _d2r_decodable(
+    ictx: "FrameInterference",
+    coord: "Coordinator",
+    a: int,
+    devs: np.ndarray,
+    positions: np.ndarray,
+    t_start: float,
+    T: float,
+    subbands: tuple[int, ...],
+    reader: ReaderState,
+    *,
+    slot_period: bool,
+) -> np.ndarray:
+    """D2R SINR verdict for uplink transmissions at resource ``positions``.
+
+    Resource ``p`` sits in subband ``subbands[p % F_r]`` during period ``p // F_r``.
+    """
+    F_r = len(subbands)
+    signal = coord.d2r_rx_dbm(devs, a)
+    cache: dict[tuple[int, int], float] = {}
+    interference = np.zeros(devs.size)
+    for i, p in enumerate(positions):
+        key = (int(p) // F_r, subbands[int(p) % F_r])
+        val = cache.get(key)
+        if val is None:
+            t_a = t_start + key[0] * T
+            val = cache[key] = ictx.reader_interference_w(t_a, t_a + T, key[1])
+        interference[i] = val
+    sinr = coord.sinr_db(signal, interference, a)
+    reader.interference["sinr_sum_db"] += float(np.sum(sinr[interference > 0]))
+    reader.interference["sinr_n"] += int((interference > 0).sum())
+    return (interference <= 0) | (sinr >= coord.spec.d2r_sinr_db)
 
 
 def _frame_rx_cost(world: DeviceWorld, config: EpisodeConfig) -> np.ndarray:
@@ -378,6 +567,7 @@ def _deplete(
     for dev in dead:
         dev = int(dev)
         world.on[dev] = 0.0
+        world.went_off[dev] = True
         world.grp[dev] = -1
         world.latched_reader[dev] = -1
         world.depletions[dev] += 1

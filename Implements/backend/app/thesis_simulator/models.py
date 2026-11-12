@@ -182,6 +182,8 @@ class ThesisRunSummary(Base):
     rounds_total: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     wall_duration_s: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     metrics_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # numpy .npz of the per-device diagnostics (inventory/metrics.py).
+    device_metrics: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True, deferred=True)
 
     run: Mapped[ThesisInventoryRun] = relationship(back_populates="summary")
 

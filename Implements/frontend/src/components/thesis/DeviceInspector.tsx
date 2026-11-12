@@ -9,6 +9,7 @@ import { TimeFreqSection } from '@/components/thesis/timefreq/TimeFreqSection'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { LiveDevices } from '@/hooks/useLiveRun'
+import { useDeviceMetrics } from '@/hooks/useMultiReader'
 import { usePlotTheme } from '@/hooks/usePlotTheme'
 import Plot from '@/lib/Plot'
 import { thesisKeys } from '@/lib/thesisQueryKeys'
@@ -27,13 +28,19 @@ const EVENT_ORDER = [
   'm1_tx',
   'm1_empty',
   'm1_collision',
+  'm1_interfered',
   'm1_success',
   'budget_drop',
   'ebi_received',
   'm2_rx',
+  'm2_interfered',
   'm3_tx',
+  'm3_interfered',
   'identified',
 ] as const
+
+/** ``DROP_CAUSE_LABEL`` of the backend (``inventory/state.py``). */
+const DROP_CAUSES = ['', 'unreachable', 'max_time_reached', 'stopped', 'no_progress', 'terminated_early'] as const
 
 const TIMELINE_REFRESH_MS = 1000
 const MAX_TABLE_ROWS = 400
@@ -85,6 +92,11 @@ export function DeviceInspector({
     staleTime: liveRun ? 0 : Infinity,
   })
   const timeline: Timeline | null = timelineQuery.data ?? null
+  const metricsQuery = useDeviceMetrics(runId, runStatus)
+  const metrics = useMemo(
+    () => metricsQuery.data?.devices.find((d) => d.device_id === deviceId) ?? null,
+    [metricsQuery.data, deviceId],
+  )
 
   const stats = useMemo(() => {
     const ev = timeline?.events ?? []
@@ -146,6 +158,38 @@ export function DeviceInspector({
               </div>
             )}
           </section>
+
+          {runId != null ? (
+            <section className="grid gap-1.5">
+              <h3 className="flex items-center gap-1 font-medium">{t('thesis.deviceMetrics.title')}</h3>
+              {liveRun ? (
+                <p className="text-muted-foreground">{t('thesis.deviceMetrics.afterRun')}</p>
+              ) : metrics ? (
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Stat label={t('thesis.deviceMetrics.readersInRange')}>{metrics.readers_in_range}</Stat>
+                  <Stat label={t('thesis.deviceMetrics.cbraFailures')}>
+                    {metrics.cbra_failures} / {metrics.attempts}
+                  </Stat>
+                  <Stat label={t('thesis.deviceMetrics.readerChanges')}>{metrics.reader_changes}</Stat>
+                  <Stat label={t('thesis.deviceMetrics.failToPage')}>
+                    {metrics.fail_to_page_count > 0
+                      ? `${metrics.fail_to_page_count} · ⌀ ${(1e3 * (metrics.fail_to_page_mean_s ?? 0)).toFixed(0)} ms · max ${(1e3 * (metrics.fail_to_page_max_s ?? 0)).toFixed(0)} ms`
+                      : '—'}
+                  </Stat>
+                  {metrics.drop_cause > 0 ? (
+                    <Stat label={t('thesis.deviceMetrics.dropCause')}>
+                      <span className="text-red-500">{t(`thesis.deviceMetrics.drop.${DROP_CAUSES[metrics.drop_cause] ?? 'stopped'}`)}</span>
+                    </Stat>
+                  ) : null}
+                </div>
+              ) : metricsQuery.isLoading ? (
+                <p className="text-muted-foreground">{t('thesis.timeline.loading')}</p>
+              ) : (
+                <p className="text-muted-foreground">{t('thesis.deviceMetrics.none')}</p>
+              )}
+              <p className="text-[11px] text-muted-foreground">{t('thesis.deviceMetrics.hint')}</p>
+            </section>
+          ) : null}
 
           {runId != null ? (
             <TimeFreqSection title={t('thesis.tf.deviceTitle', { id: deviceId })}>

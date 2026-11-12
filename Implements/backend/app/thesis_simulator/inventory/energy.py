@@ -52,6 +52,7 @@ def advance_availability(dt: float, world: DeviceWorld, *, freeze: np.ndarray | 
         dt_rem -= tA
         turn_off = on_now & ((on <= 0.0) | (E <= Eoff))
         on[turn_off] = 0.0
+        world.went_off[turn_off] = True
 
     # Phase B: OFF devices harvest toward Ecap
     off_now = active & (on <= 0.0)
@@ -99,6 +100,7 @@ def advance_availability(dt: float, world: DeviceWorld, *, freeze: np.ndarray | 
         E[idx] -= P_on_i * t1
         on[idx] -= t1
         dt_i = dt_i - t1
+        world.went_off[idx[(n_full > 0) | (dt_i > 1e-18)]] = True
 
         if np.any(dt_i > 1e-18):
             t2_full = np.where(Ph_i > 0.0, dE_full / np.where(Ph_i > 0.0, Ph_i, 1.0), np.inf)

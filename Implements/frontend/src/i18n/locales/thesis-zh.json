@@ -1,7 +1,8 @@
 {
   "nav": {
     "thesisSimulation": "论文仿真",
-    "thesisAnalysis": "分析"
+    "thesisAnalysis": "分析",
+    "thesisTraining": "训练"
   },
   "thesis": {
     "documentTitle": "论文仿真",
@@ -80,7 +81,7 @@
       "g": "N_g (分组数)",
       "seed": "种子(空=随机)",
       "adaptiveK": "自适应 K（Schoute DFSA）",
-      "adaptiveKHint": "经典 DFSA（不是 Recurrent PPO）。第 1 轮用你填的首轮 $K$（例如 256），之后按 Schoute / 空时隙估计 $K \\approx 2\\hat{N}$。关闭时每轮都用同一个固定 $K$。PPO 在「Aperiodic Paging Paper」页，未接到 Thesis 多阅读器。",
+      "adaptiveKHint": "经典 DFSA：第 1 轮使用初始 $K$，之后每轮依据 Schoute / 空时隙积压估计取 $K \\approx 2\\hat{N}$。关闭：每轮都用同一个固定 $K$。仅在下方控制器为“自动”时生效；显式选择固定 / DFSA / RL 策略控制器时以控制器为准（RL 策略来自“训练”页）。",
       "useGrouping": "启用分组（周期寻呼）",
       "useCapture": "启用捕获效应",
       "useEbi": "启用 EBI",
@@ -101,7 +102,126 @@
       "stagger": "错开 reader 启动",
       "staggerHint": "关闭：所有 reader 在 t = 0 同时开始第一帧。开启：reader 按组启动，每组比上一组晚固定间隔。分组本身是一种策略，会随 run 一起记录。",
       "staggerInterval": "间隔 (ms)",
-      "staggerAssign": "设置分组…"
+      "staggerAssign": "设置分组…",
+      "controller": {
+        "title": "帧长控制器",
+        "hint": "每个读写器每轮如何选择 K 与 p*。",
+        "kind": "控制器",
+        "kinds": {
+          "auto": "自动（跟随自适应 K 开关）",
+          "fixed": "固定 K",
+          "dfsa": "DFSA（K ≈ 2N̂）",
+          "policy": "RL 策略"
+        },
+        "autoDfsa": "自适应 K 已开启 → DFSA",
+        "autoFixed": "自适应 K 已关闭 → 固定 K",
+        "desc": {
+          "auto": "与引入此选项之前相同：由自适应 K 开关决定 DFSA 还是固定 K。",
+          "fixed": "每轮都使用初始 K；p* 按寻呼规则计算。",
+          "dfsa": "动态帧时隙 ALOHA：依据上一帧的积压估计取 K = 2N̂。",
+          "policy": "由注册表中训练好的 PPO 策略根据每个读写器的本地观测选择 K 与 p*；每个读写器维护各自的循环状态。"
+        },
+        "policy": "策略",
+        "noPolicies": "注册表中还没有策略——请先训练并发布（训练页）。",
+        "deterministic": "确定性动作",
+        "deterministicHint": "使用策略分布的均值动作而不是采样（结果可复现）。"
+      },
+      "resource": {
+        "title": "多读写器资源",
+        "hint": "读写器如何共享时间与频率，以及是否相互干扰。",
+        "mode": "协调方式",
+        "modes": {
+          "independent": "独立（无干扰）",
+          "shared": "共享（全部子带，有干扰）",
+          "fdma": "FDMA（颜色 → 子带组）",
+          "tdma": "TDMA（颜色 → 时隙）",
+          "hybrid": "混合 FDMA × TDMA",
+          "lbt": "LBT（先听后说）"
+        },
+        "desc": {
+          "independent": "读写器之间从不干扰——即论文原模型和回归基准。",
+          "shared": "所有读写器同时使用全部 F 个子带；覆盖重叠处 R2D/D2R 消息会丢失。",
+          "fdma": "对冲突图着色；每种颜色分得 F 个子带中互不重叠的一组（每个读写器的 Msg1 子带变少）。",
+          "tdma": "每种颜色在循环窗口中占一个时隙；读写器需等待自己的时隙（冲突内串行）。",
+          "hybrid": "先把颜色分到不同的频率组，组内再分时隙。",
+          "lbt": "读写器在每帧前侦听信道，冲突读写器发射时退避；遵循 ETSI 驻留规则（最长发射时间后暂停）。"
+        },
+        "singleReader": "只有一个读写器启用：协调方式不起作用。",
+        "fFreq": "子带数 F",
+        "fFreqHint": "Msg1 频率子带数（TR 38.769：F）。每帧时隙 K = L_s × F_r。",
+        "tdmaWindow": "TDMA 时隙长度（秒）",
+        "tdmaWindowHint": "TDMA 超帧（颜色数 × 窗口）中每种颜色窗口的长度，默认 0.5 秒。",
+        "freqGroups": "频率组数",
+        "freqGroupsHint": "混合模式：颜色分布到的互不重叠子带组数；同组颜色按时间轮流。默认 2。",
+        "lbtBackoff": "退避时间（毫秒）",
+        "lbtBackoffHint": "侦听到信道忙后等待的时间。",
+        "lbtMaxOn": "最长发射时间（秒）",
+        "lbtPause": "暂停时间（秒）",
+        "lbtDwellHint": "ETSI EN 302 208 式驻留：达到最长发射时间后须静默一段暂停时间（默认 4 s / 0.1 s）。",
+        "linkBudget": "基于链路预算的冲突",
+        "linkBudgetHint": "若任一读写器的载波以高于 SIR 门限的强度到达另一方的设备，则两者冲突。关闭：使用简单距离门限。",
+        "conflictDistance": "冲突距离（米）",
+        "nColors": "颜色数",
+        "nColorsHint": "留空 = 由贪心着色决定（取其找到的最小值）。",
+        "auto": "自动",
+        "interference": "建模干扰",
+        "interferenceHint": "重叠读写器发射期间，SIR/SINR 低于门限的消息将被丢弃。",
+        "crossMsg1": "跨读写器 Msg1 碰撞",
+        "crossMsg1Hint": "不同读写器的设备在同一子带同一时隙发送的 Msg1 会碰撞。",
+        "r2dSir": "R2D SIR 门限（dB）",
+        "d2rSinr": "D2R SINR 门限（dB）",
+        "cwSuppression": "载波抑制（dB）",
+        "cwSuppressionHint": "接收机能抵消另一读写器载波的程度（TR 38.769 假设自干扰消除）。"
+      },
+      "termination": {
+        "title": "读写器终止规则",
+        "hint": "读写器在不知道真实情况的前提下何时判定其设备已全部识别。",
+        "kind": "规则",
+        "kinds": {
+          "oracle": "Oracle（真实值）",
+          "quiet_rounds": "连续安静轮数",
+          "id_rate": "识别速率",
+          "energy_bound": "能量上界",
+          "combined": "组合"
+        },
+        "desc": {
+          "oracle": "当没有可达设备剩余时停止（仿真器全知，旧行为）。",
+          "quiet_rounds": "连续 n 帧没有新识别时停止。",
+          "id_rate": "当窗口内的识别速率低于绝对或相对门限时停止。",
+          "energy_bound": "自上次识别以来，所有设备类型都已经过最坏充电时间 t_wc 后停止，此时不会再有沉睡设备醒来。",
+          "combined": "用 AND（全部满足）或 OR（任一满足）组合多条规则。"
+        },
+        "remove": "删除",
+        "quietRounds": "安静轮数 n",
+        "windowMode": "窗口",
+        "windowModes": {
+          "rounds": "最近 N 轮",
+          "seconds": "最近 W 秒",
+          "ewma": "指数加权平均"
+        },
+        "ewmaAlpha": "EWMA α",
+        "windowS": "窗口（秒）",
+        "windowRounds": "窗口（轮）",
+        "rMin": "绝对速率 r_min（个/秒）",
+        "rMinHint": "留空 = 只用相对门限。",
+        "rRel": "相对速率 r_rel",
+        "rRelHint": "相对迄今峰值速率的比例。",
+        "minFrames": "最少帧数",
+        "energySource": "t_wc 来源",
+        "energySourceHint": "边缘：覆盖边缘处的采能（保守）。实际：该读写器自身设备的估计值。",
+        "energySources": {
+          "edge": "覆盖边缘",
+          "actual": "实际设备"
+        },
+        "margin": "裕量",
+        "marginHint": "在 t_wc 上额外增加的比例（0.1 = +10%）。",
+        "combine": "组合方式",
+        "combineModes": {
+          "all": "全部（AND）",
+          "any": "任一（OR）"
+        },
+        "addRule": "添加规则"
+      }
     },
     "analysis": {
       "title": "运行分析",
@@ -123,7 +243,12 @@
         "bySubtype": "按 device 类型的识别数",
         "slots": "时隙结果与资源效率",
         "overhead": "各阶段时间开销",
-        "depletions": "各阶段能量耗尽"
+        "depletions": "各阶段能量耗尽",
+        "config": "运行配置",
+        "retention": "多读写器增益保持率 G",
+        "termination": "终止规则：额外时间 vs 漏识设备",
+        "interference": "干扰损失与延迟",
+        "devices": "每设备多读写器指标"
       },
       "axis": {
         "time": "时间 (s)",
@@ -148,7 +273,66 @@
         "dropped": "掉落",
         "duration": "时长 (s)"
       },
-      "tNote": "Tx = 场景中 x% 的 device 被识别所需的仿真时间。"
+      "tNote": "Tx = 场景中 x% 的 device 被识别所需的仿真时间。",
+      "tabs": {
+        "overview": "概览",
+        "retention": "增益保持率",
+        "termination": "终止规则",
+        "interference": "干扰",
+        "devices": "设备指标"
+      },
+      "multi": {
+        "cols": {
+          "run": "运行",
+          "controller": "控制器",
+          "resource": "资源",
+          "f": "F",
+          "termination": "终止规则",
+          "terminatedEarly": "提前终止",
+          "readersStopped": "已终止读写器"
+        },
+        "retention": {
+          "hint": "G = (T_serial − T_run) / (T_serial − T_ideal)，基于可达设备的 T99。1 表示保持了全部理想多读写器增益（独立读写器），0 表示不比冲突读写器依次服务（TDMA）更好。",
+          "needTwo": "请至少选择两个运行（理想与串行参考，以及待比较的运行）。",
+          "ideal": "理想参考",
+          "serial": "串行参考",
+          "unreached": "参考运行未识别到 99% 的可达设备——G 无定义。",
+          "degenerate": "串行参考比理想参考慢不到 5%，说明此场景中读写器几乎不冲突，G 无定义或被放大。请选择差异更大的参考，或更密集的场景。",
+          "idealTag": "理想",
+          "serialTag": "串行"
+        },
+        "termination": {
+          "hint": "在一个已完成的 oracle 运行所记录的帧历史上回放每条规则：读写器在最后一次识别后还要继续寻呼多久（额外时间），以及会漏掉多少可达设备。加粗行位于帕累托前沿。",
+          "needFinished": "请至少选择一个已完成的运行。",
+          "run": "运行",
+          "summary": "可达 {{reachable}} · T99 {{t99}} s · 最后识别 {{tLast}} s",
+          "notOracle": "该运行本身使用了非 oracle 规则；回放只能看到它停止前的帧，更晚停止的规则会被截断。",
+          "multiApprox": "多个读写器：各自在自己的帧历史上回放。读写器停止之后才会识别的设备计为漏识，但在真实运行中相邻读写器仍可能识别到它，因此漏识数是上界（见设计文档）。",
+          "front": "帕累托前沿",
+          "extra": "最后识别后的额外时间（秒）",
+          "missed": "漏识设备（%）",
+          "addRule": "加入比较",
+          "cols": {
+            "rule": "规则",
+            "tStop": "停止时间",
+            "extra": "额外时间",
+            "extraT99": "相对 T99 额外",
+            "missed": "漏识",
+            "missedPct": "漏识 %"
+          }
+        },
+        "interference": {
+          "hint": "每个运行中因其他读写器而丢失的消息、读写器等待 TDMA 时隙 / LBT 退避的时间，以及所选运行的逐帧时间线。",
+          "deferredAxis": "延迟时间（秒）",
+          "detail": "时间线：",
+          "timelineHint": "每行一个读写器；每个点是一帧，大小表示丢失消息数。"
+        },
+        "devices": {
+          "hint": "已完成运行中所有设备上的分布（表格中按设备类型细分）。",
+          "pctDevices": "设备占比（%）",
+          "perDevice": "每设备取值"
+        }
+      }
     },
     "timeline": {
       "titleDevice": "Device #{{id}} · {{subtype}}",
@@ -354,7 +538,10 @@
         "ebi_received": "EBI",
         "m2_rx": "收到 M2",
         "m3_tx": "发送 M3",
-        "identified": "识别"
+        "identified": "识别",
+        "m1_interfered": "M1 因干扰丢失",
+        "m2_interfered": "M2 因干扰丢失",
+        "m3_interfered": "M3 因干扰丢失"
       },
       "dock": "运行",
       "playReplay": "播放回放",
@@ -371,7 +558,11 @@
       "configStallOff": "无进展关闭",
       "configSeed": "种子 {{seed}}",
       "configStagger": "错峰 {{groups}} 组 · {{ms}} ms",
-      "configDisabledReaders": "禁用 {{count}} 个 reader"
+      "configDisabledReaders": "禁用 {{count}} 个 reader",
+      "configPolicy": "策略 {{id}}",
+      "configResource": "资源：{{mode}}",
+      "configTermination": "终止：{{rule}}",
+      "configTerminatedEarly": "{{count}} 个提前终止"
     },
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
@@ -439,7 +630,8 @@
         "energy": "能量",
         "round": "当前轮",
         "metrics": "指标",
-        "pin": "Pin 分布"
+        "pin": "Pin 分布",
+        "coord": "协调"
       },
       "stage": {
         "paging": "寻呼",
@@ -490,6 +682,10 @@
         "pin": {
           "lead": "各设备从 reader 收到的最强功率的累积分布。",
           "body": "横轴是设备接收功率（dBm），纵轴是接收功率不超过该值的设备比例。曲线越靠右说明设备离 reader 越近、充电越快。按设备类型分线，可对照论文图 4。"
+        },
+        "coord": {
+          "lead": "读写器如何共享频谱，以及相互之间损失了多少。",
+          "body": "指标卡：协调方式、颜色数、受干扰帧数、已终止读写器数。柱状图：各阶段（R2D 寻呼、Msg1、Msg2、Msg3）因干扰丢失的消息随时间变化。表格：每个读写器的颜色、子带、时隙、冲突邻居、轮数、损失、延迟时间（TDMA 等待 / LBT 退避）、终止原因与 t_wc。"
         }
       },
       "terms": {
@@ -521,7 +717,14 @@
         "energySpent": "协议消息累计消耗的能量。",
         "slotCodes": "格子颜色：空闲、单设备、捕获、冲突、漏检。",
         "pin": "Pin：从任一 reader 收到的最强功率（dBm）。",
-        "cdf": "CDF：接收功率不超过横轴值的设备比例。"
+        "cdf": "CDF：接收功率不超过横轴值的设备比例。",
+        "conflictGraph": "冲突图：两读写器的载波会破坏对方链路时（链路预算或距离），二者之间连边。",
+        "colour": "颜色：对冲突图的着色；同色读写器互不冲突，可共享同一资源。",
+        "grant": "授予：读写器可使用的子带与时隙。",
+        "r2dLost": "R2D 丢失：因其他读写器载波而错过寻呼的设备。",
+        "d2rLost": "D2R 丢失：在读写器处 SINR 低于门限的 Msg1/Msg3 回复。",
+        "deferred": "延迟：读写器等待 TDMA 时隙或 LBT 退避/暂停的时间。",
+        "stopReason": "终止原因：哪条终止规则结束了该读写器（oracle 下为耗尽）。"
       }
     },
     "readerInspector": {
@@ -537,7 +740,29 @@
       "meanK": "平均 K",
       "meanFrame": "平均帧时长",
       "curve": "本 reader 累计识别数",
-      "hint": "下方图表已切换到这个 reader。右键 reader 可编辑；关闭后图表回到全部 reader。"
+      "hint": "下方图表已切换到这个 reader。右键 reader 可编辑；关闭后图表回到全部 reader。",
+      "coordination": "协调",
+      "mode": "模式",
+      "controller": "控制器",
+      "color": "颜色",
+      "subbands": "子带",
+      "timeSlot": "时隙",
+      "neighbors": "冲突对象",
+      "stop": "终止",
+      "stopReason": {
+        "quiet_rounds": "连续安静轮数",
+        "id_rate": "识别速率",
+        "id_rate_no_ids": "窗口内无识别",
+        "energy_bound": "能量上界",
+        "combined": "组合规则",
+        "stopped": "已终止"
+      },
+      "exhausted": "已耗尽（无可达设备）",
+      "running": "运行中",
+      "tWc": "最坏充电时间 t_wc",
+      "framesHit": "受干扰帧数",
+      "lost": "丢失（R2D/M1/M2/M3）",
+      "deferred": "延迟时间"
     },
     "tf": {
       "deviceTitle": "Device #{{id}} 时间线",
@@ -596,7 +821,11 @@
         "sleep": "休眠（等待）"
       },
       "collapse": "折叠空闲时间",
-      "collapsedTip": "已折叠的空闲时间\n{{a}} ~ {{b}}（{{d}}）\n取消勾选“折叠空闲时间”可按真实比例查看。"
+      "collapsedTip": "已折叠的空闲时间\n{{a}} ~ {{b}}（{{d}}）\n取消勾选“折叠空闲时间”可按真实比例查看。",
+      "grant": "授予子带 {{subbands}} · 颜色 {{color}}",
+      "interference": "干扰：R2D {{r2d}} · M1 {{m1}} · M2 {{m2}} · M3 {{m3}} 丢失（{{n}} 个干扰源）",
+      "controller": "控制器：{{name}}",
+      "notGranted": "子带 {{f}} 未授予此读写器"
     },
     "stagger": {
       "title": "Reader 启动分组",
@@ -614,6 +843,151 @@
       "clickHint": "在图上或列表中点击 reader，把它放入组 {{n}}。",
       "map": "Reader 布局",
       "apply": "应用"
+    },
+    "showCoordination": "协调（冲突图、着色）",
+    "deviceMetrics": {
+      "title": "多读写器指标",
+      "afterRun": "运行结束后可用。",
+      "readersInRange": "覆盖读写器数",
+      "cbraFailures": "CBRA 失败次数",
+      "readerChanges": "读写器切换次数",
+      "failToPage": "失败到下次寻呼",
+      "failToPageMeanS": "失败到下次寻呼（均值）",
+      "dropCause": "丢弃原因",
+      "drop": {
+        "unreachable": "不可达（无读写器覆盖）",
+        "max_time_reached": "达到最大时间",
+        "stopped": "运行被停止",
+        "no_progress": "无进展（停滞）",
+        "terminated_early": "其读写器提前终止"
+      },
+      "none": "该设备没有指标。",
+      "hint": "覆盖读写器数：覆盖该设备的读写器数量。CBRA 失败：碰撞、丢失或受干扰的 Msg1 尝试次数。读写器切换：尝试所对应读写器与上一次不同的次数。失败到下次寻呼：从一次失败到它听到下一次寻呼的平均时间。"
+    },
+    "coord": {
+      "mode": "模式",
+      "colors": "颜色数",
+      "framesHit": "受干扰帧",
+      "stopped": "已终止读写器",
+      "independentHint": "独立模式：读写器互不干扰，无需协调。",
+      "loss": {
+        "r2d_lost": "R2D 寻呼",
+        "m1_lost": "Msg1",
+        "m2_lost": "Msg2",
+        "m3_lost": "Msg3"
+      },
+      "lostDevices": "丢失消息数",
+      "col": {
+        "reader": "读写器",
+        "color": "颜色",
+        "subbands": "子带",
+        "slot": "时隙",
+        "neighbors": "冲突",
+        "rounds": "轮数",
+        "lost": "丢失",
+        "deferred": "延迟（秒）",
+        "stop": "终止",
+        "tWc": "t_wc（秒）"
+      }
+    },
+    "training": {
+      "title": "多读写器强化学习训练",
+      "subtitle": "backend/training 下的实验：学习曲线、相对 DFSA 的泛化表现，以及运行所用的策略注册表。",
+      "experiments": "实验",
+      "runCount": "完成 {{done}}/{{total}} · 失败 {{failed}}",
+      "algo": "算法",
+      "algoConfig": {
+        "ps_ppo": "PS-PPO（参数共享 PPO）",
+        "mappo": "MAPPO（集中式评论家）",
+        "ippo": "IPPO（独立学习者）",
+        "zero_shot": "零样本单读写器策略"
+      },
+      "algos": {
+        "sb3_ppo": "PPO（stable-baselines3）",
+        "torch_mlp": "MAPPO / IPPO（torch）",
+        "zero_shot_aperiodic": "循环 PPO（非周期，零样本）"
+      },
+      "scale": "规模",
+      "steps": "时间步",
+      "seeds": "随机种子",
+      "t99VsDfsa": "T99 / DFSA",
+      "env": {
+        "readers": "读写器数",
+        "subset": "读写器子集",
+        "offsets": "启动偏移",
+        "resource": "资源模式",
+        "mix": "设备构成"
+      },
+      "runs": "训练运行",
+      "noRuns": "还没有运行。请用上面的命令启动。",
+      "cols": {
+        "run": "运行",
+        "status": "状态",
+        "alpha": "α / β / 种子",
+        "scale": "规模",
+        "steps": "步数",
+        "episodes": "回合数",
+        "wall": "耗时",
+        "reach99": "达到 99% 的格",
+        "t99VsDfsa": "T99 / DFSA（几何均值）",
+        "promoted": "发布为"
+      },
+      "status": {
+        "running": "运行中",
+        "done": "完成",
+        "failed": "失败",
+        "interrupted": "已中断"
+      },
+      "error": "错误",
+      "learning": "学习曲线",
+      "learningHint": "每个点为一个训练回合；曲线为滑动平均。",
+      "curve": {
+        "return": "回合回报",
+        "identified": "识别比例",
+        "t99": "T99（秒）",
+        "efficiency": "资源效率"
+      },
+      "rolling": "滑动平均（{{w}}）",
+      "noCurve": "尚无完成的回合。",
+      "evalMatrix": "泛化矩阵",
+      "evalHint": "成对评估：策略与 DFSA 使用相同部署（读写器 × 设备数 × 构成 × 偏移）。格内值为 T99 / DFSA，小于 1（绿色）表示比 DFSA 快。",
+      "noEval": "尚无评估（运行 python -m training.evaluate）。",
+      "matrix": {
+        "candidate": "候选",
+        "cell": "格",
+        "identified": "识别比例",
+        "t99": "T99",
+        "tMean": "平均识别时间",
+        "efficiency": "效率",
+        "t99VsDfsa": "T99 / DFSA"
+      },
+      "plots": "已保存图表",
+      "promote": "发布到注册表",
+      "promoteHint": "把检查点连同 SHA-256 附属 json 复制到 rl/policies，之后“新建运行”即可选择。",
+      "overwrite": "覆盖同名 id",
+      "promoteButton": "发布",
+      "promoted": "已发布为 {{id}}",
+      "registry": "策略注册表",
+      "registryHint": "论文运行可用的策略（控制器“RL 策略”）。✗ 表示文件缺失或哈希不符。",
+      "registryCols": {
+        "policy": "策略 id",
+        "algo": "算法",
+        "alpha": "α / β",
+        "scale": "规模",
+        "steps": "步数",
+        "t99VsDfsa": "T99 / DFSA",
+        "sha": "SHA-256",
+        "state": "可用"
+      },
+      "howTo": "使用流程",
+      "steps_": {
+        "train": "离线训练：cd Implements/backend && PYTHONPATH=. .venv/bin/python -m training.train --config <实验> --scale small（smoke · small · medium · full，或 0.5 这样的倍数）。",
+        "outputs": "每次运行写入 training/outputs/<实验>/<时间戳>__a…__b…__s…/：meta.json、train_metrics.csv、checkpoints/final.zip + final.json、plots/。",
+        "evaluate": "训练结束后自动评估（与 DFSA 成对）；也可用 python -m training.evaluate --runs <目录> --grid full 重新评估。",
+        "promote": "发布表现好的运行（上方按钮、--promote 或 python -m training.promote <目录>），即复制到注册表。",
+        "use": "在“新建运行”中选择控制器“RL 策略”及策略 id；每个读写器以各自的状态运行该策略。"
+      },
+      "interruptedHint": "训练进程未完成就结束了（被终止或机器重启）。请用上面的命令重新启动。"
     }
   }
 }

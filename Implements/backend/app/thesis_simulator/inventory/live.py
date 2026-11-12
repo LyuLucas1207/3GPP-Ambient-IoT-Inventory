@@ -22,6 +22,7 @@ from fastapi.sse import ServerSentEvent
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from app.thesis_simulator.inventory import metrics as device_metrics
 from app.thesis_simulator.inventory.checkpoint import dump_state, load_state
 from app.thesis_simulator.inventory.episode import (
     SNAPSHOT_EVERY_S,
@@ -364,14 +365,21 @@ class LiveRunner(threading.Thread):
         summary.identified_total = c["identified"]
         summary.identified_by_subtype_json = c["identified_by_subtype"]
         summary.died_count = c["depletions"]
-        summary.dropped_count = c["dropped"] + c["unreachable"] + c["no_progress"]
+        summary.dropped_count = c["dropped"] + c["unreachable"] + c["no_progress"] + c["terminated_early"]
         summary.rounds_total = c["rounds"]
         summary.wall_duration_s = float((run.duration_s or 0.0) + extra_wall)
+        cfg = state.config
         summary.metrics_json = {
             **c,
             "device_event_count": emit.device_event_total,
             "reader_event_count": emit.reader_event_total,
+            "device_metrics": device_metrics.aggregate(state.world),
+            "readers": state.reader_summary(),
+            "controller": cfg.controller.to_json(),
+            "termination": {**cfg.termination.to_json(), "label": cfg.termination.label()},
+            "resource": cfg.resource.to_json(),
         }
+        summary.device_metrics = device_metrics.device_metrics_blob(state.world)
 
     # ---------------------------------------------------------- live state for SSE
     def _set_live(self, state: EpisodeState, codes: np.ndarray | None = None) -> None:

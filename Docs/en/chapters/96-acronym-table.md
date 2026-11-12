@@ -45,6 +45,9 @@ You do not have to memorize them all today, but you should recognize them when t
 
 These ~30 already cover most of the paper's "scary-looking" terms.
 
+
+> The complete list (abbreviation · full name · Chinese), including the multi-reader and RL terms, is in [Docs/VOCABULARY.md](../../VOCABULARY.md).
+
 ---
 
 > **Nav** · [TOC content.md](../content.md) · [Docs home](../README.md)

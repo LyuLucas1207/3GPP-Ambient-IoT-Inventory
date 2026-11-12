@@ -46,6 +46,12 @@ SLOT_SINGLE = 1
 SLOT_CAPTURED = 2
 SLOT_COLLISION = 3
 SLOT_MISSED = 4  # singleton lost to the energy detector (miss-detect)
+SLOT_INTERFERED = 5  # inter-reader interference pushed the slot below the D2R SINR target
+
+
+def draw_slots(rng: np.random.Generator, k: int, j: int) -> np.ndarray:
+    """Uniform Msg1 resource pick of ``j`` joiners (the frame's first random draw)."""
+    return rng.integers(0, max(1, k), size=j, dtype=np.int64)
 
 
 def simulate_frame(
@@ -57,6 +63,8 @@ def simulate_frame(
     use_energy_detect: bool,
     rng: np.random.Generator,
     consts: EngineConstants = CONSTANTS,
+    decodable: np.ndarray | None = None,
+    slots: np.ndarray | None = None,
 ) -> AlohaResult:
     """Simulate one M1 frame.
 
@@ -69,9 +77,12 @@ def simulate_frame(
     use_capture: enable capture-effect decoding.
     use_energy_detect: apply false-alarm / miss-detect gating per slot.
     rng: numpy Generator (seeded).
+    decodable: per-joiner D2R SINR verdict under inter-reader interference.
+        An undecodable singleton looks empty to the reader; in a multi-device
+        slot only a decodable device can win capture. ``None`` = all decodable.
     """
     j = len(joiner_indices)
-    slot = rng.integers(0, max(1, k), size=j, dtype=np.int64)
+    slot = draw_slots(rng, k, j) if slots is None else np.asarray(slots, dtype=np.int64)
     winners = np.zeros(j, dtype=bool)
     rx_power_per_slot = np.full(k, -np.inf)
     occupancy = np.bincount(slot, minlength=k).astype(np.int32) if j else np.zeros(k, dtype=np.int32)
@@ -90,6 +101,10 @@ def simulate_frame(
             continue
         if in_slot.size == 1:
             singletons += 1
+            if decodable is not None and not decodable[in_slot[0]]:
+                empties += 1
+                slot_result[s] = SLOT_INTERFERED
+                continue
             if use_energy_detect and rng.random() < consts.p_md:
                 collisions += 1
                 slot_result[s] = SLOT_MISSED
@@ -111,8 +126,9 @@ def simulate_frame(
         max_p = float(powers[max_idx])
         others = np.concatenate([powers[:max_idx], powers[max_idx + 1:]])
         max_other = float(np.max(others))
+        strongest_ok = decodable is None or bool(decodable[in_slot[max_idx]])
         # Lin domain: max_p_lin >= CAPTURE_F * max_other_lin
-        if max_p - max_other >= 10.0 * np.log10(consts.capture_f_lin):
+        if strongest_ok and max_p - max_other >= 10.0 * np.log10(consts.capture_f_lin):
             winners[in_slot[max_idx]] = True
             successes += 1
             slot_result[s] = SLOT_CAPTURED

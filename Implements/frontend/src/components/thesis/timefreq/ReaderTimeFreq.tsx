@@ -136,6 +136,16 @@ export function ReaderTimeFreq({
   )
 }
 
+/** Absolute subband (grid row) of the frame's i-th granted subband; FDMA / hybrid grant a subset of F. */
+function subbandRow(fr: TimeFreqFrame, i: number): number {
+  return fr.subbands?.[i] ?? i
+}
+
+function lostTotal(fr: TimeFreqFrame): number {
+  const ix = fr.interference
+  return ix ? ix.r2d_lost + ix.m1_lost + ix.m2_lost + ix.m3_lost : 0
+}
+
 function drawFrame(ctx: CanvasRenderingContext2D, v: TimeView, fr: TimeFreqFrame, c: FrameConsts, dlTop: number) {
   const F = Math.max(1, fr.f || c.f)
   const tm = fr.timing
@@ -151,7 +161,8 @@ function drawFrame(ctx: CanvasRenderingContext2D, v: TimeView, fr: TimeFreqFrame
   ctx.fillStyle = v.dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'
   ctx.fillRect(Math.round(x0), 0, 1, v.height - AXIS_PX)
   ctx.font = '10px ui-sans-serif, system-ui, sans-serif'
-  const label = `#${fr.round_index} · K=${fr.k}${fr.group != null ? ` · g${fr.group}` : ''}${fr.pstar != null ? ` · p*=${fr.pstar.toFixed(2)}` : ''}`
+  const lost = lostTotal(fr)
+  const label = `#${fr.round_index} · K=${fr.k}${fr.group != null ? ` · g${fr.group}` : ''}${fr.pstar != null ? ` · p*=${fr.pstar.toFixed(2)}` : ''}${lost ? ` · ⚡${lost}` : ''}`
   if (x1 - x0 > 60) {
     ctx.save()
     ctx.beginPath()
@@ -162,6 +173,14 @@ function drawFrame(ctx: CanvasRenderingContext2D, v: TimeView, fr: TimeFreqFrame
     ctx.restore()
   }
   ctx.font = '9px ui-sans-serif, system-ui, sans-serif'
+
+  if (fr.subbands && fr.subbands.length < c.f) {
+    const granted = new Set(fr.subbands)
+    ctx.fillStyle = v.dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
+    for (let row = 0; row < c.f; row++) {
+      if (!granted.has(row)) ctx.fillRect(x0, TOP + row * ROW, Math.max(1, x1 - x0), ROW)
+    }
+  }
 
   box(ctx, x0, dlTop + 2, v.w(fr.t_start_s, tM1), DL_ROW - 4, TF_COLORS.paging, 'Paging', '#5b9bd5')
   if ((tm.ebi ?? 0) > 0) box(ctx, v.x(tEbi), dlTop + 2, v.w(tEbi, tM2), DL_ROW - 4, TF_COLORS.ei, 'EI', '#5b9bd5')
@@ -178,7 +197,9 @@ function drawFrame(ctx: CanvasRenderingContext2D, v: TimeView, fr: TimeFreqFrame
   if (cellW < 2) {
     const s = fr.res.filter((r) => r === 1 || r === 2).length
     const col = fr.res.filter((r) => r === 3).length
-    box(ctx, v.x(tM1), TOP, v.w(tM1, tEbi), F * ROW, TF_COLORS.collision, `${s}✓ ${col}✗`)
+    for (let i = 0; i < F; i++) {
+      box(ctx, v.x(tM1), TOP + subbandRow(fr, i) * ROW, v.w(tM1, tEbi), ROW, TF_COLORS.collision, i === 0 ? `${s}✓ ${col}✗` : '')
+    }
   } else {
     const idleFill = v.dark ? TF_COLORS.idleDark : TF_COLORS.idle
     for (let s = 0; s < fr.k; s++) {
@@ -188,7 +209,7 @@ function drawFrame(ctx: CanvasRenderingContext2D, v: TimeView, fr: TimeFreqFrame
       const res = fr.res[s] ?? 0
       const win = fr.winners[String(s)]
       const text = win ? String(win[0]) : res === 3 ? `×${fr.occ[s] ?? ''}` : res === 4 ? 'miss' : ''
-      box(ctx, xs, TOP + (s % F) * ROW, cellW, ROW, res === 0 ? idleFill : SLOT_FILL[res] ?? idleFill, text, 'rgba(0,0,0,0.25)')
+      box(ctx, xs, TOP + subbandRow(fr, s % F) * ROW, cellW, ROW, res === 0 ? idleFill : SLOT_FILL[res] ?? idleFill, text, 'rgba(0,0,0,0.25)')
     }
   }
 
@@ -196,7 +217,7 @@ function drawFrame(ctx: CanvasRenderingContext2D, v: TimeView, fr: TimeFreqFrame
     const xs = v.x(ts)
     const m3W = v.w(ts, ts + c.t_m3)
     if (xs > v.width || xs + m3W < GUTTER_PX) continue
-    box(ctx, xs, TOP + (row % F) * ROW, m3W, ROW, TF_COLORS.m3, String(dev), ident ? TF_COLORS.identified : 'rgba(0,0,0,0.3)')
+    box(ctx, xs, TOP + subbandRow(fr, row % F) * ROW, m3W, ROW, TF_COLORS.m3, String(dev), ident ? TF_COLORS.identified : 'rgba(0,0,0,0.3)')
   }
 }
 
@@ -251,6 +272,14 @@ function describe(
     served: fr.m2.length,
     dropped: fr.budget_dropped,
   })
+  const grant = fr.subbands && fr.subbands.length < c.f
+    ? t('thesis.tf.grant', { subbands: fr.subbands.join(','), color: fr.color ?? 0 })
+    : ''
+  const ix = fr.interference
+  const lost = ix && lostTotal(fr) > 0
+    ? t('thesis.tf.interference', { r2d: ix.r2d_lost, m1: ix.m1_lost, m2: ix.m2_lost, m3: ix.m3_lost, n: ix.interferers ?? 0 })
+    : ''
+  const ctl = fr.controller ? t('thesis.tf.controller', { name: fr.controller }) : ''
   let part = ''
   if (y >= dlTop && y <= dlTop + DL_ROW) {
     if (time < tM1) part = t('thesis.tf.part.paging')
@@ -259,10 +288,13 @@ function describe(
       const i = Math.floor((time - tM2) / c.t_m2)
       part = fr.m2[i] != null ? t('thesis.tf.part.m2', { i: i + 1, dev: fr.m2[i] }) : t('thesis.tf.part.m2Unused')
     }
-  } else if (y >= TOP && y < TOP + F * ROW) {
+  } else if (y >= TOP && y < TOP + c.f * ROW) {
     const f = Math.floor((y - TOP) / ROW)
-    if (time >= tM1 && time < tEbi) {
-      const s = Math.floor((time - tM1) / c.t_m1) * F + f
+    const local = fr.subbands ? fr.subbands.indexOf(f) : f
+    if (local < 0 || local >= F) {
+      part = t('thesis.tf.notGranted', { f })
+    } else if (time >= tM1 && time < tEbi) {
+      const s = Math.floor((time - tM1) / c.t_m1) * F + local
       if (s < fr.k) {
         const res = fr.res[s] ?? 0
         const win = fr.winners[String(s)]
@@ -274,11 +306,11 @@ function describe(
         })
       }
     } else if (time >= tM3) {
-      const m3 = fr.m3.find(([ts, row]) => row === f && time >= ts && time < ts + c.t_m3)
+      const m3 = fr.m3.find(([ts, row]) => row % F === local && time >= ts && time < ts + c.t_m3)
       if (m3) part = t(m3[3] ? 'thesis.tf.part.m3Identified' : 'thesis.tf.part.m3', { dev: m3[2], f })
     }
   }
-  return [head, summary, part].filter(Boolean).join('\n')
+  return [head, summary, grant, ctl, lost, part].filter(Boolean).join('\n')
 }
 
 function combineChunks(results: { data?: ReaderTimeFreqData; isFetching: boolean; dataUpdatedAt: number }[]) {

@@ -10,6 +10,8 @@ from app.schemas.thesis_runs import (
     CompareRunsOut,
     DeviceEventListOut,
     DeviceMapOut,
+    DeviceMetricsOut,
+    InterferenceOut,
     IdentificationsOut,
     DeviceStatesOut,
     ReaderEventListOut,
@@ -22,11 +24,13 @@ from app.schemas.thesis_runs import (
     RunSummaryOut,
     SnapshotIndexOut,
     SnapshotOut,
+    TerminationReplayIn,
+    TerminationReplayOut,
     TimelineOut,
 )
 from app.thesis_simulator.db import ensure_db, get_db, session_factory
 from app.thesis_simulator.inventory.live import stream_events
-from app.thesis_simulator.analysis import analysis_bundle
+from app.thesis_simulator.analysis import analysis_bundle, device_metrics, interference_report, termination_replay
 from app.thesis_simulator.runs_service import (
     create_run,
     device_map,
@@ -72,6 +76,13 @@ def read_runs(section_id: int, db: Session = Depends(get_db)) -> list[dict]:
 
 @router.post("/sections/{section_id}/runs", response_model=RunDetailOut, status_code=201)
 def post_run(section_id: int, body: RunCreateIn, db: Session = Depends(get_db)) -> dict:
+    if body.controller is not None and body.controller.kind == "policy":
+        from app.thesis_simulator.rl.policy import PolicyMissing, load_meta
+
+        try:
+            load_meta(body.controller.policy_id or "")
+        except PolicyMissing as exc:
+            raise HTTPException(status_code=422, detail=f"policy_unavailable: {exc}") from exc
     try:
         return run_detail(create_run(db, section_id, body))
     except SceneError as exc:
@@ -272,6 +283,32 @@ def read_device_states(run_id: int, db: Session = Depends(get_db)) -> dict:
 def read_analysis(run_id: int, db: Session = Depends(get_db)) -> dict:
     try:
         return analysis_bundle(db, run_id)
+    except SceneError as exc:
+        raise _guard(exc) from exc
+
+
+@router.get("/runs/{run_id}/device-metrics", response_model=DeviceMetricsOut)
+def read_device_metrics(run_id: int, db: Session = Depends(get_db)) -> dict:
+    """Readers in range, CBRA failures, reader changes and fail-to-page wait per device."""
+    try:
+        return device_metrics(db, run_id)
+    except SceneError as exc:
+        raise _guard(exc) from exc
+
+
+@router.get("/runs/{run_id}/interference", response_model=InterferenceOut)
+def read_interference(run_id: int, db: Session = Depends(get_db)) -> dict:
+    try:
+        return interference_report(db, run_id)
+    except SceneError as exc:
+        raise _guard(exc) from exc
+
+
+@router.post("/runs/{run_id}/termination-replay", response_model=TerminationReplayOut)
+def post_termination_replay(run_id: int, body: TerminationReplayIn, db: Session = Depends(get_db)) -> dict:
+    """Score termination rules offline on the run's round log (best on an oracle run)."""
+    try:
+        return termination_replay(db, run_id, [r.model_dump() for r in body.rules])
     except SceneError as exc:
         raise _guard(exc) from exc
 

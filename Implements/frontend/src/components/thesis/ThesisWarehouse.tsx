@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next'
 import KDBush from 'kdbush'
 import { Layers } from 'lucide-react'
 import { MarkerShape } from '@/components/thesis/MarkerShape'
+import { readerColor } from '@/components/thesis/ReaderInspector'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { inside } from '@/lib/thesisGeometry'
 import { DEVICE_SUBTYPES, deriveReaderRanges, effectiveCoverageM, rangeFromSensitivityM, readerRingVisible } from '@/lib/thesisPhysics'
 import { FLAGGED_CODES, RUN_STATE_COLOR_BY_CODE, RUN_STATE_LABELS } from '@/lib/thesisRunStates'
 import type { LiveDevices } from '@/hooks/useLiveRun'
+import { useInterference } from '@/hooks/useMultiReader'
 import { readerLinksForDevice } from '@/lib/thesisReach'
 import type { CatalogEntry, DeviceSubtype, Kind, Placement, RunSummary, Scene, Shape } from '@/types/thesis'
 
@@ -106,6 +108,25 @@ export function ThesisWarehouse({
   })
   // Identified (green) devices dominate late-run draws; off skips them entirely.
   const [showIdentified, setShowIdentified] = useState(true)
+  // Conflict graph + colour classes of the selected run's coordination policy.
+  const [showCoordination, setShowCoordination] = useState(true)
+  const coordinated = run != null && (run.resource_mode ?? 'independent') !== 'independent'
+  const ixQuery = useInterference(coordinated ? run.run_id : null, run?.status ?? null)
+  const coordination = coordinated && showCoordination ? ixQuery.data ?? null : null
+  const conflictEdges = useMemo(() => {
+    if (!coordination || !scene) return []
+    const pos = new Map(scene.placements.filter((p) => p.kind === 'radar').map((p) => [String(p.id), p]))
+    const out: { a: Placement; b: Placement; key: string }[] = []
+    for (const [rid, info] of Object.entries(coordination.readers)) {
+      const a = pos.get(rid)
+      if (!a) continue
+      for (const n of info.neighbors) {
+        const b = pos.get(String(n))
+        if (b && Number(rid) < n) out.push({ a, b, key: `${rid}-${n}` })
+      }
+    }
+    return out
+  }, [coordination, scene])
 
   const deviceCanvasRef = useRef<HTMLCanvasElement>(null)
   const pressRef = useRef<{ x: number; y: number } | null>(null)
@@ -717,6 +738,53 @@ export function ThesisWarehouse({
                   )}
                 </g>
               ) : null}
+              {coordination ? (
+                <g className="pointer-events-none">
+                  {conflictEdges.map(({ a, b, key }) => (
+                    <line
+                      key={`conflict-${key}`}
+                      x1={a.x_m}
+                      y1={a.y_m}
+                      x2={b.x_m}
+                      y2={b.y_m}
+                      className="stroke-foreground"
+                      strokeOpacity={0.35}
+                      strokeWidth={1}
+                      strokeDasharray="3 3"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))}
+                  {scene.placements.map((placement) => {
+                    if (placement.kind !== 'radar') return null
+                    const info = coordination.readers[String(placement.id)]
+                    if (!info) return null
+                    const r = 2.1 * markerScale
+                    const lost = info.interference.r2d_lost + info.interference.m1_lost + info.interference.m2_lost + info.interference.m3_lost
+                    return (
+                      <g key={`coord-${placement.id}`} transform={`translate(${placement.x_m} ${placement.y_m})`}>
+                        <circle
+                          r={r}
+                          fill="none"
+                          stroke={readerColor(info.color)}
+                          strokeWidth={3}
+                          strokeDasharray={info.stopped ? '4 3' : undefined}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <g transform="scale(1 -1)">
+                          <text
+                            y={-r - 0.6 * markerScale}
+                            textAnchor="middle"
+                            fontSize={1.3 * markerScale}
+                            className="fill-foreground"
+                          >
+                            {`c${info.color + 1}${info.time_slot ? ` · t${info.time_slot[0] + 1}` : ''} · ${info.f_r}sb${lost ? ` · ⚡${lost}` : ''}${info.stopped ? ' · ■' : ''}`}
+                          </text>
+                        </g>
+                      </g>
+                    )
+                  })}
+                </g>
+              ) : null}
               {scene.placements.map((placement) => {
                 if (placement.kind === 'device') return null
                 if (!layerVisible(placement, layers)) return null
@@ -832,6 +900,9 @@ export function ThesisWarehouse({
               label={t('thesis.showIdentified')}
               onChange={setShowIdentified}
             />
+            {coordinated ? (
+              <LayerToggle checked={showCoordination} label={t('thesis.showCoordination')} onChange={setShowCoordination} />
+            ) : null}
           </div>
         </div>
         <button

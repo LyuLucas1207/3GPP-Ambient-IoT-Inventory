@@ -13,6 +13,11 @@ services:
       - "8000:8000"
     environment:
       PYTHONUNBUFFERED: "1"
+    volumes:
+      # Multi-reader training outputs and the policy registry live on the host,
+      # so policies trained with `python -m training.train` show up without a rebuild.
+      - ./Implements/backend/training/outputs:/app/training/outputs
+      - ./Implements/backend/app/thesis_simulator/rl/policies:/app/app/thesis_simulator/rl/policies
 
   frontend:
     build:

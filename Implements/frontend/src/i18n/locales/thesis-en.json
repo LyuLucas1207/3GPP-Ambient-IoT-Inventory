@@ -1,7 +1,8 @@
 {
   "nav": {
     "thesisSimulation": "Thesis Simulation",
-    "thesisAnalysis": "Analysis"
+    "thesisAnalysis": "Analysis",
+    "thesisTraining": "Training"
   },
   "thesis": {
     "documentTitle": "Thesis Simulation",
@@ -80,7 +81,7 @@
       "g": "N_g (groups)",
       "seed": "Seed (empty = random)",
       "adaptiveK": "Adaptive K (Schoute DFSA)",
-      "adaptiveKHint": "Classic DFSA (not Recurrent PPO). Round 1 uses the Initial $K$ you set (e.g. 256); later rounds set $K \\approx 2\\hat{N}$ from the Schoute / empty-slot backlog estimate. Off: every round uses that same fixed $K$. PPO lives on the Aperiodic Paging Paper page, not in Thesis multi-reader runs.",
+      "adaptiveKHint": "Classic DFSA: round 1 uses the Initial $K$; later rounds set $K \\approx 2\\hat{N}$ from the Schoute / empty-slot backlog estimate. Off: every round uses the same fixed $K$. Only used when the controller below is “auto”; an explicit fixed / DFSA / RL-policy controller overrides it (RL policies come from the Training page).",
       "useGrouping": "Use grouping (periodic paging)",
       "useCapture": "Use capture effect",
       "useEbi": "Use EBI",
@@ -101,7 +102,126 @@
       "stagger": "Stagger reader start",
       "staggerHint": "Off: every reader starts its first frame at t = 0. On: readers start in groups, each group a fixed interval after the previous one. The grouping is a strategy and is stored with the run.",
       "staggerInterval": "Interval (ms)",
-      "staggerAssign": "Assign groups…"
+      "staggerAssign": "Assign groups…",
+      "controller": {
+        "title": "Frame-size controller",
+        "hint": "How each reader chooses K and p* every round.",
+        "kind": "Controller",
+        "kinds": {
+          "auto": "Auto (from the Adaptive K switch)",
+          "fixed": "Fixed K",
+          "dfsa": "DFSA (K ≈ 2N̂)",
+          "policy": "RL policy"
+        },
+        "autoDfsa": "Adaptive K is on → DFSA",
+        "autoFixed": "Adaptive K is off → fixed K",
+        "desc": {
+          "auto": "Same behaviour as before this option existed: the Adaptive K switch decides between DFSA and fixed K.",
+          "fixed": "Every round uses the Initial K; p* follows the paging rule.",
+          "dfsa": "Dynamic framed slotted ALOHA: K = 2N̂ from the backlog estimate of the previous frame.",
+          "policy": "A trained PPO policy from the registry chooses K and p* from each reader’s local observation. Each reader keeps its own recurrent state."
+        },
+        "policy": "Policy",
+        "noPolicies": "No policy in the registry yet — train one and promote it (Training page).",
+        "deterministic": "Deterministic actions",
+        "deterministicHint": "Use the mean action instead of sampling from the policy distribution (reproducible runs)."
+      },
+      "resource": {
+        "title": "Multi-reader resources",
+        "hint": "How readers share time and frequency and whether they interfere.",
+        "mode": "Coordination",
+        "modes": {
+          "independent": "Independent (no interference)",
+          "shared": "Shared (all subbands, interfering)",
+          "fdma": "FDMA (colour → subband group)",
+          "tdma": "TDMA (colour → time slot)",
+          "hybrid": "Hybrid FDMA × TDMA",
+          "lbt": "LBT (listen before talk)"
+        },
+        "desc": {
+          "independent": "Readers never interfere — the original thesis model and the golden regression.",
+          "shared": "Every reader uses all F subbands at the same time; overlapping coverage loses R2D/D2R messages.",
+          "fdma": "The conflict graph is coloured; each colour gets a disjoint group of the F subbands (fewer Msg1 subbands per reader).",
+          "tdma": "Each colour gets its own time slot in a repeating window; readers wait for their slot (serial within a conflict).",
+          "hybrid": "Colours are split into frequency groups first, then into time slots inside each group.",
+          "lbt": "A reader senses the channel before a frame and backs off while a conflicting reader transmits; ETSI dwell rule (max on-time, then a pause)."
+        },
+        "singleReader": "Only one reader is active: coordination has no effect.",
+        "fFreq": "Subbands F",
+        "fFreqHint": "Number of Msg1 frequency subbands (TR 38.769: F). K = L_s × F_r slots per frame.",
+        "tdmaWindow": "TDMA slot length (s)",
+        "tdmaWindowHint": "Length of one colour’s window in the TDMA superframe (colours × window). Default 0.5 s.",
+        "freqGroups": "Frequency groups",
+        "freqGroupsHint": "Hybrid: number of disjoint subband groups the colours are spread over; colours sharing a group take turns in time. Default 2.",
+        "lbtBackoff": "Backoff (ms)",
+        "lbtBackoffHint": "Wait after sensing a busy channel.",
+        "lbtMaxOn": "Max on-time (s)",
+        "lbtPause": "Pause (s)",
+        "lbtDwellHint": "ETSI EN 302 208 style dwell: after the max on-time the reader must be silent for the pause (default 4 s / 0.1 s).",
+        "linkBudget": "Link-budget conflicts",
+        "linkBudgetHint": "Two readers conflict if either one’s carrier reaches devices of the other above the SIR limit. Off: a plain distance threshold.",
+        "conflictDistance": "Conflict distance (m)",
+        "nColors": "Colours",
+        "nColorsHint": "Empty = greedy colouring decides (minimum it finds).",
+        "auto": "auto",
+        "interference": "Model interference",
+        "interferenceHint": "Drop messages whose SIR/SINR is below the limits while overlapping readers transmit.",
+        "crossMsg1": "Cross-reader Msg1 collisions",
+        "crossMsg1Hint": "Msg1 from devices of different readers on the same subband and slot collide.",
+        "r2dSir": "R2D SIR limit (dB)",
+        "d2rSinr": "D2R SINR limit (dB)",
+        "cwSuppression": "CW suppression (dB)",
+        "cwSuppressionHint": "How much of another reader’s carrier the receiver cancels (TR 38.769 assumes self-interference cancellation)."
+      },
+      "termination": {
+        "title": "Reader termination",
+        "hint": "When a reader decides its population is done — without knowing the ground truth.",
+        "kind": "Rule",
+        "kinds": {
+          "oracle": "Oracle (ground truth)",
+          "quiet_rounds": "Quiet rounds",
+          "id_rate": "Identification rate",
+          "energy_bound": "Energy bound",
+          "combined": "Combined"
+        },
+        "desc": {
+          "oracle": "The reader stops when no reachable device is left (simulator knowledge, the old behaviour).",
+          "quiet_rounds": "Stop after n consecutive frames with no new identification.",
+          "id_rate": "Stop when the identification rate over a window falls below an absolute or relative threshold.",
+          "energy_bound": "Stop once every device type has had the worst-case charging time (t_wc) since the last identification, so no sleeping device can still wake up.",
+          "combined": "Combine several rules with AND (all must fire) or OR (first one wins)."
+        },
+        "remove": "Remove",
+        "quietRounds": "Quiet rounds n",
+        "windowMode": "Window",
+        "windowModes": {
+          "rounds": "Last N rounds",
+          "seconds": "Last W seconds",
+          "ewma": "EWMA"
+        },
+        "ewmaAlpha": "EWMA α",
+        "windowS": "Window (s)",
+        "windowRounds": "Window (rounds)",
+        "rMin": "Absolute rate r_min (IDs/s)",
+        "rMinHint": "Empty = only the relative threshold.",
+        "rRel": "Relative rate r_rel",
+        "rRelHint": "Fraction of the peak rate seen so far.",
+        "minFrames": "Min frames",
+        "energySource": "t_wc source",
+        "energySourceHint": "Edge: the coverage-edge harvest (conservative). Actual: the reader’s own best-case device.",
+        "energySources": {
+          "edge": "Coverage edge",
+          "actual": "Actual devices"
+        },
+        "margin": "Margin",
+        "marginHint": "Extra fraction added to t_wc (0.1 = +10 %).",
+        "combine": "Combine",
+        "combineModes": {
+          "all": "All (AND)",
+          "any": "Any (OR)"
+        },
+        "addRule": "Add rule"
+      }
     },
     "analysis": {
       "title": "Run Analysis",
@@ -123,7 +243,12 @@
         "bySubtype": "Identified per device type",
         "slots": "Slot outcomes and resource efficiency",
         "overhead": "Time overhead per stage",
-        "depletions": "Energy depletions per stage"
+        "depletions": "Energy depletions per stage",
+        "config": "Run configuration",
+        "retention": "Multi-reader gain retention G",
+        "termination": "Termination rules: extra time vs missed devices",
+        "interference": "Interference losses and deferral",
+        "devices": "Per-device multi-reader metrics"
       },
       "axis": {
         "time": "time (s)",
@@ -148,7 +273,66 @@
         "dropped": "dropped",
         "duration": "duration (s)"
       },
-      "tNote": "Tx = simulated time until x % of all devices in the scene are identified."
+      "tNote": "Tx = simulated time until x % of all devices in the scene are identified.",
+      "tabs": {
+        "overview": "Overview",
+        "retention": "Gain retention",
+        "termination": "Termination",
+        "interference": "Interference",
+        "devices": "Device metrics"
+      },
+      "multi": {
+        "cols": {
+          "run": "Run",
+          "controller": "Controller",
+          "resource": "Resources",
+          "f": "F",
+          "termination": "Termination",
+          "terminatedEarly": "Stopped early",
+          "readersStopped": "Readers stopped"
+        },
+        "retention": {
+          "hint": "G = (T_serial − T_run) / (T_serial − T_ideal) on T99 of the reachable devices. 1 keeps the whole ideal multi-reader gain (independent readers), 0 is no better than serving conflicting readers one after another (TDMA).",
+          "needTwo": "Select at least two runs (ideal and serial references plus the runs to compare).",
+          "ideal": "Ideal reference",
+          "serial": "Serial reference",
+          "unreached": "A reference run never reached 99 % of its reachable devices — G is undefined.",
+          "degenerate": "The serial reference is less than 5 % slower than the ideal one, so readers barely conflict here and G is undefined or blows up. Pick references that differ, or a denser scene.",
+          "idealTag": "ideal",
+          "serialTag": "serial"
+        },
+        "termination": {
+          "hint": "Each rule is replayed on the recorded frame history of one finished oracle run: how long after the last identification the readers would keep paging (extra time) against how many reachable devices they would leave behind. Bold rows are on the Pareto front.",
+          "needFinished": "Select at least one finished run.",
+          "run": "Run",
+          "summary": "{{reachable}} reachable · T99 {{t99}} s · last ID {{tLast}} s",
+          "notOracle": "This run already used a non-oracle rule; the replay only sees frames up to its own stop, so rules that would stop later are cut off.",
+          "multiApprox": "Several readers: each is replayed on its own frame history. A device its reader would only have found after stopping counts as missed, although in a live run a neighbouring reader might still have found it, so missed devices are an upper bound (see the design doc).",
+          "front": "Pareto front",
+          "extra": "Extra time after last ID (s)",
+          "missed": "Missed devices (%)",
+          "addRule": "Add to comparison",
+          "cols": {
+            "rule": "Rule",
+            "tStop": "Stop time",
+            "extra": "Extra",
+            "extraT99": "Extra vs T99",
+            "missed": "Missed",
+            "missedPct": "Missed %"
+          }
+        },
+        "interference": {
+          "hint": "Messages lost to other readers per run, the time readers waited for their TDMA slot / LBT backoff, and a per-frame timeline of the selected run.",
+          "deferredAxis": "Deferred time (s)",
+          "detail": "Timeline for",
+          "timelineHint": "One row per reader; a marker is a frame, its size the number of lost messages."
+        },
+        "devices": {
+          "hint": "Distributions over all devices of a finished run (and per device type in the table).",
+          "pctDevices": "% of devices",
+          "perDevice": "value per device"
+        }
+      }
     },
     "timeline": {
       "titleDevice": "Device #{{id}} · {{subtype}}",
@@ -354,7 +538,10 @@
         "ebi_received": "EBI",
         "m2_rx": "M2 rx",
         "m3_tx": "M3 tx",
-        "identified": "identified"
+        "identified": "identified",
+        "m1_interfered": "M1 lost to interference",
+        "m2_interfered": "M2 lost to interference",
+        "m3_interfered": "M3 lost to interference"
       },
       "dock": "Run",
       "playReplay": "Play replay",
@@ -371,7 +558,11 @@
       "configStallOff": "Stall off",
       "configSeed": "Seed {{seed}}",
       "configStagger": "Stagger {{groups}} groups · {{ms}} ms",
-      "configDisabledReaders": "{{count}} readers disabled"
+      "configDisabledReaders": "{{count}} readers disabled",
+      "configPolicy": "Policy {{id}}",
+      "configResource": "Resources: {{mode}}",
+      "configTermination": "Stop: {{rule}}",
+      "configTerminatedEarly": "{{count}} stopped early"
     },
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
@@ -439,7 +630,8 @@
         "energy": "Energy",
         "round": "Round map",
         "metrics": "Metrics",
-        "pin": "Pin CDF"
+        "pin": "Pin CDF",
+        "coord": "Coordination"
       },
       "stage": {
         "paging": "Paging",
@@ -490,6 +682,10 @@
         "pin": {
           "lead": "Distribution of the strongest power each device receives from any reader.",
           "body": "X axis is received power (dBm), Y axis is the fraction of devices receiving at most that power. A curve further right means devices are closer to a reader and harvest faster. One line per device type; compare with Figure 4 of the paper."
+        },
+        "coord": {
+          "lead": "How the readers shared the spectrum and what they lost to each other.",
+          "body": "KPIs: coordination mode, number of colours, frames hit by interference, readers stopped. Bars: messages lost to interference over time per stage (R2D paging, Msg1, Msg2, Msg3). Table: per-reader colour, subbands, time slot, conflict neighbours, rounds, losses, deferred time (TDMA wait / LBT backoff), stop reason and t_wc."
         }
       },
       "terms": {
@@ -521,7 +717,14 @@
         "energySpent": "Cumulative energy spent on protocol messages.",
         "slotCodes": "Cell colours: idle, single, captured, collision, missed.",
         "pin": "Pin: strongest received power from any reader, in dBm.",
-        "cdf": "CDF: fraction of devices at or below the value on the X axis."
+        "cdf": "CDF: fraction of devices at or below the value on the X axis.",
+        "conflictGraph": "Conflict graph: an edge joins two readers whose carriers would break each other’s links (link budget or distance).",
+        "colour": "Colour: a graph colouring of the conflict graph; readers of one colour never conflict and share a resource.",
+        "grant": "Grant: the subbands and time slot a reader may use.",
+        "r2dLost": "R2D lost: devices that missed the paging because of another reader’s carrier.",
+        "d2rLost": "D2R lost: Msg1/Msg3 replies whose SINR at the reader was below the limit.",
+        "deferred": "Deferred: time a reader waited for its TDMA slot or LBT backoff/pause.",
+        "stopReason": "Stop reason: which termination rule ended the reader (or exhausted under the oracle)."
       }
     },
     "readerInspector": {
@@ -537,7 +740,29 @@
       "meanK": "Mean K",
       "meanFrame": "Mean frame",
       "curve": "Identified by this reader over time",
-      "hint": "Charts below now show this reader. Right-click the reader to edit it; close to go back to all readers."
+      "hint": "Charts below now show this reader. Right-click the reader to edit it; close to go back to all readers.",
+      "coordination": "Coordination",
+      "mode": "Mode",
+      "controller": "Controller",
+      "color": "Colour",
+      "subbands": "Subbands",
+      "timeSlot": "Time slot",
+      "neighbors": "Conflicts with",
+      "stop": "Stop",
+      "stopReason": {
+        "quiet_rounds": "Quiet rounds",
+        "id_rate": "Identification rate",
+        "id_rate_no_ids": "No identification in window",
+        "energy_bound": "Energy bound",
+        "combined": "Combined rule",
+        "stopped": "Stopped"
+      },
+      "exhausted": "Exhausted (no reachable device left)",
+      "running": "Running",
+      "tWc": "Worst-case charge t_wc",
+      "framesHit": "Frames hit",
+      "lost": "Lost (R2D/M1/M2/M3)",
+      "deferred": "Deferred time"
     },
     "tf": {
       "deviceTitle": "Device #{{id}} timeline",
@@ -596,7 +821,11 @@
         "sleep": "Sleeping (waiting)"
       },
       "collapse": "Collapse idle time",
-      "collapsedTip": "Collapsed idle time\n{{a}} ~ {{b}} ({{d}})\nUntick \"Collapse idle time\" to see it to scale."
+      "collapsedTip": "Collapsed idle time\n{{a}} ~ {{b}} ({{d}})\nUntick \"Collapse idle time\" to see it to scale.",
+      "grant": "Granted subbands {{subbands}} · colour {{color}}",
+      "interference": "Interference: R2D {{r2d}} · M1 {{m1}} · M2 {{m2}} · M3 {{m3}} lost ({{n}} interferers)",
+      "controller": "Controller: {{name}}",
+      "notGranted": "Subband {{f}} not granted to this reader"
     },
     "stagger": {
       "title": "Reader start groups",
@@ -614,6 +843,151 @@
       "clickHint": "Click readers on the map or in the list to move them into group {{n}}.",
       "map": "Reader layout",
       "apply": "Apply"
+    },
+    "showCoordination": "Coordination (conflict graph, colours)",
+    "deviceMetrics": {
+      "title": "Multi-reader metrics",
+      "afterRun": "Available once the run has finished.",
+      "readersInRange": "Readers in range",
+      "cbraFailures": "CBRA failures",
+      "readerChanges": "Reader changes",
+      "failToPage": "Fail → next page",
+      "failToPageMeanS": "Fail → next page (mean)",
+      "dropCause": "Drop cause",
+      "drop": {
+        "unreachable": "Unreachable (no reader covers it)",
+        "max_time_reached": "Max time reached",
+        "stopped": "Run stopped",
+        "no_progress": "No progress (stall)",
+        "terminated_early": "Its readers terminated early"
+      },
+      "none": "No metrics for this device.",
+      "hint": "Readers in range: readers whose coverage includes the device. CBRA failures: Msg1 attempts that collided, were lost or interfered. Reader changes: how often the identifying reader differed from the previous attempt. Fail → next page: mean time from a failed attempt to the next paging it heard."
+    },
+    "coord": {
+      "mode": "Mode",
+      "colors": "Colours",
+      "framesHit": "Frames hit",
+      "stopped": "Readers stopped",
+      "independentHint": "Independent mode: readers do not interfere, so there is nothing to coordinate.",
+      "loss": {
+        "r2d_lost": "R2D paging",
+        "m1_lost": "Msg1",
+        "m2_lost": "Msg2",
+        "m3_lost": "Msg3"
+      },
+      "lostDevices": "Lost messages",
+      "col": {
+        "reader": "Reader",
+        "color": "Colour",
+        "subbands": "Subbands",
+        "slot": "Slot",
+        "neighbors": "Conflicts",
+        "rounds": "Rounds",
+        "lost": "Lost",
+        "deferred": "Deferred (s)",
+        "stop": "Stop",
+        "tWc": "t_wc (s)"
+      }
+    },
+    "training": {
+      "title": "Multi-reader RL training",
+      "subtitle": "Experiments under backend/training: learning curves, generalization against DFSA and the policy registry used by runs.",
+      "experiments": "Experiments",
+      "runCount": "{{done}}/{{total}} done · {{failed}} failed",
+      "algo": "Algorithm",
+      "algoConfig": {
+        "ps_ppo": "PS-PPO (parameter-shared PPO)",
+        "mappo": "MAPPO (centralized critic)",
+        "ippo": "IPPO (independent learners)",
+        "zero_shot": "Zero-shot single-reader policy"
+      },
+      "algos": {
+        "sb3_ppo": "PPO (stable-baselines3)",
+        "torch_mlp": "MAPPO / IPPO (torch)",
+        "zero_shot_aperiodic": "Recurrent PPO (aperiodic, zero-shot)"
+      },
+      "scale": "Scale",
+      "steps": "Timesteps",
+      "seeds": "Seeds",
+      "t99VsDfsa": "T99 / DFSA",
+      "env": {
+        "readers": "Readers",
+        "subset": "Reader subset",
+        "offsets": "Start offsets",
+        "resource": "Resource modes",
+        "mix": "Device mix"
+      },
+      "runs": "Runs",
+      "noRuns": "No run yet. Start one with the command above.",
+      "cols": {
+        "run": "Run",
+        "status": "Status",
+        "alpha": "α / β / seed",
+        "scale": "Scale",
+        "steps": "Steps",
+        "episodes": "Episodes",
+        "wall": "Wall time",
+        "reach99": "Cells ≥ 99 %",
+        "t99VsDfsa": "T99 / DFSA (geo-mean)",
+        "promoted": "Promoted as"
+      },
+      "status": {
+        "running": "running",
+        "done": "done",
+        "failed": "failed",
+        "interrupted": "interrupted"
+      },
+      "error": "Error",
+      "learning": "Learning curves",
+      "learningHint": "One dot per training episode; the line is a rolling mean.",
+      "curve": {
+        "return": "Episode return",
+        "identified": "Identified fraction",
+        "t99": "T99 (s)",
+        "efficiency": "Resource efficiency"
+      },
+      "rolling": "rolling mean ({{w}})",
+      "noCurve": "No episode finished yet.",
+      "evalMatrix": "Generalization matrix",
+      "evalHint": "Paired evaluation: the policy and DFSA see the same deployments (readers × device count × mix × offsets). Cell value T99 / DFSA, below 1 (green) means faster than DFSA.",
+      "noEval": "No evaluation yet (run python -m training.evaluate).",
+      "matrix": {
+        "candidate": "Candidate",
+        "cell": "Cell",
+        "identified": "Identified",
+        "t99": "T99",
+        "tMean": "Mean ID time",
+        "efficiency": "Efficiency",
+        "t99VsDfsa": "T99 / DFSA"
+      },
+      "plots": "Saved plots",
+      "promote": "Promote to registry",
+      "promoteHint": "Copies the checkpoint into rl/policies with a SHA-256 sidecar so New run can select it.",
+      "overwrite": "Overwrite existing id",
+      "promoteButton": "Promote",
+      "promoted": "Promoted as {{id}}",
+      "registry": "Policy registry",
+      "registryHint": "Policies that thesis runs can use (controller “RL policy”). ✗ means the file is missing or its hash does not match.",
+      "registryCols": {
+        "policy": "Policy id",
+        "algo": "Algorithm",
+        "alpha": "α / β",
+        "scale": "Scale",
+        "steps": "Steps",
+        "t99VsDfsa": "T99 / DFSA",
+        "sha": "SHA-256",
+        "state": "Available"
+      },
+      "howTo": "Workflow",
+      "steps_": {
+        "train": "Train offline: cd Implements/backend && PYTHONPATH=. .venv/bin/python -m training.train --config <experiment> --scale small (smoke · small · medium · full, or a factor such as 0.5).",
+        "outputs": "Each run writes training/outputs/<experiment>/<stamp>__a…__b…__s…/: meta.json, train_metrics.csv, checkpoints/final.zip + final.json, plots/.",
+        "evaluate": "Evaluation runs automatically after training (paired with DFSA); re-run it with python -m training.evaluate --runs <dir> --grid full.",
+        "promote": "Promote a good run (button above, --promote, or python -m training.promote <dir>); this copies it into the registry.",
+        "use": "In New run pick controller “RL policy” and the policy id; every reader runs the policy with its own state."
+      },
+      "interruptedHint": "The training process ended without finishing (killed or the machine restarted). Start it again with the command above."
     }
   }
 }

@@ -1,0 +1,10 @@
+{
+  "name": "ippo",
+  "algo": "ippo",
+  "description": "Independent PPO baseline: one actor and one local critic per reader slot, no parameter sharing and no global state.",
+  "alphas": [0.5],
+  "betas": [0.5],
+  "seeds": [0],
+  "env": {"readers": [1, 18], "subset": "random", "offsets": ["none", "random", "groups"], "resource_modes": ["independent", "fdma", "tdma", "hybrid"], "schemes": ["aperiodic"], "subtype_mix": "random"},
+  "hyperparameters": {"learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.005, "hidden": [64, 64], "slots": 18}
+}

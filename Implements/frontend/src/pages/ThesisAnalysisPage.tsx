@@ -9,6 +9,14 @@ import { ThesisSubNav } from '@/components/thesis/ThesisSubNav'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  ConfigTable,
+  DeviceMetricsPanel,
+  InterferencePanel,
+  RetentionPanel,
+  TerminationPanel,
+} from '@/components/thesis/analysis/MultiReaderAnalysis'
 import {
   Select,
   SelectContent,
@@ -31,6 +39,8 @@ const SUBTYPE_DASH: Record<string, 'solid' | 'dash' | 'dot'> = { '1': 'solid', '
 const STAGES = ['paging', 'm1', 'ebi', 'm2', 'm3'] as const
 const STAGE_COLOR: Record<string, string> = { paging: '#4dbeee', m1: '#0072bd', ebi: '#7e2f8e', m2: '#77ac30', m3: '#edb120' }
 const LEVELS = [50, 90, 95, 99]
+const ANALYSIS_TABS = ['overview', 'retention', 'termination', 'interference', 'devices'] as const
+type AnalysisTab = (typeof ANALYSIS_TABS)[number]
 
 function runLabel(a: RunAnalysis) {
   const name = a.summary?.name?.trim()
@@ -74,6 +84,7 @@ export default function ThesisAnalysisPage() {
   }, [sectionId])
 
   const analysis = useRunAnalysis(runs.runs, selected)
+  const [tab, setTab] = useState<AnalysisTab>('overview')
 
   const selectedAnalyses = useMemo<RunAnalysis[]>(
     () => Array.from(selected).map((id) => analysis.getAnalysis(id)).filter((a): a is RunAnalysis => !!a),
@@ -169,7 +180,12 @@ export default function ThesisAnalysisPage() {
                       <StatusChip status={run.status} />
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>{run.scheme}</span>
+                      <span>
+                        {run.scheme}
+                        {run.resource_mode && run.resource_mode !== 'independent' ? ` · ${run.resource_mode}` : ''}
+                        {run.controller_kind === 'policy' ? ' · RL' : ''}
+                        {run.termination_label && run.termination_label !== 'oracle' ? ' · ⏹' : ''}
+                      </span>
                       <span className="tabular-nums">
                         {run.identified_total}/{run.total_devices}
                       </span>
@@ -205,31 +221,63 @@ export default function ThesisAnalysisPage() {
                   {t('thesis.analysis.selectHint')}
                 </p>
               ) : (
-                <>
-                  <ChartPanel title={t('thesis.analysis.charts.identification')}>
-                    <IdentificationChart analyses={selectedAnalyses} />
-                  </ChartPanel>
-                  <ChartPanel title={t('thesis.analysis.charts.bySubtype')}>
-                    <SubtypeChart analyses={selectedAnalyses} />
-                  </ChartPanel>
-                  <ChartPanel title={t('thesis.analysis.charts.metrics')}>
-                    <MetricsTable analyses={selectedAnalyses} />
-                  </ChartPanel>
-                  <div className="grid gap-4 xl:grid-cols-2">
-                    <ChartPanel title={t('thesis.analysis.charts.slots')}>
-                      <SlotsChart analyses={selectedAnalyses} />
+                <Tabs value={tab} onValueChange={(v) => setTab(v as AnalysisTab)} className="flex flex-col gap-3">
+                  <TabsList className="h-8 self-start">
+                    {ANALYSIS_TABS.map((k) => (
+                      <TabsTrigger key={k} value={k} className="px-3 text-xs">
+                        {t(`thesis.analysis.tabs.${k}`)}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  <TabsContent value="overview" className="flex flex-col gap-4">
+                    <ChartPanel title={t('thesis.analysis.charts.identification')}>
+                      <IdentificationChart analyses={selectedAnalyses} />
                     </ChartPanel>
-                    <ChartPanel title={t('thesis.analysis.charts.overhead')}>
-                      <OverheadChart analyses={selectedAnalyses} />
+                    <ChartPanel title={t('thesis.analysis.charts.bySubtype')}>
+                      <SubtypeChart analyses={selectedAnalyses} />
                     </ChartPanel>
-                    <ChartPanel title={t('thesis.analysis.charts.depletions')}>
-                      <DepletionChart analyses={selectedAnalyses} />
+                    <ChartPanel title={t('thesis.analysis.charts.metrics')}>
+                      <MetricsTable analyses={selectedAnalyses} />
                     </ChartPanel>
-                    <ChartPanel title={t('thesis.analysis.charts.contribution')}>
-                      <ContributionChart analyses={selectedAnalyses} />
+                    <ChartPanel title={t('thesis.analysis.charts.config')}>
+                      <ConfigTable analyses={selectedAnalyses} />
                     </ChartPanel>
-                  </div>
-                </>
+                    <div className="grid gap-4 xl:grid-cols-2">
+                      <ChartPanel title={t('thesis.analysis.charts.slots')}>
+                        <SlotsChart analyses={selectedAnalyses} />
+                      </ChartPanel>
+                      <ChartPanel title={t('thesis.analysis.charts.overhead')}>
+                        <OverheadChart analyses={selectedAnalyses} />
+                      </ChartPanel>
+                      <ChartPanel title={t('thesis.analysis.charts.depletions')}>
+                        <DepletionChart analyses={selectedAnalyses} />
+                      </ChartPanel>
+                      <ChartPanel title={t('thesis.analysis.charts.contribution')}>
+                        <ContributionChart analyses={selectedAnalyses} />
+                      </ChartPanel>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="retention">
+                    <ChartPanel title={t('thesis.analysis.charts.retention')} hint={t('thesis.analysis.multi.retention.hint')}>
+                      <RetentionPanel analyses={selectedAnalyses} />
+                    </ChartPanel>
+                  </TabsContent>
+                  <TabsContent value="termination">
+                    <ChartPanel title={t('thesis.analysis.charts.termination')} hint={t('thesis.analysis.multi.termination.hint')}>
+                      <TerminationPanel analyses={selectedAnalyses} />
+                    </ChartPanel>
+                  </TabsContent>
+                  <TabsContent value="interference">
+                    <ChartPanel title={t('thesis.analysis.charts.interference')} hint={t('thesis.analysis.multi.interference.hint')}>
+                      <InterferencePanel analyses={selectedAnalyses} />
+                    </ChartPanel>
+                  </TabsContent>
+                  <TabsContent value="devices">
+                    <ChartPanel title={t('thesis.analysis.charts.devices')} hint={t('thesis.analysis.multi.devices.hint')}>
+                      <DeviceMetricsPanel analyses={selectedAnalyses} />
+                    </ChartPanel>
+                  </TabsContent>
+                </Tabs>
               )}
             </div>
           </ScrollArea>
@@ -239,10 +287,11 @@ export default function ThesisAnalysisPage() {
   )
 }
 
-function ChartPanel({ title, children }: { title: string; children: React.ReactNode }) {
+function ChartPanel({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <section className="rounded-xl border bg-card p-3">
       <h3 className="mb-2 text-xs font-medium text-muted-foreground">{title}</h3>
+      {hint ? <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">{hint}</p> : null}
       {children}
     </section>
   )

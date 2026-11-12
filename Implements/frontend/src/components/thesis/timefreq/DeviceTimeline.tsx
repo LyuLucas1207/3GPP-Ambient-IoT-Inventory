@@ -236,7 +236,8 @@ function buildModel(trace: DeviceTrace, t: (k: string, o?: Record<string, unknow
     const frame = r?.round_index ?? null
     const reader = r?.reader_id ?? events[0].reader_id
     const mine: Act[] = []
-    const outcome = events.find((e) => e.event_type === 'm1_success' || e.event_type === 'm1_collision' || e.event_type === 'm1_empty')
+    const outcome = events.find((e) => M1_OUTCOMES.has(e.event_type))
+    const grant = r?.subbands ?? null
     for (const e of events) {
       const slot = (e.payload?.slot as number | undefined) ?? null
       switch (e.event_type) {
@@ -254,7 +255,7 @@ function buildModel(trace: DeviceTrace, t: (k: string, o?: Record<string, unknow
             label: 'Msg1',
             detail: t('thesis.tf.act.m1', {
               slot,
-              f: slot != null ? slot % c.f : '',
+              f: slot != null ? (grant?.length ? grant[slot % grant.length] : slot % c.f) : '',
               result: outcome ? t(`thesis.live.event.${outcome.event_type}`, { defaultValue: outcome.event_type }) : '—',
             }),
             reader,
@@ -287,6 +288,8 @@ function buildModel(trace: DeviceTrace, t: (k: string, o?: Record<string, unknow
   return { acts, markers, samples, rounds, jumps: rounds.map((r) => r.t_start_s), lastT }
 }
 
+const M1_OUTCOMES = new Set(['m1_success', 'm1_collision', 'm1_empty', 'm1_interfered'])
+
 function markerOf(e: DeviceEvent, t: (k: string, o?: Record<string, unknown>) => string): Marker | null {
   const label = t(`thesis.live.event.${e.event_type}`, { defaultValue: e.event_type })
   const detail = e.cause ? `${label} (${e.cause})` : label
@@ -305,6 +308,10 @@ function markerOf(e: DeviceEvent, t: (k: string, o?: Record<string, unknown>) =>
       return { t: e.t_s, text: '?', color: '#71717a', detail }
     case 'latched':
       return { t: e.t_s, text: 'L', color: '#7e2f8e', detail }
+    case 'm1_interfered':
+    case 'm2_interfered':
+    case 'm3_interfered':
+      return { t: e.t_s, text: '≋', color: '#a2142f', detail }
     default:
       return null
   }

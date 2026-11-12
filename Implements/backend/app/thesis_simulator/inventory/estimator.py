@@ -22,8 +22,12 @@ class BacklogEstimator:
 
     def p_star(self, k: int, group: int) -> float:
         est = self.mnot_next[group]
-        if est is None or est <= 0:
+        if est is None:
             return self._consts.p0_init
+        if est <= 0:
+            # All-idle frame: the estimator says nothing is left, so page everyone
+            # (``grouping_logic.py``; aperiodic paper's PZE fallback ps = 1).
+            return 1.0
         return min(1.0, k / float(est))
 
     def update(self, group: int, k: int, s: int, c: int, e: int, p_used: float) -> float | None:

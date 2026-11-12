@@ -45,6 +45,9 @@
 
 这 30 个左右已经覆盖了 paper 绝大多数“看起来很吓人”的术语。
 
+
+> 完整术语表（缩写 · 全称 · 中文），包括多读写器与强化学习术语，见 [Docs/VOCABULARY.md](../../VOCABULARY.md)。
+
 ---
 
 > **导航** · [目录 content.md](../content.md) · [Docs 首页](../README.md)

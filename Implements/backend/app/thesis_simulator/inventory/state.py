@@ -13,13 +13,19 @@ recharges and competes again.
 
 from __future__ import annotations
 
+import dataclasses
+
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
 
+from app.thesis_simulator.coordination.spec import ResourceSpec
 from app.thesis_simulator.inventory.config import CONSTANTS, EngineConstants
+from app.thesis_simulator.inventory.controller import ControllerSpec, new_history
 from app.thesis_simulator.inventory.estimator import BacklogEstimator
+from app.thesis_simulator.inventory.termination import TermState, TerminationSpec
 
 SUBTYPE_CODE: dict[str, int] = {"1": 0, "2a": 1, "2b": 2}
 SUBTYPE_LABEL: tuple[str, str, str] = ("1", "2a", "2b")
@@ -32,7 +38,8 @@ DROP_UNREACHABLE = 1
 DROP_MAX_TIME = 2
 DROP_STOPPED = 3
 DROP_NO_PROGRESS = 4
-DROP_CAUSE_LABEL: tuple[str, ...] = ("", "unreachable", "max_time_reached", "stopped", "no_progress")
+DROP_TERMINATED = 5  # every reader stopped on its termination rule
+DROP_CAUSE_LABEL: tuple[str, ...] = ("", "unreachable", "max_time_reached", "stopped", "no_progress", "terminated_early")
 
 DEFAULT_STALL_TIMEOUT_S = 300.0
 """An open-ended run ends by itself after this much simulated time without a
@@ -101,19 +108,49 @@ class DeviceWorld:
     identified_t: np.ndarray  # float64, NaN until identified
     identified_by: np.ndarray  # int32 reader id, -1 until identified
 
+    # Per-device diagnostics (never read by the physics; see ``METRIC_FIELDS``).
+    readers_in_range: np.ndarray | None = None  # int16, readers whose coverage contains the device
+    cbra_failures: np.ndarray | None = None  # int32, joined attempts that did not end identified
+    reader_changes: np.ndarray | None = None  # int32, joins at a different reader after an OFF period
+    last_reader: np.ndarray | None = None  # int32, reader of the previous join, -1 before the first
+    went_off: np.ndarray | None = None  # bool, an ON->OFF transition happened since the last join
+    t_last_fail: np.ndarray | None = None  # float64, end of the last failed attempt, NaN if none pending
+    fail_to_page_sum: np.ndarray | None = None  # float64, total wait failure -> next paging acquisition
+    fail_to_page_max: np.ndarray | None = None  # float64
+    fail_to_page_count: np.ndarray | None = None  # int32
+
     MUTABLE_FIELDS = (
         "E", "on", "grp", "latched_reader", "attempts", "identified",
         "dropped", "drop_cause", "depletions", "identified_t", "identified_by",
     )
+    METRIC_FIELDS = (
+        "cbra_failures", "reader_changes", "last_reader", "went_off", "t_last_fail",
+        "fail_to_page_sum", "fail_to_page_max", "fail_to_page_count",
+    )
+    """Checkpointed like ``MUTABLE_FIELDS`` but optional when resuming an older checkpoint."""
 
     def __post_init__(self) -> None:
         n = len(self.placement_ids)
+        defaults = {
+            "readers_in_range": (np.int16, 0),
+            "cbra_failures": (np.int32, 0),
+            "reader_changes": (np.int32, 0),
+            "last_reader": (np.int32, -1),
+            "went_off": (bool, False),
+            "t_last_fail": (np.float64, np.nan),
+            "fail_to_page_sum": (np.float64, 0.0),
+            "fail_to_page_max": (np.float64, 0.0),
+            "fail_to_page_count": (np.int32, 0),
+        }
+        for name, (dtype, fill) in defaults.items():
+            if getattr(self, name) is None:
+                setattr(self, name, np.full(n, fill, dtype=dtype))
         for name in (
             "subtype_code", "x_m", "y_m", "E", "on", "Ph_total",
             "Ecap", "Eoff", "P_on", "T_on_default", "T_on_dcm",
             "p_rx", "p_tx", "rx_sens_dbm", "uplink_code",
             "backscatter_loss_db", "backscatter_gain_db", "active_tx_power_dbm",
-            *self.MUTABLE_FIELDS,
+            *self.MUTABLE_FIELDS, "readers_in_range", *self.METRIC_FIELDS,
         ):
             arr = getattr(self, name)
             if len(arr) != n:
@@ -155,6 +192,27 @@ class ReaderState:
     Ph_contrib: np.ndarray  # W per device
     d3d: np.ndarray  # m per device
     exhausted: bool = False  # no non-terminal device left in coverage
+    coverage_radius: np.ndarray | None = None  # m per device (type-level link budget)
+    # Static facts a reader knows about its deployment (RL observation context).
+    context: dict[str, float] = field(default_factory=dict)
+
+    controller: Any = None  # ReaderController, built per reader
+    history: deque = field(default_factory=new_history)  # FrameRecord of the last frames
+    term: TermState = field(default_factory=TermState)
+    t_wc_s: float | None = None  # worst-case recharge time for the energy_bound rule
+    stopped: bool = False  # a termination rule fired for this reader
+
+    # Resource grant (coordination): colour, absolute subband indices, F_r = len(subbands).
+    color: int = 0
+    subbands: tuple[int, ...] = ()
+    interference: dict[str, float] = field(default_factory=lambda: {
+        "frames_hit": 0, "r2d_lost": 0, "m1_lost": 0, "m2_lost": 0, "m3_lost": 0,
+        "deferred_s": 0.0, "deferrals": 0, "sinr_sum_db": 0.0, "sinr_n": 0,
+    })
+
+    @property
+    def f_r(self) -> int:
+        return len(self.subbands)
 
 
 @dataclass
@@ -174,6 +232,9 @@ class EpisodeConfig:
     # When True, k_initial is only the cold-start frame length; later rounds
     # follow the Schoute / empty-slot backlog rule (K ≈ 2 N̂).
     adaptive_k: bool = False
+    controller: ControllerSpec = field(default_factory=ControllerSpec)
+    termination: TerminationSpec = field(default_factory=TerminationSpec)
+    resource: ResourceSpec = field(default_factory=ResourceSpec)
 
     consts: EngineConstants = field(default_factory=lambda: CONSTANTS)
 
@@ -202,5 +263,8 @@ class EpisodeConfig:
             disabled_reader_ids=list(cfg.get("disabled_reader_ids") or []),
             stall_timeout_s=None if stall in (None, "") else float(stall),
             adaptive_k=adaptive_k,
-            consts=CONSTANTS,
+            controller=ControllerSpec.from_json(cfg.get("controller")),
+            termination=TerminationSpec.from_json(cfg.get("termination")),
+            resource=ResourceSpec.from_json(cfg.get("resource")),
+            consts=CONSTANTS if cfg.get("f_freq") in (None, "") else dataclasses.replace(CONSTANTS, f_freq=max(1, int(cfg["f_freq"]))),
         )

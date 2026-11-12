@@ -1,0 +1,9 @@
+{
+  "name": "zero_shot_single",
+  "algo": "zero_shot",
+  "description": "No training: the aperiodic engine's single-reader RecurrentPPO on every reader (own LSTM state each). Measures zero-shot transfer from one reader to many.",
+  "alphas": [0.5],
+  "betas": [0.5],
+  "seeds": [0],
+  "env": {"readers": [1, 18], "subset": "random", "offsets": ["none"], "resource_modes": ["independent"], "schemes": ["aperiodic"], "subtype_mix": "uniform"}
+}

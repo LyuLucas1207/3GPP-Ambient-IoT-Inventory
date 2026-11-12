@@ -1,14 +1,15 @@
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { THESIS_ANALYSIS_PATH, THESIS_SIMULATION_PATH } from '@/components/PaperNav'
+import { THESIS_ANALYSIS_PATH, THESIS_SIMULATION_PATH, THESIS_TRAINING_PATH } from '@/components/PaperNav'
 import { cn } from '@/lib/utils'
 
-/** Second-level navigation inside the thesis simulation: the scene editor and the run analysis. */
+/** Second-level navigation inside the thesis simulation: the scene editor, the run analysis and the RL training outputs. */
 export function ThesisSubNav({ className }: { className?: string }) {
   const { t } = useTranslation()
   const links = [
     { to: THESIS_SIMULATION_PATH, label: t('thesis.subnav.scene'), end: true },
     { to: THESIS_ANALYSIS_PATH, label: t('nav.thesisAnalysis'), end: false },
+    { to: THESIS_TRAINING_PATH, label: t('nav.thesisTraining'), end: false },
   ]
   return (
     <nav aria-label={t('thesis.subnav.label')} className={cn('inline-flex rounded-lg border border-border bg-muted/40 p-0.5', className)}>

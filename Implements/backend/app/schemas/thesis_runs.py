@@ -15,6 +15,54 @@ def _normalize_run_name(value: str | None) -> str | None:
     return cleaned or None
 
 
+ControllerKind = Literal["auto", "fixed", "dfsa", "policy"]
+ResourceMode = Literal["independent", "shared", "fdma", "tdma", "hybrid", "lbt"]
+TerminationKind = Literal["oracle", "quiet_rounds", "id_rate", "energy_bound", "combined"]
+
+
+class ControllerIn(BaseModel):
+    """Per-reader (K, p*) controller. ``auto`` = DFSA when ``adaptive_k`` else fixed K."""
+
+    kind: ControllerKind = "auto"
+    policy_id: str | None = Field(default=None, max_length=160)
+    deterministic: bool = True
+
+
+class ResourceIn(BaseModel):
+    """How readers share the F subbands (``coordination/spec.py``)."""
+
+    mode: ResourceMode = "independent"
+    interference: bool = True
+    cross_msg1: bool = True
+    conflict_distance_m: float | None = Field(default=None, ge=0.0, le=1000.0)  # None = link-budget graph
+    n_colors: int | None = Field(default=None, ge=1, le=64)
+    tdma_window_s: float = Field(default=0.5, gt=0.0, le=60.0)
+    freq_groups: int = Field(default=2, ge=1, le=64)
+    lbt_backoff_s: float = Field(default=0.05, ge=0.0, le=10.0)
+    lbt_max_on_s: float = Field(default=4.0, gt=0.0, le=600.0)
+    lbt_pause_s: float = Field(default=0.1, ge=0.0, le=60.0)
+    r2d_sir_db: float = Field(default=6.0, ge=-30.0, le=60.0)
+    d2r_sinr_db: float = Field(default=0.5, ge=-30.0, le=60.0)
+    other_cw_suppression_db: float = Field(default=61.0, ge=0.0, le=200.0)
+
+
+class TerminationIn(BaseModel):
+    """When a reader stops paging (``inventory/termination.py``)."""
+
+    kind: TerminationKind = "oracle"
+    quiet_rounds: int = Field(default=10, ge=1, le=100000)
+    window_mode: Literal["rounds", "seconds", "ewma"] = "rounds"
+    window: float = Field(default=20.0, gt=0.0, le=1e6)
+    ewma_alpha: float = Field(default=0.1, gt=0.0, le=1.0)
+    r_min: float | None = Field(default=None, ge=0.0)
+    r_rel: float | None = Field(default=0.01, ge=0.0, le=1.0)
+    min_frames: int = Field(default=5, ge=0, le=100000)
+    margin: float = Field(default=0.0, ge=0.0, le=100.0)
+    energy_source: Literal["edge", "actual"] = "edge"
+    combine: Literal["all", "any"] = "all"
+    rules: list["TerminationIn"] = Field(default_factory=list, max_length=8)
+
+
 class RunCreateIn(BaseModel):
     scheme: RunScheme = "periodic"
     # Optional display label; empty/whitespace becomes None (UI falls back to #id).
@@ -43,6 +91,11 @@ class RunCreateIn(BaseModel):
     reader_start_groups: list[list[int]] = Field(default_factory=list)
     reader_start_interval_s: float | None = Field(default=None, ge=0.0, le=3600.0)
     disabled_reader_ids: list[int] = Field(default_factory=list)
+    # Frequency subbands F (None = the paper's 8).
+    f_freq: int | None = Field(default=None, ge=1, le=64)
+    controller: ControllerIn = Field(default_factory=ControllerIn)
+    resource: ResourceIn = Field(default_factory=ResourceIn)
+    termination: TerminationIn = Field(default_factory=TerminationIn)
     # Run to completion inside the request (tests / scripted sweeps).
     sync: bool = False
 
@@ -85,6 +138,12 @@ class RunSummaryOut(BaseModel):
     unreachable_count: int = 0
     speed: float | None = None
     max_time_s: float | None = None
+    terminated_early_count: int = 0
+    readers_stopped: int = 0
+    controller_kind: str = "auto"
+    policy_id: str | None = None
+    resource_mode: str = "independent"
+    termination_label: str = "oracle"
 
 
 class RunDetailOut(BaseModel):
@@ -243,9 +302,36 @@ class AnalysisOut(BaseModel):
     # percentiles of the identified devices / of the whole population
     completion_times: dict[str, float | None]
     population_completion_times: dict[str, float | None] = Field(default_factory=dict)
+    reachable_completion_times: dict[str, float | None] = Field(default_factory=dict)
     reader_contribution: dict[int, int]
     rounds_breakdown: list[RoundBreakdownOut]
     aggregates: RoundAggregatesOut | None = None
+
+
+class DeviceMetricsOut(BaseModel):
+    aggregate: dict[str, Any]
+    devices: list[dict[str, Any]]
+
+
+class InterferenceOut(BaseModel):
+    mode: str
+    n_colors: int
+    readers: dict[str, dict[str, Any]]
+    # per frame: [t_start_s, reader_id, r2d_lost, m1_lost, m2_lost, m3_lost]
+    frames: list[list[float]]
+
+
+class TerminationReplayIn(BaseModel):
+    rules: list[TerminationIn] = Field(..., min_length=1, max_length=64)
+
+
+class TerminationReplayOut(BaseModel):
+    run_id: int
+    oracle: bool
+    reachable: int
+    t99: float | None
+    t_last_id: float | None
+    outcomes: list[dict[str, Any]]
 
 
 class CompareRunsIn(BaseModel):

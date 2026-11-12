@@ -29,3 +29,8 @@ Papers/Undergrad Thesis Proposal.docx.pdf
 # outer sources
 Sources/
 Sources/**
+# Thesis sweeps and multi-reader training outputs (regenerate with the scripts)
+Implements/backend/scripts/thesis/*/results/
+Implements/backend/training/outputs/*
+!Implements/backend/training/outputs/.gitkeep
+Implements/backend/training/logs/

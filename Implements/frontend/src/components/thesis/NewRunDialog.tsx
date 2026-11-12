@@ -2,6 +2,13 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ParamHint } from '@/components/ParamHint'
 import {
+  ControllerSection,
+  DEFAULT_RESOURCE,
+  defaultTermination,
+  ResourceSection,
+  TerminationSection,
+} from '@/components/thesis/MultiReaderOptions'
+import {
   compactGroups,
   groupColor,
   StartGroupsDialog,
@@ -14,7 +21,7 @@ import { Dialog, DialogBackdrop, DialogDescription, DialogPopup, DialogPortal, D
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SPEED_OPTIONS } from '@/lib/thesisRunStates'
-import type { RunCreateInput, RunScheme } from '@/types/thesis'
+import type { ControllerSpec, ResourceSpec, RunCreateInput, RunScheme, TerminationSpec } from '@/types/thesis'
 
 export function NewRunDialog({
   open,
@@ -51,12 +58,18 @@ export function NewRunDialog({
   const [intervalMs, setIntervalMs] = useState('100')
   const [assignment, setAssignment] = useState<StartAssignment>({})
   const [groupsOpen, setGroupsOpen] = useState(false)
+  const [controller, setController] = useState<ControllerSpec>({ kind: 'auto', policy_id: null, deterministic: true })
+  const [resource, setResource] = useState<ResourceSpec>(DEFAULT_RESOURCE)
+  const [termination, setTermination] = useState<TerminationSpec>(defaultTermination('oracle'))
+  const [fFreq, setFFreq] = useState('')
 
   const periodic = scheme === 'periodic'
   const enabledReaders = readers.filter((r) => !disabledReaders.has(r.id))
   const startGroups = compactGroups(enabledReaders, assignment)
   const interval = Math.max(0, Number(intervalMs) || 0)
-  const staggered = periodic && stagger
+  const staggered = stagger && readers.length > 1
+
+  const policyMissing = controller.kind === 'policy' && !controller.policy_id
 
   async function submit() {
     const trimmed = name.trim()
@@ -79,6 +92,10 @@ export function NewRunDialog({
       include_d2r: includeD2r,
       seed: seed === '' ? null : Number(seed),
       disabled_reader_ids: Array.from(disabledReaders),
+      f_freq: positiveOrNull(fFreq),
+      controller: controller.kind === 'policy' ? controller : { kind: controller.kind },
+      resource,
+      termination,
     }
     if (staggered) {
       config.reader_start_groups = startGroups
@@ -103,7 +120,7 @@ export function NewRunDialog({
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose() }}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="w-[min(520px,calc(100vw-32px))] gap-3 p-4">
+        <DialogPopup className="max-h-[calc(100dvh-32px)] w-[min(560px,calc(100vw-32px))] gap-3 overflow-y-auto p-4">
           <DialogTitle>{t('thesis.newRun.title')}</DialogTitle>
           <DialogDescription>{t('thesis.newRun.hint')}</DialogDescription>
           <div className="grid grid-cols-2 gap-3">
@@ -204,7 +221,7 @@ export function NewRunDialog({
               label={t('thesis.newRun.includeD2r')}
               hint={t('thesis.newRun.includeD2rHint')}
             />
-            {periodic && readers.length > 1 ? (
+            {readers.length > 1 ? (
               <>
                 <OptionToggle
                   checked={stagger}
@@ -233,6 +250,15 @@ export function NewRunDialog({
                 ) : null}
               </>
             ) : null}
+            <ControllerSection value={controller} adaptiveK={adaptiveK} onChange={setController} />
+            <ResourceSection
+              value={resource}
+              fFreq={fFreq}
+              readerCount={enabledReaders.length}
+              onChange={setResource}
+              onFFreq={setFFreq}
+            />
+            <TerminationSection value={termination} onChange={setTermination} />
             {readers.length > 0 ? (
               <fieldset className="col-span-2 flex flex-col gap-1 rounded-md border p-2 text-xs">
                 <legend className="px-1 text-muted-foreground">{t('thesis.newRun.disableReaders')}</legend>
@@ -258,7 +284,7 @@ export function NewRunDialog({
             <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
               {t('thesis.newRun.cancel')}
             </Button>
-            <Button type="button" disabled={busy} onClick={() => void submit()}>
+            <Button type="button" disabled={busy || policyMissing} onClick={() => void submit()}>
               {t('thesis.newRun.start')}
             </Button>
           </div>

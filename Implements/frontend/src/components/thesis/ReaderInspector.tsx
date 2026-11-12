@@ -9,11 +9,12 @@ import { TimeFreqSection } from '@/components/thesis/timefreq/TimeFreqSection'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { LiveDevices } from '@/hooks/useLiveRun'
+import { useInterference } from '@/hooks/useMultiReader'
 import { usePlotTheme } from '@/hooks/usePlotTheme'
 import Plot from '@/lib/Plot'
 import { thesisKeys } from '@/lib/thesisQueryKeys'
 import { FLAGGED_CODES, RUN_STATE_LABELS } from '@/lib/thesisRunStates'
-import type { Placement, RunRound, RunStatus } from '@/types/thesis'
+import type { InterferenceReport, Placement, RunRound, RunStatus } from '@/types/thesis'
 
 const SUBTYPES = ['1', '2a', '2b'] as const
 const STAGES = ['paging', 'm1', 'ebi', 'm2', 'm3'] as const
@@ -120,6 +121,14 @@ export function ReaderInspector({
     }
   }, [mapQuery.data, identQuery.data, devices, rounds, rid])
 
+  const ixQuery = useInterference(runId, runStatus)
+  const lastController = useMemo(() => {
+    for (let i = rounds.length - 1; i >= 0; i--) {
+      if (rounds[i].reader_id === rid) return (rounds[i].metadata?.controller as string | undefined) ?? null
+    }
+    return null
+  }, [rounds, rid])
+
   const pct = (a: number, b: number) => (b > 0 ? `${((100 * a) / b).toFixed(1)}%` : '—')
   const rf = reader.params
 
@@ -151,6 +160,8 @@ export function ReaderInspector({
             </Stat>
             <Stat label={t('thesis.live.depletions')}>{stats.depletions}</Stat>
           </div>
+
+          <CoordinationPanel report={ixQuery.data ?? null} readerId={rid} controller={lastController} />
 
           <TimeFreqSection title={t('thesis.tf.readerTitle', { id: rid })}>
             {(wide) => <ReaderTimeFreq runId={runId} readerId={rid} live={isLive} wide={wide} />}
@@ -202,6 +213,77 @@ export function ReaderInspector({
       </ScrollArea>
     </aside>
   )
+}
+
+/** Grant from the coordination policy, termination outcome and interference counters of one reader. */
+function CoordinationPanel({ report, readerId, controller }: { report: InterferenceReport | null; readerId: number; controller: string | null }) {
+  const { t } = useTranslation()
+  const info = report?.readers[String(readerId)]
+  if (!report || !info) return null
+  const ix = info.interference
+  const lost = ix.r2d_lost + ix.m1_lost + ix.m2_lost + ix.m3_lost
+  return (
+    <section className="grid gap-1">
+      <h3 className="font-medium">{t('thesis.readerInspector.coordination')}</h3>
+      <div className="grid grid-cols-2 gap-1.5">
+        <Stat label={t('thesis.readerInspector.mode')}>{t(`thesis.newRun.resource.modes.${report.mode}`, { defaultValue: report.mode })}</Stat>
+        <Stat label={t('thesis.readerInspector.controller')}>
+          {controller ? t(`thesis.newRun.controller.kinds.${controller}`, { defaultValue: controller }) : '—'}
+        </Stat>
+        <Stat label={t('thesis.readerInspector.color')}>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full" style={{ background: readerColor(info.color) }} />
+            {info.color + 1} / {report.n_colors}
+          </span>
+        </Stat>
+        <Stat label={t('thesis.readerInspector.subbands')}>
+          {info.f_r} · [{info.subbands.join(', ')}]
+        </Stat>
+        {info.time_slot ? (
+          <Stat label={t('thesis.readerInspector.timeSlot')}>
+            {info.time_slot[0] + 1} / {info.time_slot[1]}
+          </Stat>
+        ) : null}
+        <Stat label={t('thesis.readerInspector.neighbors')}>
+          {info.neighbors.length ? info.neighbors.map((n) => `#${n}`).join(', ') : '—'}
+        </Stat>
+        <Stat label={t('thesis.readerInspector.stop')}>
+          {info.stopped ? (
+            <span>
+              {t(`thesis.readerInspector.stopReason.${info.stop_reason ?? 'stopped'}`, { defaultValue: info.stop_reason ?? '' })}
+              {info.stop_t != null ? ` @ ${info.stop_t.toFixed(2)} s` : ''}
+            </span>
+          ) : info.exhausted ? (
+            t('thesis.readerInspector.exhausted')
+          ) : (
+            t('thesis.readerInspector.running')
+          )}
+        </Stat>
+        <Stat label={t('thesis.readerInspector.tWc')}>{info.t_wc_s != null ? `${info.t_wc_s.toFixed(1)} s` : '—'}</Stat>
+      </div>
+      <div className="grid grid-cols-3 gap-1.5">
+        <Stat label={t('thesis.readerInspector.framesHit')}>{ix.frames_hit}</Stat>
+        <Stat label={t('thesis.readerInspector.lost')}>
+          <span className={lost ? 'text-red-500' : ''}>{lost}</span>
+        </Stat>
+        <Stat label={t('thesis.readerInspector.deferred')}>
+          {ix.deferred_s.toFixed(2)} s · {ix.deferrals}×
+        </Stat>
+        <Stat label="R2D">{ix.r2d_lost}</Stat>
+        <Stat label="Msg1">{ix.m1_lost}</Stat>
+        <Stat label="Msg2 / Msg3">
+          {ix.m2_lost} / {ix.m3_lost}
+        </Stat>
+      </div>
+    </section>
+  )
+}
+
+/** Colour classes of the conflict-graph colouring (TDMA slot / FDMA subband set); shared with the map overlay. */
+export const READER_COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f', '#525252', '#e377c2', '#17becf']
+
+export function readerColor(c: number): string {
+  return READER_COLORS[((c % READER_COLORS.length) + READER_COLORS.length) % READER_COLORS.length]
 }
 
 function Stat({ label, children, strong = false }: { label: string; children: React.ReactNode; strong?: boolean }) {

@@ -8,6 +8,7 @@ from app.routers.aperiodic_simulator import router as aperiodic_router
 from app.routers.simulator import router as simulator_router
 from app.routers.thesis_runs import router as thesis_runs_router
 from app.routers.thesis_simulator import router as thesis_router
+from app.routers.thesis_training import router as thesis_training_router
 from app.thesis_simulator.inventory.live import manager as run_manager
 from app.thesis_simulator.inventory.live import recover_interrupted_runs
 
@@ -50,6 +51,7 @@ app.include_router(simulator_router, prefix="/api/simulator")
 app.include_router(aperiodic_router, prefix="/api/aperiodic-simulator")
 app.include_router(thesis_router, prefix="/api/thesis-simulator")
 app.include_router(thesis_runs_router, prefix="/api/thesis-simulator")
+app.include_router(thesis_training_router, prefix="/api/thesis-simulator")
 
 
 @app.get("/api/health")

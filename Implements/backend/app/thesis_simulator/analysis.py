@@ -167,6 +167,11 @@ def analysis_bundle(session: Session, run_id: int) -> dict[str, Any]:
     population_times = completion_time_percentiles(
         session, run_id, curve=curve, total_identified=population
     ) if population else {str(p): None for p in PERCENTILES}
+    # Percentiles of the devices some reader covers (the multi-reader sweeps' T99).
+    reachable = population - int(summary.get("unreachable_count", 0) or 0)
+    reachable_times = completion_time_percentiles(
+        session, run_id, curve=curve, total_identified=reachable
+    ) if reachable > 0 else {str(p): None for p in PERCENTILES}
     contribution = reader_contribution(session, run_id)
     breakdown = scheme_vs_round_breakdown(session, run_id)
     return {
@@ -179,7 +184,94 @@ def analysis_bundle(session: Session, run_id: int) -> dict[str, Any]:
         "identification_by_subtype": identification_curve_by_subtype(session, run_id),
         "completion_times": percentiles,
         "population_completion_times": population_times,
+        "reachable_completion_times": reachable_times,
         "reader_contribution": contribution,
         "rounds_breakdown": breakdown,
         "aggregates": round_aggregates(session, run_id),
     }
+
+
+# ------------------------------------------------------------------ multi-reader diagnostics
+
+
+def device_metrics(session: Session, run_id: int) -> dict[str, Any]:
+    """Per-device diagnostics (readers in range, CBRA failures, reader changes, fail-to-page)."""
+    from app.thesis_simulator.inventory import metrics as dm
+
+    run = get_run(session, run_id)
+    summary = run.summary
+    blob = summary.device_metrics if summary is not None else None
+    if not blob:
+        return {"aggregate": {}, "devices": []}
+    return {
+        "aggregate": (summary.metrics_json or {}).get("device_metrics") or {},
+        "devices": dm.device_metrics_rows(dm.load_device_metrics(blob)),
+    }
+
+
+def interference_report(session: Session, run_id: int) -> dict[str, Any]:
+    """Coordination grants, per-reader interference counters and per-frame losses."""
+    run = get_run(session, run_id)
+    readers = ((run.summary.metrics_json or {}).get("readers") if run.summary else None) or {}
+    rows = session.execute(
+        select(ThesisRunRound.t_start_s, ThesisRunRound.reader_id, ThesisRunRound.metadata_json)
+        .where(ThesisRunRound.run_id == run_id)
+        .order_by(ThesisRunRound.t_start_s, ThesisRunRound.id)
+    ).all()
+    frames = []
+    for t0, rid, meta in rows:
+        ix = (meta or {}).get("interference")
+        if not ix:
+            continue
+        frames.append([
+            float(t0), int(rid), int(ix.get("r2d_lost", 0)), int(ix.get("m1_lost", 0)),
+            int(ix.get("m2_lost", 0)), int(ix.get("m3_lost", 0)),
+        ])
+    return {
+        "mode": str(readers.get("mode") or (run.config_json or {}).get("resource", {}).get("mode", "independent")),
+        "n_colors": int(readers.get("n_colors") or 1),
+        "readers": readers.get("readers") or {},
+        "frames": frames,
+    }
+
+
+def termination_replay(session: Session, run_id: int, rules: list[dict[str, Any]]) -> dict[str, Any]:
+    """Score termination rules offline on a run's round log.
+
+    Exact for a single reader. With several readers it is an approximation:
+    a device credited to a frame after its reader stopped might, in a live
+    run, have been identified by a neighbour instead.
+    """
+    from app.thesis_simulator.inventory.termination import TerminationSpec, replay
+
+    run = get_run(session, run_id)
+    metrics = (run.summary.metrics_json or {}) if run.summary else {}
+    readers = (metrics.get("readers") or {}).get("readers") or {}
+    t_wc = {int(rid): float(info["t_wc_s"]) for rid, info in readers.items() if info.get("t_wc_s") is not None}
+    rows = session.execute(
+        select(ThesisRunRound.reader_id, ThesisRunRound.t_start_s, ThesisRunRound.t_end_s, ThesisRunRound.served)
+        .where(ThesisRunRound.run_id == run_id)
+        .order_by(ThesisRunRound.frame_seq, ThesisRunRound.id)
+    ).all()
+    rounds = [{"reader_id": r, "t_start_s": a, "t_end_s": b, "served": s or 0} for r, a, b, s in rows]
+    total = int(metrics.get("total") or 0)
+    reachable = total - int(metrics.get("unreachable") or 0)
+    outcomes = []
+    t99 = t_last = None
+    for raw in rules:
+        out = replay(TerminationSpec.from_json(raw), rounds, t_wc_by_reader=t_wc, reachable=reachable)
+        t99, t_last = out.t99, out.t_last_id
+        outcomes.append({
+            "rule": out.rule,
+            "spec": raw,
+            "t_stop": out.t_stop,
+            "reader_stop": {str(k): v for k, v in out.reader_stop.items()},
+            "identified_before_stop": out.identified_before_stop,
+            "identified_total": out.identified_total,
+            "missed": out.missed,
+            "missed_fraction": (out.missed / out.identified_total) if out.identified_total else 0.0,
+            "extra_time_s": out.extra_time_s,
+            "extra_vs_t99_s": out.extra_vs_t99_s,
+        })
+    oracle = (run.config_json or {}).get("termination", {}).get("kind", "oracle") == "oracle"
+    return {"run_id": run.id, "oracle": oracle, "reachable": reachable, "t99": t99, "t_last_id": t_last, "outcomes": outcomes}

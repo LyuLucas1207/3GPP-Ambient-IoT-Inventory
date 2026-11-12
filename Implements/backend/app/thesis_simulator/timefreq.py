@@ -101,6 +101,7 @@ def reader_timefreq(db: Session, run_id: int, reader_id: int, t0: float, t1: flo
     frames = []
     for r in rows:
         slots = r.slots_json or {}
+        meta = r.metadata_json or {}
         m2_order = [dev for _, dev in sorted(m2[r.id])]
         m2_rank = {dev: i for i, dev in enumerate(m2_order)}
         # Msg3 shares a time slot across F subbands; within one slot the
@@ -120,7 +121,7 @@ def reader_timefreq(db: Session, run_id: int, reader_id: int, t0: float, t1: flo
                 "t_start_s": r.t_start_s,
                 "t_end_s": r.t_end_s,
                 "k": r.slot_count,
-                "group": (r.metadata_json or {}).get("group"),
+                "group": meta.get("group"),
                 "pstar": r.pstar,
                 "timing": r.timing_json or {},
                 "f": int(slots.get("f") or 1),
@@ -130,6 +131,11 @@ def reader_timefreq(db: Session, run_id: int, reader_id: int, t0: float, t1: flo
                 "m2": m2_order,
                 "m3": m3_rows,
                 "budget_dropped": r.budget_dropped or 0,
+                # absolute subbands of the frame's grant (FDMA / hybrid use a subset of F)
+                "subbands": meta.get("subbands"),
+                "color": meta.get("color"),
+                "controller": meta.get("controller"),
+                "interference": meta.get("interference"),
             }
         )
     return {
@@ -223,6 +229,7 @@ def device_trace(db: Session, run_id: int, device_id: int) -> dict[str, Any]:
                     "t_end_s": r.t_end_s,
                     "k": r.slot_count,
                     "timing": r.timing_json or {},
+                    "subbands": (r.metadata_json or {}).get("subbands"),
                 }
             )
 

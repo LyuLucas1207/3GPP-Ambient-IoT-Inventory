@@ -21,6 +21,7 @@ const TERMS_PER_TAB: Record<string, string[]> = {
   round: ['candidates', 'joiners', 'budget', 'budgetDropped', 'backlogTrue', 'slotCodes'],
   metrics: ['efficiency', 'depletions', 'unreachable', 'no_progress', 't50'],
   pin: ['pin', 'cdf'],
+  coord: ['conflictGraph', 'colour', 'grant', 'r2dLost', 'd2rLost', 'deferred', 'stopReason'],
 }
 
 /** One-line description of the active chart tab + an (i) popover with the full explanation and legend. */

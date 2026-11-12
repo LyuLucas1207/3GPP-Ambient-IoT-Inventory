@@ -373,5 +373,32 @@ function runConfigChips(
     })
   }
 
+  const controller = (cfg.controller ?? {}) as { kind?: string; policy_id?: string | null }
+  const ctlKind = run.controller_kind ?? controller.kind ?? 'auto'
+  if (ctlKind !== 'auto') {
+    chips.push({
+      key: 'controller',
+      label: ctlKind === 'policy'
+        ? t('thesis.live.configPolicy', { id: run.policy_id ?? controller.policy_id ?? '?' })
+        : t(`thesis.newRun.controller.kinds.${ctlKind}`, { defaultValue: ctlKind }),
+      title: t('thesis.newRun.controller.hint'),
+    })
+  }
+  const mode = run.resource_mode ?? ((cfg.resource as { mode?: string } | undefined)?.mode ?? 'independent')
+  chips.push({
+    key: 'resource',
+    label: t('thesis.live.configResource', { mode: t(`thesis.newRun.resource.modes.${mode}`, { defaultValue: mode }) }),
+    title: t(`thesis.newRun.resource.desc.${mode}`, { defaultValue: '' }),
+  })
+  const f = num('f_freq')
+  if (f != null) chips.push({ key: 'f', label: `F=${f}` })
+  const term = run.termination_label ?? 'oracle'
+  if (term !== 'oracle') {
+    chips.push({ key: 'termination', label: t('thesis.live.configTermination', { rule: term }), title: t('thesis.newRun.termination.hint') })
+  }
+  if (run.terminated_early_count) {
+    chips.push({ key: 'terminatedEarly', label: t('thesis.live.configTerminatedEarly', { count: run.terminated_early_count }) })
+  }
+
   return chips
 }

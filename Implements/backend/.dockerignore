@@ -5,3 +5,6 @@ __pycache__
 *.pyc
 *.egg-info
 .DS_Store
+training/outputs/*
+!training/outputs/.gitkeep
+training/logs/

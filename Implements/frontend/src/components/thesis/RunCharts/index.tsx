@@ -25,11 +25,12 @@ import {
 } from './data'
 import { ChartHelp } from './ChartHelp'
 import { EnergyChart, PinCdfChart } from './EnergyCharts'
+import { CoordinationPanel } from './CoordinationPanel'
 import { MetricsPanel } from './MetricsPanel'
 import { RoundMapPanel } from './RoundMapPanel'
 
 const MAX_BARS = 400
-const TABS = ['ident', 'controller', 'outcome', 'timing', 'energy', 'round', 'metrics', 'pin'] as const
+const TABS = ['ident', 'controller', 'outcome', 'timing', 'energy', 'round', 'metrics', 'coord', 'pin'] as const
 type Tab = (typeof TABS)[number]
 const READER_COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f', '#525252', '#1d4ed8', '#0f766e', '#c2410c', '#be185d']
 const STAGE_COLOR: Record<string, string> = { paging: '#4dbeee', m1: MATLAB.blue, ebi: MATLAB.purple, m2: MATLAB.green, m3: MATLAB.yellow }
@@ -200,6 +201,9 @@ export function RunCharts({
             replaying={cursor != null}
             devices={devices}
           />
+        </TabsContent>
+        <TabsContent value="coord" className="h-full">
+          <CoordinationPanel runId={runId} status={live.status} rounds={scopeRounds} all={reader === 'all'} tNow={tNow} />
         </TabsContent>
         <TabsContent value="pin" className="h-full">
           <PinCdfChart scene={scene} map={mapQuery.data} scope={scope} />

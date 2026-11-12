@@ -1,7 +1,8 @@
 {
   "nav": {
     "thesisSimulation": "Simulation de thèse",
-    "thesisAnalysis": "Analyse"
+    "thesisAnalysis": "Analyse",
+    "thesisTraining": "Entraînement"
   },
   "thesis": {
     "documentTitle": "Simulation de thèse",
@@ -80,7 +81,7 @@
       "g": "N_g (groupes)",
       "seed": "Graine (vide = aléatoire)",
       "adaptiveK": "K adaptatif (DFSA Schoute)",
-      "adaptiveKHint": "DFSA classique (pas Recurrent PPO). La 1ʳᵉ ronde utilise le $K$ initial (ex. 256) ; ensuite $K \\approx 2\\hat{N}$ via Schoute / slots vides. Désactivé : chaque ronde garde ce même $K$ fixe. Le PPO est sur la page Aperiodic Paging Paper, pas branché aux runs Thesis multi-lecteurs.",
+      "adaptiveKHint": "DFSA classique : le tour 1 utilise le $K$ initial ; ensuite $K \\approx 2\\hat{N}$ d’après l’estimation de backlog Schoute / créneaux vides. Désactivé : chaque tour utilise le même $K$ fixe. Utilisé seulement si le contrôleur ci-dessous est « auto » ; un contrôleur explicite (fixe / DFSA / politique RL) le remplace (les politiques RL viennent de la page Entraînement).",
       "useGrouping": "Activer le regroupement (paging périodique)",
       "useCapture": "Activer l'effet de capture",
       "useEbi": "Activer EBI",
@@ -101,7 +102,126 @@
       "stagger": "Décaler le démarrage des readers",
       "staggerHint": "Désactivé : tous les readers démarrent leur première trame à t = 0. Activé : les readers démarrent par groupes, chaque groupe un intervalle fixe après le précédent. Le regroupement est une stratégie enregistrée avec le run.",
       "staggerInterval": "Intervalle (ms)",
-      "staggerAssign": "Définir les groupes…"
+      "staggerAssign": "Définir les groupes…",
+      "controller": {
+        "title": "Contrôleur de taille de trame",
+        "hint": "Comment chaque lecteur choisit K et p* à chaque tour.",
+        "kind": "Contrôleur",
+        "kinds": {
+          "auto": "Auto (selon l’interrupteur K adaptatif)",
+          "fixed": "K fixe",
+          "dfsa": "DFSA (K ≈ 2N̂)",
+          "policy": "Politique RL"
+        },
+        "autoDfsa": "K adaptatif activé → DFSA",
+        "autoFixed": "K adaptatif désactivé → K fixe",
+        "desc": {
+          "auto": "Comportement historique : l’interrupteur K adaptatif choisit entre DFSA et K fixe.",
+          "fixed": "Chaque tour utilise le K initial ; p* suit la règle de paging.",
+          "dfsa": "ALOHA à trames dynamiques : K = 2N̂ d’après l’estimation du backlog de la trame précédente.",
+          "policy": "Une politique PPO entraînée (registre) choisit K et p* à partir de l’observation locale de chaque lecteur ; chaque lecteur garde son propre état récurrent."
+        },
+        "policy": "Politique",
+        "noPolicies": "Aucune politique dans le registre — entraînez-en une puis promouvez-la (page Entraînement).",
+        "deterministic": "Actions déterministes",
+        "deterministicHint": "Utilise l’action moyenne au lieu d’échantillonner la distribution (runs reproductibles)."
+      },
+      "resource": {
+        "title": "Ressources multi-lecteurs",
+        "hint": "Comment les lecteurs partagent temps et fréquence, et s’ils interfèrent.",
+        "mode": "Coordination",
+        "modes": {
+          "independent": "Indépendant (sans interférence)",
+          "shared": "Partagé (toutes sous-bandes, interférant)",
+          "fdma": "FDMA (couleur → groupe de sous-bandes)",
+          "tdma": "TDMA (couleur → créneau temporel)",
+          "hybrid": "Hybride FDMA × TDMA",
+          "lbt": "LBT (écoute avant émission)"
+        },
+        "desc": {
+          "independent": "Les lecteurs n’interfèrent jamais — le modèle d’origine et la régression de référence.",
+          "shared": "Chaque lecteur utilise les F sous-bandes en même temps ; les zones de recouvrement perdent des messages R2D/D2R.",
+          "fdma": "Le graphe de conflits est coloré ; chaque couleur reçoit un groupe disjoint des F sous-bandes (moins de sous-bandes Msg1 par lecteur).",
+          "tdma": "Chaque couleur a son créneau dans une fenêtre répétée ; les lecteurs attendent leur créneau (série au sein d’un conflit).",
+          "hybrid": "Les couleurs sont d’abord réparties en groupes de fréquences, puis en créneaux dans chaque groupe.",
+          "lbt": "Le lecteur écoute avant chaque trame et recule si un lecteur en conflit émet ; règle de séjour ETSI (durée max puis pause)."
+        },
+        "singleReader": "Un seul lecteur actif : la coordination n’a aucun effet.",
+        "fFreq": "Sous-bandes F",
+        "fFreqHint": "Nombre de sous-bandes Msg1 (TR 38.769 : F). K = L_s × F_r créneaux par trame.",
+        "tdmaWindow": "Durée du créneau TDMA (s)",
+        "tdmaWindowHint": "Durée de la fenêtre d’une couleur dans la supertrame TDMA (couleurs × fenêtre). Défaut 0,5 s.",
+        "freqGroups": "Groupes de fréquences",
+        "freqGroupsHint": "Hybride : nombre de groupes de sous-bandes disjoints sur lesquels les couleurs sont réparties ; les couleurs d’un même groupe alternent dans le temps. Défaut 2.",
+        "lbtBackoff": "Recul (ms)",
+        "lbtBackoffHint": "Attente après détection d’un canal occupé.",
+        "lbtMaxOn": "Durée d’émission max (s)",
+        "lbtPause": "Pause (s)",
+        "lbtDwellHint": "Séjour type ETSI EN 302 208 : après la durée max, le lecteur se tait pendant la pause (défaut 4 s / 0,1 s).",
+        "linkBudget": "Conflits par bilan de liaison",
+        "linkBudgetHint": "Deux lecteurs sont en conflit si la porteuse de l’un atteint les dispositifs de l’autre au-dessus du seuil SIR. Désactivé : simple seuil de distance.",
+        "conflictDistance": "Distance de conflit (m)",
+        "nColors": "Couleurs",
+        "nColorsHint": "Vide = la coloration gloutonne décide (minimum trouvé).",
+        "auto": "auto",
+        "interference": "Modéliser l’interférence",
+        "interferenceHint": "Perte des messages dont le SIR/SINR est sous le seuil quand des lecteurs se recouvrent.",
+        "crossMsg1": "Collisions Msg1 entre lecteurs",
+        "crossMsg1Hint": "Les Msg1 de dispositifs de lecteurs différents sur la même sous-bande et le même créneau entrent en collision.",
+        "r2dSir": "Seuil SIR R2D (dB)",
+        "d2rSinr": "Seuil SINR D2R (dB)",
+        "cwSuppression": "Suppression de porteuse (dB)",
+        "cwSuppressionHint": "Part de la porteuse d’un autre lecteur annulée par le récepteur (TR 38.769 suppose une annulation d’auto-interférence)."
+      },
+      "termination": {
+        "title": "Arrêt des lecteurs",
+        "hint": "Quand un lecteur décide que sa population est terminée — sans connaître la vérité terrain.",
+        "kind": "Règle",
+        "kinds": {
+          "oracle": "Oracle (vérité terrain)",
+          "quiet_rounds": "Tours silencieux",
+          "id_rate": "Taux d’identification",
+          "energy_bound": "Borne énergétique",
+          "combined": "Combinée"
+        },
+        "desc": {
+          "oracle": "Le lecteur s’arrête quand il ne reste aucun dispositif joignable (connaissance du simulateur, ancien comportement).",
+          "quiet_rounds": "Arrêt après n trames consécutives sans nouvelle identification.",
+          "id_rate": "Arrêt quand le taux d’identification sur une fenêtre passe sous un seuil absolu ou relatif.",
+          "energy_bound": "Arrêt quand chaque type a eu son temps de charge pire cas (t_wc) depuis la dernière identification : plus aucun dispositif endormi ne peut se réveiller.",
+          "combined": "Combine plusieurs règles en ET (toutes) ou OU (la première)."
+        },
+        "remove": "Supprimer",
+        "quietRounds": "Tours silencieux n",
+        "windowMode": "Fenêtre",
+        "windowModes": {
+          "rounds": "N derniers tours",
+          "seconds": "W dernières secondes",
+          "ewma": "Moyenne mobile exp."
+        },
+        "ewmaAlpha": "α EWMA",
+        "windowS": "Fenêtre (s)",
+        "windowRounds": "Fenêtre (tours)",
+        "rMin": "Taux absolu r_min (ID/s)",
+        "rMinHint": "Vide = seuil relatif seulement.",
+        "rRel": "Taux relatif r_rel",
+        "rRelHint": "Fraction du taux maximal observé.",
+        "minFrames": "Trames min",
+        "energySource": "Source de t_wc",
+        "energySourceHint": "Bord : récupération en bord de couverture (prudent). Réelle : le dispositif du lecteur.",
+        "energySources": {
+          "edge": "Bord de couverture",
+          "actual": "Dispositifs réels"
+        },
+        "margin": "Marge",
+        "marginHint": "Fraction ajoutée à t_wc (0,1 = +10 %).",
+        "combine": "Combinaison",
+        "combineModes": {
+          "all": "Toutes (ET)",
+          "any": "Une (OU)"
+        },
+        "addRule": "Ajouter une règle"
+      }
     },
     "analysis": {
       "title": "Analyse des runs",
@@ -123,7 +243,12 @@
         "bySubtype": "Identifiés par type de device",
         "slots": "Résultats des slots et efficacité",
         "overhead": "Coût en temps par étape",
-        "depletions": "Épuisements par étape"
+        "depletions": "Épuisements par étape",
+        "config": "Configuration des runs",
+        "retention": "Rétention du gain multi-lecteurs G",
+        "termination": "Règles d’arrêt : temps supplémentaire vs dispositifs manqués",
+        "interference": "Pertes d’interférence et attente",
+        "devices": "Métriques multi-lecteurs par dispositif"
       },
       "axis": {
         "time": "temps (s)",
@@ -148,7 +273,66 @@
         "dropped": "abandonnés",
         "duration": "durée (s)"
       },
-      "tNote": "Tx = temps simulé jusqu’à ce que x % de tous les devices soient identifiés."
+      "tNote": "Tx = temps simulé jusqu’à ce que x % de tous les devices soient identifiés.",
+      "tabs": {
+        "overview": "Vue d’ensemble",
+        "retention": "Rétention du gain",
+        "termination": "Arrêt",
+        "interference": "Interférence",
+        "devices": "Métriques dispositifs"
+      },
+      "multi": {
+        "cols": {
+          "run": "Run",
+          "controller": "Contrôleur",
+          "resource": "Ressources",
+          "f": "F",
+          "termination": "Arrêt",
+          "terminatedEarly": "Arrêtés tôt",
+          "readersStopped": "Lecteurs arrêtés"
+        },
+        "retention": {
+          "hint": "G = (T_serial − T_run) / (T_serial − T_idéal) sur le T99 des dispositifs joignables. 1 conserve tout le gain multi-lecteurs idéal (lecteurs indépendants), 0 ne fait pas mieux que servir les lecteurs en conflit l’un après l’autre (TDMA).",
+          "needTwo": "Sélectionnez au moins deux runs (références idéale et série, plus les runs à comparer).",
+          "ideal": "Référence idéale",
+          "serial": "Référence série",
+          "unreached": "Une référence n’a jamais atteint 99 % de ses dispositifs joignables — G indéfini.",
+          "degenerate": "La référence série est moins de 5 % plus lente que l’idéale : les lecteurs se gênent à peine ici et G est indéfini ou explose. Choisissez d’autres références ou une scène plus dense.",
+          "idealTag": "idéal",
+          "serialTag": "série"
+        },
+        "termination": {
+          "hint": "Chaque règle est rejouée sur l’historique de trames d’un run oracle terminé : combien de temps après la dernière identification les lecteurs continueraient (temps supplémentaire) face au nombre de dispositifs joignables laissés de côté. Les lignes en gras sont sur le front de Pareto.",
+          "needFinished": "Sélectionnez au moins un run terminé.",
+          "run": "Run",
+          "summary": "{{reachable}} joignables · T99 {{t99}} s · dernière ID {{tLast}} s",
+          "notOracle": "Ce run utilisait déjà une règle non oracle ; le rejeu ne voit que les trames jusqu’à son arrêt, les règles plus tardives sont tronquées.",
+          "multiApprox": "Plusieurs lecteurs : chacun est rejoué sur son propre historique. Un dispositif que son lecteur n’aurait trouvé qu’après son arrêt compte comme manqué, alors qu’en run réel un voisin aurait pu le trouver : les manqués sont une borne supérieure (voir le document de conception).",
+          "front": "Front de Pareto",
+          "extra": "Temps après la dernière ID (s)",
+          "missed": "Dispositifs manqués (%)",
+          "addRule": "Ajouter à la comparaison",
+          "cols": {
+            "rule": "Règle",
+            "tStop": "Arrêt",
+            "extra": "Supplément",
+            "extraT99": "Supplément vs T99",
+            "missed": "Manqués",
+            "missedPct": "Manqués %"
+          }
+        },
+        "interference": {
+          "hint": "Messages perdus à cause des autres lecteurs, temps d’attente (créneau TDMA / recul LBT), et chronologie par trame du run choisi.",
+          "deferredAxis": "Temps différé (s)",
+          "detail": "Chronologie de",
+          "timelineHint": "Une ligne par lecteur ; chaque point est une trame, sa taille le nombre de messages perdus."
+        },
+        "devices": {
+          "hint": "Distributions sur tous les dispositifs d’un run terminé (et par type dans le tableau).",
+          "pctDevices": "% des dispositifs",
+          "perDevice": "valeur par dispositif"
+        }
+      }
     },
     "timeline": {
       "titleDevice": "Device #{{id}} · {{subtype}}",
@@ -354,7 +538,10 @@
         "ebi_received": "EBI",
         "m2_rx": "M2 reçu",
         "m3_tx": "M3 tx",
-        "identified": "identifié"
+        "identified": "identifié",
+        "m1_interfered": "M1 perdu (interférence)",
+        "m2_interfered": "M2 perdu (interférence)",
+        "m3_interfered": "M3 perdu (interférence)"
       },
       "dock": "Run",
       "playReplay": "Lire la relecture",
@@ -371,7 +558,11 @@
       "configStallOff": "Stall off",
       "configSeed": "Graine {{seed}}",
       "configStagger": "Décalage {{groups}} groupes · {{ms}} ms",
-      "configDisabledReaders": "{{count}} readers désactivés"
+      "configDisabledReaders": "{{count}} readers désactivés",
+      "configPolicy": "Politique {{id}}",
+      "configResource": "Ressources : {{mode}}",
+      "configTermination": "Arrêt : {{rule}}",
+      "configTerminatedEarly": "{{count}} arrêtés tôt"
     },
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
@@ -439,7 +630,8 @@
         "energy": "Énergie",
         "round": "Carte du round",
         "metrics": "Indicateurs",
-        "pin": "CDF de Pin"
+        "pin": "CDF de Pin",
+        "coord": "Coordination"
       },
       "stage": {
         "paging": "Paging",
@@ -490,6 +682,10 @@
         "pin": {
           "lead": "Distribution de la plus forte puissance reçue par chaque appareil.",
           "body": "L'axe X est la puissance reçue (dBm), l'axe Y la fraction d'appareils recevant au plus cette puissance. Une courbe plus à droite signifie des appareils plus proches d'un reader, qui récoltent plus vite. Une ligne par type d'appareil ; à comparer à la figure 4 de l'article."
+        },
+        "coord": {
+          "lead": "Comment les lecteurs ont partagé le spectre et ce qu’ils se sont fait perdre.",
+          "body": "Indicateurs : mode, nombre de couleurs, trames touchées, lecteurs arrêtés. Barres : messages perdus par interférence au cours du temps par étape (paging R2D, Msg1, Msg2, Msg3). Tableau : couleur, sous-bandes, créneau, voisins en conflit, tours, pertes, temps différé (attente TDMA / recul LBT), raison d’arrêt et t_wc par lecteur."
         }
       },
       "terms": {
@@ -521,7 +717,14 @@
         "energySpent": "Énergie cumulée dépensée en messages du protocole.",
         "slotCodes": "Couleurs des cases : libre, unique, capturé, collision, manqué.",
         "pin": "Pin : plus forte puissance reçue d'un reader, en dBm.",
-        "cdf": "CDF : fraction d'appareils au plus égale à la valeur de l'axe X."
+        "cdf": "CDF : fraction d'appareils au plus égale à la valeur de l'axe X.",
+        "conflictGraph": "Graphe de conflits : une arête relie deux lecteurs dont les porteuses brouilleraient les liens de l’autre (bilan de liaison ou distance).",
+        "colour": "Couleur : coloration du graphe de conflits ; les lecteurs d’une même couleur ne sont jamais en conflit et partagent une ressource.",
+        "grant": "Attribution : les sous-bandes et le créneau qu’un lecteur peut utiliser.",
+        "r2dLost": "R2D perdu : dispositifs ayant manqué le paging à cause de la porteuse d’un autre lecteur.",
+        "d2rLost": "D2R perdu : réponses Msg1/Msg3 dont le SINR au lecteur était sous le seuil.",
+        "deferred": "Différé : temps d’attente du créneau TDMA ou du recul/pause LBT.",
+        "stopReason": "Raison d’arrêt : quelle règle a arrêté le lecteur (ou épuisé sous l’oracle)."
       }
     },
     "readerInspector": {
@@ -537,7 +740,29 @@
       "meanK": "K moyen",
       "meanFrame": "Trame moyenne",
       "curve": "Identifiés par ce reader dans le temps",
-      "hint": "Les graphiques ci-dessous montrent ce reader. Clic droit pour l’éditer ; fermer pour revenir à tous les readers."
+      "hint": "Les graphiques ci-dessous montrent ce reader. Clic droit pour l’éditer ; fermer pour revenir à tous les readers.",
+      "coordination": "Coordination",
+      "mode": "Mode",
+      "controller": "Contrôleur",
+      "color": "Couleur",
+      "subbands": "Sous-bandes",
+      "timeSlot": "Créneau",
+      "neighbors": "En conflit avec",
+      "stop": "Arrêt",
+      "stopReason": {
+        "quiet_rounds": "Tours silencieux",
+        "id_rate": "Taux d’identification",
+        "id_rate_no_ids": "Aucune identification dans la fenêtre",
+        "energy_bound": "Borne énergétique",
+        "combined": "Règle combinée",
+        "stopped": "Arrêté"
+      },
+      "exhausted": "Épuisé (plus de dispositif joignable)",
+      "running": "En cours",
+      "tWc": "Charge pire cas t_wc",
+      "framesHit": "Trames touchées",
+      "lost": "Perdus (R2D/M1/M2/M3)",
+      "deferred": "Temps différé"
     },
     "tf": {
       "deviceTitle": "Chronologie du device #{{id}}",
@@ -596,7 +821,11 @@
         "sleep": "Veille (attente)"
       },
       "collapse": "Replier les temps morts",
-      "collapsedTip": "Temps mort replié\n{{a}} ~ {{b}} ({{d}})\nDécochez « Replier les temps morts » pour le voir à l’échelle."
+      "collapsedTip": "Temps mort replié\n{{a}} ~ {{b}} ({{d}})\nDécochez « Replier les temps morts » pour le voir à l’échelle.",
+      "grant": "Sous-bandes accordées {{subbands}} · couleur {{color}}",
+      "interference": "Interférence : R2D {{r2d}} · M1 {{m1}} · M2 {{m2}} · M3 {{m3}} perdus ({{n}} interférents)",
+      "controller": "Contrôleur : {{name}}",
+      "notGranted": "Sous-bande {{f}} non accordée à ce lecteur"
     },
     "stagger": {
       "title": "Groupes de démarrage des readers",
@@ -614,6 +843,151 @@
       "clickHint": "Cliquez sur les readers (carte ou liste) pour les placer dans le groupe {{n}}.",
       "map": "Disposition des readers",
       "apply": "Appliquer"
+    },
+    "showCoordination": "Coordination (graphe de conflits, couleurs)",
+    "deviceMetrics": {
+      "title": "Métriques multi-lecteurs",
+      "afterRun": "Disponible à la fin du run.",
+      "readersInRange": "Lecteurs à portée",
+      "cbraFailures": "Échecs CBRA",
+      "readerChanges": "Changements de lecteur",
+      "failToPage": "Échec → page suivante",
+      "failToPageMeanS": "Échec → page suivante (moy.)",
+      "dropCause": "Cause d’abandon",
+      "drop": {
+        "unreachable": "Injoignable (aucun lecteur)",
+        "max_time_reached": "Temps max atteint",
+        "stopped": "Run arrêté",
+        "no_progress": "Aucun progrès (blocage)",
+        "terminated_early": "Ses lecteurs se sont arrêtés tôt"
+      },
+      "none": "Aucune métrique pour ce dispositif.",
+      "hint": "Lecteurs à portée : lecteurs dont la couverture inclut le dispositif. Échecs CBRA : tentatives Msg1 en collision, perdues ou brouillées. Changements de lecteur : nombre de fois où le lecteur différait de la tentative précédente. Échec → page suivante : temps moyen entre un échec et la page suivante entendue."
+    },
+    "coord": {
+      "mode": "Mode",
+      "colors": "Couleurs",
+      "framesHit": "Trames touchées",
+      "stopped": "Lecteurs arrêtés",
+      "independentHint": "Mode indépendant : les lecteurs n’interfèrent pas, rien à coordonner.",
+      "loss": {
+        "r2d_lost": "Paging R2D",
+        "m1_lost": "Msg1",
+        "m2_lost": "Msg2",
+        "m3_lost": "Msg3"
+      },
+      "lostDevices": "Messages perdus",
+      "col": {
+        "reader": "Lecteur",
+        "color": "Couleur",
+        "subbands": "Sous-bandes",
+        "slot": "Créneau",
+        "neighbors": "Conflits",
+        "rounds": "Tours",
+        "lost": "Perdus",
+        "deferred": "Différé (s)",
+        "stop": "Arrêt",
+        "tWc": "t_wc (s)"
+      }
+    },
+    "training": {
+      "title": "Entraînement RL multi-lecteurs",
+      "subtitle": "Expériences de backend/training : courbes d’apprentissage, généralisation face à DFSA et registre des politiques utilisé par les runs.",
+      "experiments": "Expériences",
+      "runCount": "{{done}}/{{total}} finis · {{failed}} échecs",
+      "algo": "Algorithme",
+      "algoConfig": {
+        "ps_ppo": "PS-PPO (PPO à paramètres partagés)",
+        "mappo": "MAPPO (critique centralisé)",
+        "ippo": "IPPO (apprenants indépendants)",
+        "zero_shot": "Politique mono-lecteur zero-shot"
+      },
+      "algos": {
+        "sb3_ppo": "PPO (stable-baselines3)",
+        "torch_mlp": "MAPPO / IPPO (torch)",
+        "zero_shot_aperiodic": "PPO récurrent (apériodique, zero-shot)"
+      },
+      "scale": "Échelle",
+      "steps": "Pas",
+      "seeds": "Graines",
+      "t99VsDfsa": "T99 / DFSA",
+      "env": {
+        "readers": "Lecteurs",
+        "subset": "Sous-ensemble",
+        "offsets": "Décalages",
+        "resource": "Modes de ressources",
+        "mix": "Mélange de dispositifs"
+      },
+      "runs": "Runs",
+      "noRuns": "Aucun run. Lancez-en un avec la commande ci-dessus.",
+      "cols": {
+        "run": "Run",
+        "status": "État",
+        "alpha": "α / β / graine",
+        "scale": "Échelle",
+        "steps": "Pas",
+        "episodes": "Épisodes",
+        "wall": "Durée",
+        "reach99": "Cellules ≥ 99 %",
+        "t99VsDfsa": "T99 / DFSA (moy. géom.)",
+        "promoted": "Promu en"
+      },
+      "status": {
+        "running": "en cours",
+        "done": "fini",
+        "failed": "échec",
+        "interrupted": "interrompu"
+      },
+      "error": "Erreur",
+      "learning": "Courbes d’apprentissage",
+      "learningHint": "Un point par épisode ; la ligne est une moyenne glissante.",
+      "curve": {
+        "return": "Retour d’épisode",
+        "identified": "Fraction identifiée",
+        "t99": "T99 (s)",
+        "efficiency": "Efficacité des ressources"
+      },
+      "rolling": "moyenne glissante ({{w}})",
+      "noCurve": "Aucun épisode terminé.",
+      "evalMatrix": "Matrice de généralisation",
+      "evalHint": "Évaluation appariée : la politique et DFSA voient les mêmes déploiements (lecteurs × nombre × mélange × décalages). Valeur T99 / DFSA ; sous 1 (vert) = plus rapide que DFSA.",
+      "noEval": "Pas encore d’évaluation (lancez python -m training.evaluate).",
+      "matrix": {
+        "candidate": "Candidat",
+        "cell": "Cellule",
+        "identified": "Identifiés",
+        "t99": "T99",
+        "tMean": "Temps moyen d’ID",
+        "efficiency": "Efficacité",
+        "t99VsDfsa": "T99 / DFSA"
+      },
+      "plots": "Graphiques enregistrés",
+      "promote": "Promouvoir dans le registre",
+      "promoteHint": "Copie le checkpoint dans rl/policies avec un fichier SHA-256 pour qu’il soit sélectionnable dans Nouveau run.",
+      "overwrite": "Écraser l’id existant",
+      "promoteButton": "Promouvoir",
+      "promoted": "Promu en {{id}}",
+      "registry": "Registre des politiques",
+      "registryHint": "Politiques utilisables par les runs (contrôleur « politique RL »). ✗ = fichier absent ou empreinte différente.",
+      "registryCols": {
+        "policy": "Id de politique",
+        "algo": "Algorithme",
+        "alpha": "α / β",
+        "scale": "Échelle",
+        "steps": "Pas",
+        "t99VsDfsa": "T99 / DFSA",
+        "sha": "SHA-256",
+        "state": "Disponible"
+      },
+      "howTo": "Procédure",
+      "steps_": {
+        "train": "Entraîner hors ligne : cd Implements/backend && PYTHONPATH=. .venv/bin/python -m training.train --config <expérience> --scale small (smoke · small · medium · full, ou un facteur comme 0.5).",
+        "outputs": "Chaque run écrit training/outputs/<expérience>/<horodatage>__a…__b…__s…/ : meta.json, train_metrics.csv, checkpoints/final.zip + final.json, plots/.",
+        "evaluate": "L’évaluation suit automatiquement l’entraînement (appariée avec DFSA) ; relancez-la avec python -m training.evaluate --runs <dossier> --grid full.",
+        "promote": "Promouvoir un bon run (bouton ci-dessus, --promote ou python -m training.promote <dossier>) : copie dans le registre.",
+        "use": "Dans Nouveau run, choisir le contrôleur « politique RL » et l’id ; chaque lecteur exécute la politique avec son propre état."
+      },
+      "interruptedHint": "Le processus s’est arrêté avant la fin (tué ou machine redémarrée). Relancez-le avec la commande ci-dessus."
     }
   }
 }

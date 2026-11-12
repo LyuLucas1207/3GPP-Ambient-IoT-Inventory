@@ -12,4 +12,10 @@ export const thesisKeys = {
   deviceTrace: (runId: number, deviceId: number) => ['thesis', 'deviceTrace', runId, deviceId] as const,
   analysis: (runId: number, status: string) => ['thesis', 'analysis', runId, status] as const,
   snapshot: (runId: number, t: number | null) => ['thesis', 'snapshot', runId, t] as const,
+  deviceMetrics: (runId: number, status: string) => ['thesis', 'deviceMetrics', runId, status] as const,
+  interference: (runId: number, status: string) => ['thesis', 'interference', runId, status] as const,
+  terminationReplay: (runId: number, rules: string) => ['thesis', 'terminationReplay', runId, rules] as const,
+  policies: ['thesis', 'policies'] as const,
+  trainingExperiments: ['thesis', 'training', 'experiments'] as const,
+  trainingExperiment: (name: string | null) => ['thesis', 'training', 'experiment', name] as const,
 }

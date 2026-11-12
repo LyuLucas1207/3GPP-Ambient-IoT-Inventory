@@ -1,0 +1,10 @@
+{
+  "name": "ps_ppo_fixed2",
+  "algo": "ps_ppo",
+  "description": "Parameter-sharing PPO trained on the TR 38.769 D1T1-A2 pair only (2 readers, independent resources, no offsets): the 'retrain per configuration' reference.",
+  "alphas": [0.5],
+  "betas": [0.5],
+  "seeds": [0],
+  "env": {"readers": [2, 2], "subset": "spread", "offsets": ["none"], "resource_modes": ["independent"], "schemes": ["aperiodic"], "subtype_mix": "uniform"},
+  "hyperparameters": {"learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.005, "net_arch": [128, 128]}
+}

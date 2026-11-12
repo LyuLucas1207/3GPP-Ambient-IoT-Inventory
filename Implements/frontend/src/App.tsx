@@ -4,6 +4,7 @@ import {
   PERIODIC_PAGING_PATH,
   THESIS_ANALYSIS_PATH,
   THESIS_SIMULATION_PATH,
+  THESIS_TRAINING_PATH,
 } from '@/components/PaperNav'
 import { GLOSSARY_PATH } from '@/explain/glossary'
 import AperiodicPagingPage from '@/pages/AperiodicPagingPage'
@@ -11,6 +12,7 @@ import GlossaryPage from '@/pages/GlossaryPage'
 import PeriodicPagingPage from '@/pages/PeriodicPagingPage'
 import ThesisAnalysisPage from '@/pages/ThesisAnalysisPage'
 import ThesisSimulationPage from '@/pages/ThesisSimulationPage'
+import ThesisTrainingPage from '@/pages/ThesisTrainingPage'
 
 export default function App() {
   return (
@@ -21,6 +23,7 @@ export default function App() {
         <Route path={APERIODIC_PAGING_PATH} element={<AperiodicPagingPage />} />
         <Route path={THESIS_SIMULATION_PATH} element={<ThesisSimulationPage />} />
         <Route path={THESIS_ANALYSIS_PATH} element={<ThesisAnalysisPage />} />
+        <Route path={THESIS_TRAINING_PATH} element={<ThesisTrainingPage />} />
         <Route path={GLOSSARY_PATH} element={<GlossaryPage />} />
       </Routes>
     </BrowserRouter>

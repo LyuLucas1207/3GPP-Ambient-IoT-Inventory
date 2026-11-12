@@ -1,0 +1,10 @@
+{
+  "name": "ps_ppo_randomized",
+  "algo": "ps_ppo",
+  "description": "Parameter-sharing PPO with domain randomization over 1-18 readers (random lattice subsets), start offsets, resource policies and subtype mixes: train once, deploy anywhere.",
+  "alphas": [0.5],
+  "betas": [0.5],
+  "seeds": [0],
+  "env": {"readers": [1, 18], "subset": "random", "offsets": ["none", "random", "groups"], "resource_modes": ["independent", "fdma", "tdma", "hybrid"], "schemes": ["aperiodic"], "subtype_mix": "random"},
+  "hyperparameters": {"learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.005, "net_arch": [128, 128]}
+}

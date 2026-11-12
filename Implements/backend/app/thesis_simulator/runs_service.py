@@ -225,6 +225,12 @@ def run_summary(run: ThesisInventoryRun) -> dict[str, Any]:
         "disabled_reader_ids": [int(x) for x in (cfg.get("disabled_reader_ids") or [])],
         "reader_start_groups": [[int(x) for x in g] for g in (cfg.get("reader_start_groups") or [])],
         "reader_start_interval_s": cfg.get("reader_start_interval_s"),
+        "terminated_early_count": int(metrics.get("terminated_early") or 0),
+        "readers_stopped": int(metrics.get("readers_stopped") or 0),
+        "controller_kind": str((cfg.get("controller") or {}).get("kind") or "auto"),
+        "policy_id": (cfg.get("controller") or {}).get("policy_id"),
+        "resource_mode": str((cfg.get("resource") or {}).get("mode") or "independent"),
+        "termination_label": str((metrics.get("termination") or {}).get("label") or (cfg.get("termination") or {}).get("kind") or "oracle"),
     }
 
 

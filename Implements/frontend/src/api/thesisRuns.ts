@@ -1,6 +1,10 @@
 import { deleteOk, getJson, postJson } from '@/api/http'
 import type {
   DeviceEvent,
+  DeviceMetrics,
+  InterferenceReport,
+  TerminationReplay,
+  TerminationSpec,
   DeviceStates,
   DeviceTrace,
   ReaderEvent,
@@ -138,4 +142,17 @@ export function fetchRunAnalysis(id: number): Promise<RunAnalysis> {
 
 export function fetchCompareRuns(sectionId: number, runIds: number[]): Promise<{ runs: RunAnalysis[] }> {
   return postJson(`${BASE}/sections/${sectionId}/runs/compare`, { run_ids: runIds })
+}
+
+export function fetchDeviceMetrics(id: number): Promise<DeviceMetrics> {
+  return getJson(`${BASE}/runs/${id}/device-metrics`)
+}
+
+export function fetchInterference(id: number): Promise<InterferenceReport> {
+  return getJson(`${BASE}/runs/${id}/interference`)
+}
+
+/** Score termination rules offline on a finished run's round log (exact for one reader). */
+export function postTerminationReplay(id: number, rules: TerminationSpec[]): Promise<TerminationReplay> {
+  return postJson(`${BASE}/runs/${id}/termination-replay`, { rules })
 }

@@ -5,7 +5,12 @@ paused, checkpointed and resumed.
 ``step_episode`` advances the earliest-clock reader by exactly one frame;
 ``finish_episode`` handles the optional ``max_time_s`` cut-off. The episode
 ends by itself once every device is terminal (identified, or dropped as
-unreachable) or every reader has run out of devices to serve.
+unreachable), every reader has run out of devices to serve, or every reader
+stopped on its termination rule (``inventory/termination.py``).
+
+The :class:`~app.thesis_simulator.coordination.coordinator.Coordinator`
+grants each reader its subbands, may defer a frame start (TDMA windows,
+listen-before-talk) and supplies the interference a frame sees.
 """
 
 from __future__ import annotations
@@ -16,9 +21,13 @@ from typing import Any
 
 import numpy as np
 
+from app.thesis_simulator import physics
 from app.thesis_simulator.catalog import spec_for  # noqa: F401  (kept for catalog alignment)
+from app.thesis_simulator.coordination.coordinator import Coordinator
 from app.thesis_simulator.inventory.config import CONSTANTS
+from app.thesis_simulator.inventory.controller import FrameRecord
 from app.thesis_simulator.inventory.energy import (
+    _pl_nlos_vector,
     advance_availability,
     compute_reader_contribution,
     init_stationary,
@@ -30,6 +39,7 @@ from app.thesis_simulator.inventory.state import (
     DROP_CAUSE_LABEL,
     DROP_MAX_TIME,
     DROP_NO_PROGRESS,
+    DROP_TERMINATED,
     DROP_UNREACHABLE,
     SUBTYPE_CODE,
     UPLINK_ACTIVE,
@@ -37,6 +47,14 @@ from app.thesis_simulator.inventory.state import (
     DeviceWorld,
     EpisodeConfig,
     ReaderState,
+)
+from app.thesis_simulator.inventory.termination import (
+    _all_specs,
+    advance_empty,
+    empty_frames_to_stop,
+    evaluate,
+    observe,
+    worst_case_recharge_s,
 )
 from app.thesis_simulator.physics import effective_coverage_m
 
@@ -57,6 +75,7 @@ class EpisodeState:
     last_progress_t: float = 0.0  # sim time of the latest identification
     # reader_id -> {device idx: transient state code} from that reader's last frame
     overlays: dict[int, dict[int, int]] = field(default_factory=dict)
+    coord: Coordinator | None = None
 
     @property
     def rounds_total(self) -> int:
@@ -79,17 +98,53 @@ class EpisodeState:
             "total": int(w.N),
             "identified": int(w.identified.sum()),
             "identified_by_subtype": by_sub,
-            "dropped": int((w.dropped & ~np.isin(w.drop_cause, (DROP_UNREACHABLE, DROP_NO_PROGRESS))).sum()),
+            "dropped": int((w.dropped & ~np.isin(w.drop_cause, (DROP_UNREACHABLE, DROP_NO_PROGRESS, DROP_TERMINATED))).sum()),
             "unreachable": int((w.dropped & (w.drop_cause == DROP_UNREACHABLE)).sum()),
             "depletions": int(self.depletions_total),
             "rounds": int(self.rounds_total),
             "frame_seq": int(self.frame_seq),
             "no_progress": int((w.dropped & (w.drop_cause == DROP_NO_PROGRESS)).sum()),
+            "terminated_early": int((w.dropped & (w.drop_cause == DROP_TERMINATED)).sum()),
+            "readers_stopped": int(sum(1 for r in self.readers if r.stopped)),
         }
 
-    def stalled(self) -> bool:
+    def stall_limit(self) -> float | None:
+        """``stall_timeout_s``, widened for ``energy_bound`` rules so the guard never
+        cuts a reader that is still waiting out its worst-case recharge time."""
         limit = self.config.stall_timeout_s
+        spec = self.config.termination
+        if limit is None or spec.is_oracle:
+            return limit
+        bounds = [s for s in _all_specs(spec) if s.kind == "energy_bound"]
+        t_wc = [r.t_wc_s for r in self.readers if r.t_wc_s is not None and math.isfinite(r.t_wc_s)]
+        if bounds and t_wc:
+            margin = max(s.margin for s in bounds)
+            limit = max(limit, 1.2 * max(t_wc) * (1.0 + margin))
+        return limit
+
+    def stalled(self) -> bool:
+        limit = self.stall_limit()
         return limit is not None and self.sim_time - self.last_progress_t >= limit
+
+    def reader_summary(self) -> dict[str, Any]:
+        """Per-reader termination / coordination / interference state (run summary)."""
+        coord = self.coord.summary() if self.coord is not None else {"readers": {}}
+        out: dict[str, Any] = {}
+        for r in self.readers:
+            info = dict(coord["readers"].get(int(r.reader_id), {}))
+            info.update({
+                "rounds": int(r.round_index),
+                "clock_s": float(r.clock_s),
+                "stopped": bool(r.stopped),
+                "stop_reason": r.term.stopped_reason,
+                "stop_t": r.term.stopped_t,
+                "t_wc_s": None if r.t_wc_s is None or not math.isfinite(r.t_wc_s) else float(r.t_wc_s),
+                "exhausted": bool(r.exhausted),
+                "interference": dict(r.interference),
+                "f_r": int(r.f_r),
+            })
+            out[str(r.reader_id)] = info
+        return {"mode": coord.get("mode", "independent"), "n_colors": coord.get("n_colors", 1), "readers": out}
 
 
 def build_episode(
@@ -107,9 +162,27 @@ def build_episode(
     world.Ph_total[:] = 0.0
     for r in readers:
         world.Ph_total += r.Ph_contrib
+    if readers:
+        world.readers_in_range[:] = np.sum([r.cover_mask for r in readers], axis=0).astype(np.int16)
+    _assign_recharge_bounds(readers, world, config)
     if warm_start and world.N:
         init_stationary(world, rng)
-    return EpisodeState(world=world, readers=readers, config=config, rng=rng)
+    coord = Coordinator(config.resource, readers, world, config) if readers else None
+    width = float(snapshot.get("width_m") or 120.0)
+    height = float(snapshot.get("height_m") or 60.0)
+    for i, r in enumerate(readers):
+        offset = config.reader_start_offsets.get(str(r.reader_id), config.reader_start_offsets.get(r.reader_id, 0.0))
+        r.context = {
+            "n_readers": float(len(readers)),
+            "neighbors": float(coord.adj[i].sum()) if coord is not None else 0.0,
+            "color": float(r.color),
+            "n_colors": float(coord.n_colors) if coord is not None else 1.0,
+            "start_offset_s": float(offset),
+            "x_norm": r.x_m / width if width > 0 else 0.0,
+            "y_norm": r.y_m / height if height > 0 else 0.0,
+            "slot": float(i),
+        }
+    return EpisodeState(world=world, readers=readers, config=config, rng=rng, coord=coord)
 
 
 def mark_unreachable(state: EpisodeState, emit: EventEmitter) -> int:
@@ -136,13 +209,20 @@ def mark_unreachable(state: EpisodeState, emit: EventEmitter) -> int:
 
 
 def _active_readers(state: EpisodeState) -> list[ReaderState]:
+    """Readers that may run another frame.
+
+    Under the ``oracle`` rule a reader with nothing left to serve is dropped at
+    once (it "knows" it is done). Under any other rule it keeps paging until its
+    rule fires, as a real reader would.
+    """
     max_t = state.config.max_time_s
+    oracle = state.config.termination.is_oracle
     alive = ~state.world.terminal_mask()
     out = []
     for r in state.readers:
         if not r.exhausted and not (r.cover_mask & alive).any():
             r.exhausted = True
-        if r.exhausted:
+        if r.stopped or (oracle and r.exhausted):
             continue
         if max_t is not None and r.clock_s >= max_t:
             continue
@@ -154,29 +234,132 @@ def is_finished(state: EpisodeState) -> bool:
     return next_frame_time(state) is None
 
 
+def _done_serving(state: EpisodeState) -> bool:
+    """Nothing is left to identify (every reader exhausted)."""
+    return state.world.all_terminal() or all(r.exhausted for r in state.readers)
+
+
 def next_frame_time(state: EpisodeState) -> float | None:
     """Simulated start time of the next frame (None when the episode is over)."""
     active = _active_readers(state)
-    if state.world.N == 0 or state.world.all_terminal() or not active or state.stalled():
+    if state.world.N == 0 or _done_serving(state) or not active or state.stalled():
         return None
     return min(r.clock_s for r in active)
+
+
+def _empty_frame_s(reader: ReaderState, others: list[ReaderState]) -> float:
+    for h in reversed(reader.history):
+        if h.new_ids == 0:
+            return h.t_end - h.t_start
+    if reader.history:
+        return reader.history[-1].t_end - reader.history[-1].t_start
+    durations = [o.history[-1].t_end - o.history[-1].t_start for o in others if o.history]
+    return float(np.median(durations)) if durations else 0.0
+
+
+def fast_forward_tail(state: EpisodeState, emit: EventEmitter) -> None:
+    """Once nothing is left to identify, every reader that has not stopped
+    would only page empty frames until its rule fires; jump there in closed form."""
+    spec = state.config.termination
+    if spec.is_oracle or not _done_serving(state):
+        return
+    max_t = state.config.max_time_s
+    t_end = state.sim_time
+    for r in state.readers:
+        if r.stopped:
+            t_end = max(t_end, r.term.stopped_t or r.clock_s)
+            continue
+        frame_s = _empty_frame_s(r, state.readers)
+        limit = None
+        if max_t is not None and frame_s > 0:
+            limit = max(0, int(math.floor((max_t - r.clock_s) / frame_s)))
+        hit = empty_frames_to_stop(spec, r.term, r.clock_s, frame_s, r.t_wc_s, max_frames=limit if limit is not None else 10**9)
+        if hit is None:
+            n = limit or 0
+            advance_empty(r.term, spec, n, r.clock_s, frame_s)
+            r.clock_s += n * frame_s
+            r.round_index += n
+            t_end = max(t_end, r.clock_s)
+            continue
+        n, reason = hit
+        advance_empty(r.term, spec, n, r.clock_s, frame_s)
+        r.clock_s += n * frame_s
+        r.round_index += n
+        r.stopped = True
+        r.term.stopped_reason = reason
+        r.term.stopped_t = r.clock_s
+        r.interference["tail_frames"] = r.interference.get("tail_frames", 0) + n
+        emit.emit_reader(reader_id=r.reader_id, round_handle=None, t_s=r.clock_s, event_type="terminated",
+                         payload={"reason": reason, "tail_frames": n})
+        t_end = max(t_end, r.clock_s)
+    state.sim_time = max(state.sim_time, t_end)
+
+
+def _pick_reader(state: EpisodeState, active: list[ReaderState]) -> ReaderState | None:
+    """Earliest-clock reader whose start is allowed by the coordination policy."""
+    coord = state.coord
+    max_t = state.config.max_time_s
+    for _ in range(10_000):
+        if not active:
+            return None
+        reader = min(active, key=lambda r: (r.clock_s, r.reader_id))
+        if coord is None or coord.spec.mode not in ("tdma", "hybrid", "lbt"):
+            return reader
+        start = coord.next_start(reader, reader.clock_s, state.rng)
+        if start <= reader.clock_s:
+            return reader
+        reader.interference["deferred_s"] += start - reader.clock_s
+        reader.interference["deferrals"] += 1
+        reader.clock_s = start
+        if max_t is not None and start >= max_t:
+            active = [r for r in active if r is not reader]
+    raise RuntimeError("coordination kept deferring every reader")
 
 
 def step_episode(state: EpisodeState, emit: EventEmitter) -> FrameResult | None:
     """Run one frame on the earliest-clock reader. Returns None when finished."""
     active = _active_readers(state)
-    if state.world.N == 0 or state.world.all_terminal() or not active or state.stalled():
+    if state.world.N == 0 or _done_serving(state) or not active or state.stalled():
         return None
-    reader = min(active, key=lambda r: (r.clock_s, r.reader_id))
+    reader = _pick_reader(state, active)
+    if reader is None:
+        return None
     world = state.world
     dt = reader.clock_s - state.sim_time
     if dt > 0:
         advance_availability(dt, world, freeze=world.terminal_mask())
         state.sim_time = reader.clock_s
+    coord = state.coord
+    ictx = None
+    if coord is not None:
+        coord.prune(min(r.clock_s for r in active))
+        ictx = coord.context(reader, reader.clock_s, active)
     emit.frame_seq = state.frame_seq + 1  # rows of this frame; resume truncates rows past the checkpoint
-    result = run_one_frame(reader, world, state.config, state.rng, emit)
+    t0 = reader.clock_s
+    result = run_one_frame(reader, world, state.config, state.rng, emit, coord=coord, ictx=ictx)
+    if coord is not None and result.activity is not None:
+        coord.commit(reader, t0, t0 + result.t_frame, result.activity)
+    if result.interference and sum(v for k, v in result.interference.items() if k.endswith("_lost")):
+        reader.interference["frames_hit"] += 1
+        for key in ("r2d_lost", "m1_lost", "m2_lost", "m3_lost"):
+            reader.interference[key] += int(result.interference.get(key, 0))
     reader.clock_s += result.t_frame
     reader.round_index += 1
+    t_end = t0 + result.t_frame
+    reader.history.append(FrameRecord(
+        t_start=t0, t_end=t_end, k=result.k, pstar=result.pstar, success=result.success,
+        collision=result.collision, empty=result.empty, new_ids=result.identified,
+        joiners=result.joiners, f_r=result.f_r, new_by_subtype=result.new_by_subtype,
+    ))
+    spec = state.config.termination
+    observe(reader.term, spec, t0, t_end, result.identified)
+    if not spec.is_oracle:
+        reason = evaluate(spec, reader.term, t_end, reader.t_wc_s)
+        if reason:
+            reader.stopped = True
+            reader.term.stopped_reason = reason
+            reader.term.stopped_t = t_end
+            emit.emit_reader(reader_id=reader.reader_id, round_handle=None, t_s=t_end, event_type="terminated", payload={"reason": reason})
     state.frame_seq += 1
     state.depletions_total += result.depleted
     state.overlays[reader.reader_id] = result.touched
@@ -189,18 +372,27 @@ def finish_episode(state: EpisodeState, emit: EventEmitter) -> None:
     """Close the episode, dropping whoever is still pending:
 
     * ``max_time_reached`` when the optional time cap was hit;
-    * ``no_progress`` when nothing was identified for ``stall_timeout_s``.
+    * ``no_progress`` when nothing was identified for ``stall_timeout_s``;
+    * ``terminated_early`` when every reader stopped on its termination rule.
 
     An episode that ended because every device is terminal drops nobody.
     """
     world = state.world
     emit.frame_seq = state.frame_seq
+    fast_forward_tail(state, emit)
     if world.all_terminal():
         state.overlays.clear()
         return
     max_t = state.config.max_time_s
+    rule_stopped = any(r.stopped for r in state.readers) and all(r.stopped or r.exhausted for r in state.readers)
     if state.stalled():
         cause, t_end = DROP_NO_PROGRESS, state.sim_time
+    elif rule_stopped:
+        t_stop = max((r.term.stopped_t or 0.0) for r in state.readers)
+        if t_stop > state.sim_time:
+            advance_availability(t_stop - state.sim_time, world, freeze=world.terminal_mask())
+            state.sim_time = t_stop
+        cause, t_end = DROP_TERMINATED, state.sim_time
     elif max_t is not None:
         if state.sim_time < max_t:
             advance_availability(max_t - state.sim_time, world, freeze=world.terminal_mask())
@@ -221,6 +413,37 @@ def finish_episode(state: EpisodeState, emit: EventEmitter) -> None:
             energy_j=float(world.E[dev]),
         )
     state.overlays.clear()
+
+
+def _assign_recharge_bounds(readers: list[ReaderState], world: DeviceWorld, config: EpisodeConfig) -> None:
+    """Worst-case recharge time per reader for the ``energy_bound`` rule.
+
+    ``edge``: link-budget worst case the reader can compute from device-type
+    knowledge alone - every covered device placed at its type's coverage edge
+    and charged by this reader only. ``actual``: the true minimum harvested
+    power among covered devices (all readers' CW), an oracle variant.
+    """
+    sources = {s.energy_source for s in _all_specs(config.termination) if s.kind == "energy_bound"}
+    source = "actual" if sources == {"actual"} else "edge"
+    for r in readers:
+        cov = r.cover_mask
+        if not cov.any():
+            r.t_wc_s = 0.0
+            continue
+        if source == "actual":
+            ph = world.Ph_total[cov]
+        else:
+            radius = r.coverage_radius[cov]
+            d3 = np.sqrt(radius * radius + (physics.H_BS - physics.H_AIOT) ** 2)
+            rf = r.rf
+            pin_dbm = (
+                float(rf.get("tx_power_dbm", physics.P_TX_CW_DBM)) + float(rf.get("antenna_gain_dbi", physics.G_TX_ANT_DBI))
+                - _pl_nlos_vector(d3, float(rf.get("carrier_ghz", physics.FC_GHZ)))
+                - physics.FIXED_DEV_DB - physics.L_OBJ_DB - float(rf.get("extra_attenuation_db", 0.0))
+            )
+            ph = 10.0 ** ((pin_dbm - 30.0) / 10.0)
+        t_on = np.maximum(world.T_on_default[cov], world.T_on_dcm[cov])
+        r.t_wc_s = worst_case_recharge_s(ecap=world.Ecap[cov], eoff=world.Eoff[cov], ph=ph, t_on=t_on)
 
 
 def _build_world(placements: list[dict[str, Any]]) -> DeviceWorld:
@@ -313,19 +536,21 @@ def _build_readers(placements: list[dict[str, Any]], world: DeviceWorld, config:
         )
         rf = dict(p.get("params", {}) or {})
         include_d2r = bool(rf.get("include_d2r", config.include_d2r))
+        radius = _coverage_radius(p, world, include_d2r)
         reader = ReaderState(
             reader_id=rid,
             x_m=float(p["x_m"]),
             y_m=float(p["y_m"]),
             rf=rf,
             include_d2r=include_d2r,
-            freq_subband=rid % CONSTANTS.f_freq,
+            freq_subband=rid % config.consts.f_freq,
             clock_s=start_offset,
             round_index=0,
             estimator=BacklogEstimator(groups=max(1, config.g if config.use_grouping else 1), consts=config.consts),
-            cover_mask=_build_cover_mask(p, world, include_d2r),
+            cover_mask=np.hypot(world.x_m - float(p["x_m"]), world.y_m - float(p["y_m"])) <= radius,
             Ph_contrib=np.zeros(world.N),
             d3d=np.zeros(world.N),
+            coverage_radius=radius,
         )
         reader.Ph_contrib = compute_reader_contribution(reader, world)
         reader.d3d = _distances(reader, world)
@@ -334,15 +559,21 @@ def _build_readers(placements: list[dict[str, Any]], world: DeviceWorld, config:
 
 
 def _build_cover_mask(reader_placement: dict[str, Any], world: DeviceWorld, include_d2r: bool) -> np.ndarray:
-    """Devices within this reader's effective coverage disk.
+    """Devices within this reader's effective coverage disk."""
+    radius = _coverage_radius(reader_placement, world, include_d2r)
+    rx = float(reader_placement["x_m"])
+    ry = float(reader_placement["y_m"])
+    return np.hypot(world.x_m - rx, world.y_m - ry) <= radius
+
+
+def _coverage_radius(reader_placement: dict[str, Any], world: DeviceWorld, include_d2r: bool) -> np.ndarray:
+    """Effective coverage radius (m) of this reader for every device.
 
     The coverage radius depends only on the device's radio parameters, so it is
     computed once per distinct parameter set (a 10k-device scene has a handful)
     and the distance test is vectorized.
     """
     rf = dict(reader_placement.get("params", {}) or {})
-    rx = float(reader_placement["x_m"])
-    ry = float(reader_placement["y_m"])
     radius = np.empty(world.N)
     cache: dict[tuple, float] = {}
     for i in range(world.N):
@@ -365,7 +596,7 @@ def _build_cover_mask(reader_placement: dict[str, Any], world: DeviceWorld, incl
             }
             r = cache[key] = float(effective_coverage_m(dev_params, rf, include_d2r=include_d2r))
         radius[i] = r
-    return np.hypot(world.x_m - rx, world.y_m - ry) <= radius
+    return radius
 
 
 def _distances(reader: ReaderState, world: DeviceWorld) -> np.ndarray:

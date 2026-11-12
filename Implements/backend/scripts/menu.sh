@@ -93,6 +93,24 @@ params() {  # params <paper>/<target>/<script.py> ; sets ARGS, returns BACK on q
             flag --paper "paper scale (N=600, 25 s, slow)?" ;;
         periodic/fig5a/reproduce_fig5a.py | periodic/fig5b/reproduce_fig5b.py)
             ;;
+        thesis/termination/sweep_termination.py)
+            opt --schemes "schemes (aperiodic periodic)" "aperiodic periodic" &&
+                opt --readers "active readers per scene (1 = single reader)" "1 18" &&
+                opt --n "device counts" 300 &&
+                opt --seeds "seeds" 10 &&
+                opt --workers "workers" "$NPROC" &&
+                flag --quick "smaller rule grid?" &&
+                flag --online "also simulate every rule live?" ;;
+        thesis/resource/sweep_resource.py)
+            opt --schemes "schemes (aperiodic periodic)" aperiodic &&
+                opt --readers "active readers (2 = TR D1T1-A2)" "2 6 12 18" &&
+                opt --f "subbands F" 8 &&
+                opt --cw-supp "other-reader CW suppression dB (TR: 61)" 61 &&
+                opt --offsets "start offsets (none staggered two_groups)" none &&
+                opt --n "devices" 300 &&
+                opt --seeds "seeds" 5 &&
+                opt --max-time "max simulated time per run (s)" 300 &&
+                opt --workers "workers" "$NPROC" ;;
         *)
             echo "  ${D}no option table for this script; see: $PY scripts/$1 --help${N}"
             local extra
@@ -155,11 +173,49 @@ pipeline() {
     run_job pipeline "$s/validation" "$cmd"
 }
 
-all_logs() { ls -t scripts/*/*/logs/*.log 2>/dev/null; }
+train_multi() {  # training/train.py (multi-reader RL); outputs in training/outputs/<experiment>/
+    local cfgs
+    cfgs="$(find training/configs -name '*.json' -printf '%f\n' | sed 's/\.json$//' | sort | tr '\n' ' ')"
+    ARGS=""
+    echo "  ${D}configs: $cfgs${N}"
+    opt --config "config" ps_ppo_randomized &&
+        opt --scale "scale: smoke / small / medium / full / <preset>:<factor> / <factor of full>" small &&
+        opt --alphas "alphas, empty = config" "" &&
+        opt --seeds "seeds, empty = config" "" &&
+        opt --jobs "parallel (alpha, seed) jobs" 1 &&
+        opt --eval-jobs "processes for the evaluation matrix" "$NPROC" &&
+        flag --no-eval "skip the evaluation matrix?" &&
+        flag --promote "copy finished policies into the registry?" || { echo "  cancelled"; return; }
+    run_job train "training" "$PY -m training.train$ARGS"
+}
+
+eval_multi() {
+    local runs
+    ARGS=""
+    echo "  ${D}latest runs:${N}"
+    ls -dt training/outputs/*/*/ 2>/dev/null | grep -v '/_eval/' | head -8 | sed 's/^/    /'
+    ask runs "run directories or policy ids (space separated)" "" || return
+    ARGS=" --runs $runs"
+    opt --grid "grid: mini / standard / full" standard &&
+        opt --episodes "episodes per cell" 3 &&
+        opt --scale "device range / time cap from scale" small &&
+        opt --jobs "workers" "$NPROC" || { echo "  cancelled"; return; }
+    run_job evaluate "training" "$PY -m training.evaluate$ARGS"
+}
+
+promote_multi() {
+    local run pid
+    ls -dt training/outputs/*/*/ 2>/dev/null | grep -v '/_eval/' | head -8 | sed 's/^/    /'
+    ask run "run directory" "$(ls -dt training/outputs/*/*/ 2>/dev/null | grep -v '/_eval/' | head -1)" || return
+    ask pid "policy id, empty = from the run" "" || return
+    run_job promote "training" "$PY -m training.promote $run${pid:+ --policy-id $pid}"
+}
+
+all_logs() { ls -t scripts/*/*/logs/*.log training/logs/*.log 2>/dev/null; }
 
 jobs_status() {
     local out
-    out="$(pgrep -af 'scripts/.*\.py' | grep -v pgrep)"
+    out="$(pgrep -af 'scripts/.*\.py|-m training\.' | grep -v pgrep)"
     echo
     if [[ -n "$out" ]]; then echo "$out" | sed 's/^/  /'; else echo "  no script running"; fi
     echo "  ${D}latest logs:${N}"
@@ -182,6 +238,9 @@ describe() {  # one-line description of a folder or script
     case "$1" in
         aperiodic) echo "3GPP Ambient IoT Inventory with Aperiodic Paging (Figs. 4-8, Tables IV-VI, PPO)" ;;
         periodic) echo "Fast Inventory ... Device Unavailability (Device-1 Fig. 5)" ;;
+        thesis) echo "Thesis extension: multi-reader termination and resource sharing" ;;
+        thesis/termination) echo "termination rules: missed devices vs extra time (Pareto)" ;;
+        thesis/resource) echo "resource policies: ideal-gain retention vs active readers" ;;
         aperiodic/figure4) echo "incident-power CDF, N_eff, type shares" ;;
         aperiodic/figure5) echo "single-source, aperiodic vs periodic, + Table IV" ;;
         aperiodic/figure6) echo "multi-source, aperiodic vs periodic" ;;
@@ -195,6 +254,9 @@ describe() {  # one-line description of a folder or script
         periodic/fig5b) echo "EM vs DCM 1/4 groups: reproduce, validate, diagnose, digitize" ;;
         periodic/assumptions) echo "effect of assumptions the paper leaves open" ;;
         act:pipeline) echo "Figs. 4-8, Tables IV-VI, then validation, in one go" ;;
+        act:train_multi) echo "multi-reader RL training (training/, --scale)" ;;
+        act:eval_multi) echo "generalization matrix of trained policies vs DFSA" ;;
+        act:promote_multi) echo "copy a training run into the policy registry" ;;
         act:train_all) echo "alpha 0 / 0.25 / 0.5 / 0.75 in the background" ;;
         *.py) awk 'f && NF { print; exit }
                    /"""/ { s = $0; sub(/^[^"]*"""/, "", s); sub(/""".*$/, "", s); sub(/\.$/, "", s)
@@ -236,6 +298,9 @@ label() {
     case "$1" in
         act:train_all) echo "train all 4 alphas" ;;
         act:pipeline) echo "full pipeline" ;;
+        act:train_multi) echo "train (multi-reader)" ;;
+        act:eval_multi) echo "evaluate policies" ;;
+        act:promote_multi) echo "promote policy" ;;
         *) echo "${p##*/}" ;;
     esac
 }
@@ -265,10 +330,14 @@ paper_menu() {  # <paper>
     local p=$1 items=() d
     for d in $(subdirs "$p"); do items+=("dir:$p/$d"); done
     [[ "$p" == aperiodic ]] && items+=("act:pipeline")
+    [[ "$p" == thesis ]] && items+=("act:train_multi" "act:eval_multi" "act:promote_multi")
     while pick "scripts/$p/" "${items[@]}"; do
         case "$PICK" in
             dir:*) target_menu "${PICK#dir:}" ;;
             act:pipeline) pipeline ;;
+            act:train_multi) train_multi ;;
+            act:eval_multi) eval_multi ;;
+            act:promote_multi) promote_multi ;;
         esac
     done
 }

@@ -73,6 +73,7 @@ _ADDED_COLUMNS: tuple[tuple[str, str, str], ...] = (
     ("thesis_run_rounds", "slots_json", "JSONB"),
     ("thesis_device_events", "frame_seq", "INTEGER"),
     ("thesis_reader_events", "frame_seq", "INTEGER"),
+    ("thesis_run_summary", "device_metrics", "BYTEA"),
 )
 
 _ADDED_INDEXES: tuple[str, ...] = (

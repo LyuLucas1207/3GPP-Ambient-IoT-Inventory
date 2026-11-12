@@ -1,0 +1,196 @@
+{
+  "policy_id": "ps_ppo_randomized__a0p5__b0p5__s0__20261111T033923",
+  "algo": "sb3_ppo",
+  "experiment": "ps_ppo_randomized",
+  "description": "Parameter-sharing PPO with domain randomization over 1-18 readers (random lattice subsets), start offsets, resource policies and subtype mixes: train once, deploy anywhere.",
+  "alpha": 0.5,
+  "beta": 0.5,
+  "seed": 0,
+  "scale": "small",
+  "scale_detail": {
+    "name": "small",
+    "total_steps": 50000,
+    "n_envs": 4,
+    "n_devices": [
+      100,
+      400
+    ],
+    "eval_episodes": 3,
+    "eval_grid": "standard",
+    "n_steps": 1024,
+    "batch_size": 256,
+    "n_epochs": 5,
+    "t_max_s": 120.0,
+    "max_frames": 10000
+  },
+  "training_steps": 53248,
+  "architecture": "MLP(128, 128) tanh -> Gaussian(2) (shared by all readers); critic MLP(128, 128)",
+  "hyperparameters": {
+    "learning_rate": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.005,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "net_arch": [
+      128,
+      128
+    ]
+  },
+  "train_config": {
+    "name": "ps_ppo_randomized",
+    "algo": "ps_ppo",
+    "description": "Parameter-sharing PPO with domain randomization over 1-18 readers (random lattice subsets), start offsets, resource policies and subtype mixes: train once, deploy anywhere.",
+    "alphas": [
+      0.5
+    ],
+    "betas": [
+      0.5
+    ],
+    "seeds": [
+      0
+    ],
+    "env": {
+      "readers": [
+        1,
+        18
+      ],
+      "subset": "random",
+      "offsets": [
+        "none",
+        "random",
+        "groups"
+      ],
+      "resource_modes": [
+        "independent",
+        "fdma",
+        "tdma",
+        "hybrid"
+      ],
+      "schemes": [
+        "aperiodic"
+      ],
+      "subtype_mix": "random"
+    },
+    "hyperparameters": {
+      "learning_rate": 0.0003,
+      "gamma": 0.99,
+      "ent_coef": 0.005,
+      "net_arch": [
+        128,
+        128
+      ]
+    }
+  },
+  "env": {
+    "readers": [
+      1,
+      18
+    ],
+    "subset": "random",
+    "offsets": [
+      "none",
+      "random",
+      "groups"
+    ],
+    "resource_modes": [
+      "independent",
+      "fdma",
+      "tdma",
+      "hybrid"
+    ],
+    "schemes": [
+      "aperiodic"
+    ],
+    "subtype_mix": "random",
+    "alpha": 0.5,
+    "beta": 0.5,
+    "n_devices": [
+      100,
+      400
+    ],
+    "t_max_s": 120.0,
+    "stall_timeout_s": 120.0,
+    "max_frames": 10000
+  },
+  "observation_spec": {
+    "history": 4,
+    "frame_features": [
+      "S/K",
+      "C/K",
+      "E/K",
+      "new_ids/K",
+      "joiners/K",
+      "log2(K)/log2(K_max)",
+      "p",
+      "t_frame/0.5"
+    ],
+    "context_features": [
+      "readers/18",
+      "neighbors/17",
+      "color/n_colors",
+      "F_r/F",
+      "start_offset/10.0",
+      "x/width",
+      "y/height",
+      "time_since_last_id/120.0",
+      "frames/2000.0"
+    ],
+    "dim": 41,
+    "excluded": [
+      "devices left",
+      "energies",
+      "availability",
+      "C2"
+    ]
+  },
+  "action_spec": {
+    "policy_action_space": "Box([-1, -1], [1, 1])",
+    "m": "exp(ln(0.25) + (a0 + 1) / 2 * (ln(10) - ln(0.25)))",
+    "q": "exp(ln(0.1) + (a1 + 1) / 2 * (ln(10) - ln(0.1)))",
+    "L": "clip(ceil(m * ceil(K_prev / F_r)), 1, ceil(K_max / F_r))",
+    "p": "clip(q * p_prev, 0.0001, 1)",
+    "m_range": [
+      0.25,
+      10.0
+    ],
+    "q_range": [
+      0.1,
+      10.0
+    ],
+    "K": "L * F_r"
+  },
+  "package_versions": {
+    "python": "3.14.8",
+    "numpy": "2.5.3",
+    "torch": "2.14.1+cpu",
+    "stable_baselines3": "2.9.0",
+    "sb3_contrib": "2.9.0",
+    "gymnasium": "1.4.0"
+  },
+  "git_commit": "b4e7522",
+  "config_hash": "40cba0bee061030573b9190bb9d0cc5a66def5efaf4ebc735126ad8e4fa67533",
+  "created_at": "2026-11-10T20:40:32-07:00",
+  "wall_time_s": 69.0,
+  "sha256": "9df6c20a99400c783dc57a474c23d2476cb3009cce5eb7f086c81d43ce281609",
+  "training_episodes": 107,
+  "mean_return_last20": 58.56102947501931,
+  "eval_summary": {
+    "dfsa": {
+      "cells": 18,
+      "cells_reaching_99": 16,
+      "mean_identified_fraction": 0.9923607394516281,
+      "geo_mean_t99_vs_dfsa": 1.0,
+      "mean_resource_efficiency": 0.05477395545357337
+    },
+    "policy": {
+      "cells": 18,
+      "cells_reaching_99": 16,
+      "mean_identified_fraction": 0.963096032651975,
+      "geo_mean_t99_vs_dfsa": 0.977927914766967,
+      "mean_resource_efficiency": 0.07650402335407797
+    }
+  },
+  "promoted_from": "/home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/backend/training/outputs/ps_ppo_randomized/20261111T033923__a0p5__b0p5__s0"
+}

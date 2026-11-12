@@ -1,0 +1,139 @@
+{
+  "policy_id": "zero_shot_single__a0p5__b0p5__s0__20261111T033923",
+  "algo": "zero_shot_aperiodic",
+  "experiment": "zero_shot_single",
+  "description": "No training: the aperiodic engine's single-reader RecurrentPPO on every reader (own LSTM state each). Measures zero-shot transfer from one reader to many.",
+  "alpha": 0.5,
+  "beta": 0.5,
+  "seed": 0,
+  "scale": "small",
+  "scale_detail": {
+    "name": "small",
+    "total_steps": 50000,
+    "n_envs": 4,
+    "n_devices": [
+      100,
+      400
+    ],
+    "eval_episodes": 3,
+    "eval_grid": "standard",
+    "n_steps": 1024,
+    "batch_size": 256,
+    "n_epochs": 5,
+    "t_max_s": 120.0,
+    "max_frames": 10000
+  },
+  "training_steps": 20480,
+  "architecture": "actor: LSTM(1x128) -> MLP(128,128,ReLU) -> Gaussian(2); critic: LSTM(1x128) -> MLP(128,128,ReLU) -> value",
+  "hyperparameters": {
+    "source_alpha": 0.5,
+    "source_seed": 42
+  },
+  "train_config": {
+    "name": "zero_shot_single",
+    "algo": "zero_shot",
+    "description": "No training: the aperiodic engine's single-reader RecurrentPPO on every reader (own LSTM state each). Measures zero-shot transfer from one reader to many.",
+    "alphas": [
+      0.5
+    ],
+    "betas": [
+      0.5
+    ],
+    "seeds": [
+      0
+    ],
+    "env": {
+      "readers": [
+        1,
+        18
+      ],
+      "subset": "random",
+      "offsets": [
+        "none"
+      ],
+      "resource_modes": [
+        "independent"
+      ],
+      "schemes": [
+        "aperiodic"
+      ],
+      "subtype_mix": "uniform"
+    }
+  },
+  "env": {
+    "readers": [
+      1,
+      18
+    ],
+    "subset": "random",
+    "offsets": [
+      "none"
+    ],
+    "resource_modes": [
+      "independent"
+    ],
+    "schemes": [
+      "aperiodic"
+    ],
+    "subtype_mix": "uniform",
+    "alpha": 0.5,
+    "beta": 0.5,
+    "n_devices": [
+      100,
+      400
+    ],
+    "t_max_s": 120.0,
+    "stall_timeout_s": 120.0,
+    "max_frames": 10000
+  },
+  "observation_spec": "aperiodic RecurrentPPO observation (S1, S2a, S2b, I, C per AO, L/L_max, p)",
+  "action_spec": {
+    "policy_action_space": "Box([-1, -1], [1, 1])",
+    "m": "exp(ln(0.25) + (a0 + 1) / 2 * (ln(10) - ln(0.25)))",
+    "q": "exp(ln(0.1) + (a1 + 1) / 2 * (ln(10) - ln(0.1)))",
+    "L": "clip(ceil(m * ceil(K_prev / F_r)), 1, ceil(K_max / F_r))",
+    "p": "clip(q * p_prev, 0.0001, 1)",
+    "m_range": [
+      0.25,
+      10.0
+    ],
+    "q_range": [
+      0.1,
+      10.0
+    ],
+    "K": "L * F_r"
+  },
+  "package_versions": {
+    "python": "3.14.8",
+    "numpy": "2.5.3",
+    "torch": "2.14.1+cpu",
+    "stable_baselines3": "2.9.0",
+    "sb3_contrib": "2.9.0",
+    "gymnasium": "1.4.0"
+  },
+  "git_commit": "b4e7522",
+  "config_hash": "a6148cd9195413c06465a9daad2fa98849bd7cf79ffac973c7afa21f3a89b268",
+  "created_at": "2026-11-10T20:39:23-07:00",
+  "wall_time_s": 0.8,
+  "sha256": "4cda48fa0bddb57e22c4003eedefad3c3ed678024951bd11f8655afb13ea0d64",
+  "source": "app/aperiodic_simulator/rl/checkpoints/recurrent_ppo_alpha_0p5.zip",
+  "training_episodes": 0,
+  "mean_return_last20": null,
+  "eval_summary": {
+    "dfsa": {
+      "cells": 18,
+      "cells_reaching_99": 16,
+      "mean_identified_fraction": 0.9923607394516281,
+      "geo_mean_t99_vs_dfsa": 1.0,
+      "mean_resource_efficiency": 0.05477395545357337
+    },
+    "policy": {
+      "cells": 18,
+      "cells_reaching_99": 16,
+      "mean_identified_fraction": 0.9619707620942675,
+      "geo_mean_t99_vs_dfsa": 1.035173849026413,
+      "mean_resource_efficiency": 0.08273510545846784
+    }
+  },
+  "promoted_from": "/home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/backend/training/outputs/zero_shot_single/20261111T033923__a0p5__b0p5__s0"
+}
