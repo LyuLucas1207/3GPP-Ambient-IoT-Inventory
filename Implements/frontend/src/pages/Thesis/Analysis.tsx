@@ -215,12 +215,14 @@ export default function ThesisAnalysisPage() {
                     ))}
                   </TabsList>
                   <TabsContent value="overview" className="flex flex-col gap-4">
-                    <ChartPanel title={t('thesis.analysis.charts.identification')}>
-                      <IdentificationChart analyses={selectedAnalyses} />
-                    </ChartPanel>
-                    <ChartPanel title={t('thesis.analysis.charts.bySubtype')}>
-                      <SubtypeChart analyses={selectedAnalyses} />
-                    </ChartPanel>
+                    <div className="grid items-start gap-4 lg:grid-cols-2">
+                      <ChartPanel title={t('thesis.analysis.charts.identification')}>
+                        <IdentificationChart analyses={selectedAnalyses} />
+                      </ChartPanel>
+                      <ChartPanel title={t('thesis.analysis.charts.bySubtype')}>
+                        <SubtypeChart analyses={selectedAnalyses} />
+                      </ChartPanel>
+                    </div>
                     <ChartPanel title={t('thesis.analysis.charts.metrics')}>
                       <MetricsTable analyses={selectedAnalyses} />
                     </ChartPanel>
@@ -303,7 +305,7 @@ function IdentificationChart({ analyses }: { analyses: RunAnalysis[] }) {
     <Plot
       data={runs}
       layout={{
-        ...baseLayout(plot, { height: 340 }),
+        ...baseLayout(plot, { height: 320 }),
         xaxis: axis(plot, t('thesis.analysis.axis.time'), xMax > 0 ? { range: [0, xMax] } : {}),
         yaxis: axis(plot, t('thesis.charts.identifiedPct'), { range: [0, 101], tickvals: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100] }),
         shapes: LEVELS.map((l) => ({
@@ -344,7 +346,7 @@ function SubtypeChart({ analyses }: { analyses: RunAnalysis[] }) {
     <Plot
       data={data}
       layout={{
-        ...baseLayout(plot, { height: 280 }),
+        ...baseLayout(plot, { height: 320 }),
         xaxis: axis(plot, t('thesis.analysis.axis.time'), xMax > 0 ? { range: [0, xMax] } : {}),
         yaxis: axis(plot, t('thesis.analysis.axis.count'), { rangemode: 'tozero' }),
       }}
