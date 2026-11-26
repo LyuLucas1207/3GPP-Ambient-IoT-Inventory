@@ -3,7 +3,7 @@
     .venv/bin/python -m training.promote training/outputs/ps_ppo_randomized/<run> [--policy-id NAME] [--force]
 
 Writes ``<policy_id>.zip`` and ``<policy_id>.json`` to
-``app/thesis_simulator/rl/policies`` (or ``$THESIS_POLICY_DIR``). The zip is
+``app/simulator_thesis/rl/policies`` (or ``$THESIS_POLICY_DIR``). The zip is
 re-hashed after copying; zero-shot runs copy only the sidecar, which keeps
 pointing at the aperiodic checkpoint.
 """
@@ -26,7 +26,7 @@ _ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\-]*$")
 
 
 def promote(run: Path, policy_id: str | None = None, force: bool = False) -> str:
-    from app.thesis_simulator.rl.policy import load_meta_file, policy_dir
+    from app.simulator_thesis.rl.policy import load_meta_file, policy_dir
 
     run = Path(run)
     side = run / "checkpoints" / "final.json"

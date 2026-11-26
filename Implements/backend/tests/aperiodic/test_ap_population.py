@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
 
-from app.aperiodic_simulator.physics.channel import inf_dh_path_loss_db
-from app.aperiodic_simulator.core.config import SystemParams
-from app.aperiodic_simulator.physics.harvesting import build_population, harvest_below_sleep_stats, incident_power_cdf
-from app.aperiodic_simulator.physics.layout import bs_positions, central_bs_indices, reader_position
-from app.aperiodic_simulator.core.states import HarvestingScenario
+from app.simulator_aperiodic.physics.channel import inf_dh_path_loss_db
+from app.simulator_aperiodic.core.config import SystemParams
+from app.simulator_aperiodic.physics.harvesting import build_population, harvest_below_sleep_stats, incident_power_cdf
+from app.simulator_aperiodic.physics.layout import bs_positions, central_bs_indices, reader_position
+from app.simulator_aperiodic.core.states import HarvestingScenario
 
 
 def pop(scen, seed=7, n=15000):

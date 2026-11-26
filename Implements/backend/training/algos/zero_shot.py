@@ -13,7 +13,7 @@ from typing import Any
 from training.common import BACKEND_ROOT, CsvLog
 
 
-SOURCE_ZIP = "app/thesis_simulator/rl/policies/A_IoT_PPO_LSTM.zip"
+SOURCE_ZIP = "app/simulator_thesis/rl/policies/A_IoT_PPO_LSTM.zip"
 
 
 def train(job: dict[str, Any], out_dir: Path, log: CsvLog) -> dict[str, Any]:

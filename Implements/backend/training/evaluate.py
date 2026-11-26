@@ -45,10 +45,10 @@ def run_episode(candidate: dict[str, Any], cell: dict[str, Any], env_cfg: dict[s
     """One seeded episode of ``candidate`` (``{"kind": "dfsa"}`` or ``{"kind": "policy", "meta_path": ...}``)."""
     import numpy as np
 
-    from app.thesis_simulator.inventory.episode import build_episode, mark_unreachable
-    from app.thesis_simulator.inventory.headless import drive
-    from app.thesis_simulator.inventory.events import EventEmitter
-    from app.thesis_simulator.rl.env import MultiReaderInventoryEnv, outcome
+    from app.simulator_thesis.inventory.episode import build_episode, mark_unreachable
+    from app.simulator_thesis.inventory.headless import drive
+    from app.simulator_thesis.inventory.events import EventEmitter
+    from app.simulator_thesis.rl.env import MultiReaderInventoryEnv, outcome
 
     spec = {**env_cfg, "readers": [cell["readers"], cell["readers"]], "resource_modes": [cell["resource"]], "offsets": [cell["offsets"]],
             "subset": "spread"}
@@ -57,7 +57,7 @@ def run_episode(candidate: dict[str, Any], cell: dict[str, Any], env_cfg: dict[s
     scene, config, _ = sampler.sample_deployment(sampler.cfg)
     state = build_episode(scene, config, np.random.default_rng(seed + 7919))
     if candidate["kind"] == "policy":
-        from app.thesis_simulator.rl.policy import PolicyController, load_meta, load_meta_file
+        from app.simulator_thesis.rl.policy import PolicyController, load_meta, load_meta_file
 
         meta = load_meta(candidate["policy_id"]) if candidate.get("policy_id") else load_meta_file(Path(candidate["meta_path"]))
         for r in state.readers:

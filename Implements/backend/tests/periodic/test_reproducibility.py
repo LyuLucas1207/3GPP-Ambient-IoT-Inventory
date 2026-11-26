@@ -1,8 +1,8 @@
 import numpy as np
 
-from app.simulator.core.config import paper_device1_config
-from app.simulator.core.scenario import Scenario
-from app.simulator.core.simulation import run_strategy
+from app.simulator_periodic.core.config import paper_device1_config
+from app.simulator_periodic.core.scenario import Scenario
+from app.simulator_periodic.core.simulation import run_strategy
 
 
 def test_same_seed_same_metrics():

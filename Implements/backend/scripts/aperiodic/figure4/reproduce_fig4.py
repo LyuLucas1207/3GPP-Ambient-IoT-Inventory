@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.aperiodic_simulator.analysis.reference_targets import results_dir
-from app.aperiodic_simulator.reproduction.reproduce import _jsonable, figure4_data, plot_figure4
+from app.simulator_aperiodic.analysis.reference_targets import results_dir
+from app.simulator_aperiodic.reproduction.reproduce import _jsonable, figure4_data, plot_figure4
 
 
 def main() -> None:

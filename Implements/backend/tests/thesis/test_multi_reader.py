@@ -5,14 +5,14 @@ import math
 import numpy as np
 import pytest
 
-from app.thesis_simulator.inventory.checkpoint import dump_state, load_state
-from app.thesis_simulator.inventory.episode import DROP_CAUSE_LABEL, build_episode
-from app.thesis_simulator.inventory.events import EventEmitter
-from app.thesis_simulator.inventory.episode import mark_unreachable
-from app.thesis_simulator.inventory.headless import drive, fingerprint, run_headless, synthetic_scene
-from app.thesis_simulator.inventory.metrics import aggregate, device_metrics_blob, device_metrics_rows, load_device_metrics
-from app.thesis_simulator.inventory.state import DROP_TERMINATED, EpisodeConfig
-from app.thesis_simulator.inventory.termination import TerminationSpec, replay
+from app.simulator_thesis.inventory.checkpoint import dump_state, load_state
+from app.simulator_thesis.inventory.episode import DROP_CAUSE_LABEL, build_episode
+from app.simulator_thesis.inventory.events import EventEmitter
+from app.simulator_thesis.inventory.episode import mark_unreachable
+from app.simulator_thesis.inventory.headless import drive, fingerprint, run_headless, synthetic_scene
+from app.simulator_thesis.inventory.metrics import aggregate, device_metrics_blob, device_metrics_rows, load_device_metrics
+from app.simulator_thesis.inventory.state import DROP_TERMINATED, EpisodeConfig
+from app.simulator_thesis.inventory.termination import TerminationSpec, replay
 
 GRID = synthetic_scene(300, seed=2)
 ONE = synthetic_scene(200, reader_xy=[(60.0, 30.0)], seed=5)
@@ -100,8 +100,8 @@ def test_energy_bound_recharge_time_is_finite_and_conservative():
 def test_energy_bound_edge_cap_and_max_wait():
     """Active 2b devices are covered far beyond the harvesting range (xi = 0 below
     -41 dBm), so the uncapped edge bound is infinite; the cap and max_wait bound it."""
-    from app.thesis_simulator.catalog import spec_for
-    from app.thesis_simulator.inventory.termination import TermState, evaluate
+    from app.simulator_thesis.catalog import spec_for
+    from app.simulator_thesis.inventory.termination import TermState, evaluate
 
     scene = synthetic_scene(200, reader_xy=[(60.0, 30.0)], seed=5)
     for p in scene["placements"]:

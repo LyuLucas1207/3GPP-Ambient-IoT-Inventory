@@ -9,8 +9,8 @@ from app.routers.simulator import router as simulator_router
 from app.routers.thesis_runs import router as thesis_runs_router
 from app.routers.thesis_simulator import router as thesis_router
 from app.routers.thesis_training import router as thesis_training_router
-from app.thesis_simulator.inventory.live import manager as run_manager
-from app.thesis_simulator.inventory.live import recover_interrupted_runs
+from app.simulator_thesis.inventory.live import manager as run_manager
+from app.simulator_thesis.inventory.live import recover_interrupted_runs
 
 log = logging.getLogger(__name__)
 

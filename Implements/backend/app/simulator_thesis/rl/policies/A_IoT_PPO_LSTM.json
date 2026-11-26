@@ -1,0 +1,31 @@
+{
+  "policy_id": "A_IoT_PPO_LSTM",
+  "algo": "zero_shot_aperiodic",
+  "experiment": "sources",
+  "description": "Original single-reader weights from Sources Controller-Level A_IoT_PPO_LSTM.zip (1,001,472 steps). Each reader keeps its own LSTM state. No training in this repository.",
+  "alpha": 0.5,
+  "beta": null,
+  "seed": null,
+  "scale": null,
+  "training_steps": 1001472,
+  "architecture": "Sources RecurrentPPO: LSTM(1x128), MLP(128,128), action Box([0.25, 0.1], [10, 10])",
+  "hyperparameters": {
+    "source_file": "Sources/Standard_3GPP/3GPP Ambient IoT Aperiodic Codes/Controller-Level/Code/A_IoT_PPO_LSTM.zip",
+    "stable_baselines3": "2.7.0",
+    "learning_rate": 0.0003,
+    "gamma": 0.9,
+    "n_steps": 2048,
+    "batch_size": 256,
+    "n_epochs": 10
+  },
+  "observation_spec": "Sources RL.py raw counts (S2b, S2a, S1, empty, collisions, K_prev, p_prev)",
+  "action_spec": {
+    "policy_action_space": "Box([0.25, 0.1], [10, 10])",
+    "K": "clip(round(m * K_prev), 2, 668)",
+    "p": "clip(q * p_prev, 0.001, 1)"
+  },
+  "sha256": "1d4f99373d286169e8cc357e194a3d7ba0962953c3c301f7e48bc8884d7556a8",
+  "source": "app/simulator_thesis/rl/policies/A_IoT_PPO_LSTM.zip",
+  "training_episodes": null,
+  "notes": "Copied from Sources. This is not the 20,480-step zip trained in this repository."
+}

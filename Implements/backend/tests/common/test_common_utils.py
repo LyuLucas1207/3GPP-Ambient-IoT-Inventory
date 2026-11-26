@@ -5,8 +5,8 @@ import pytest
 
 from app.common import metrics as cm
 from app.common import rf
-from app.simulator.physics import channel as legacy_channel
-from app.simulator.analysis import metrics as legacy_metrics
+from app.simulator_periodic.physics import channel as legacy_channel
+from app.simulator_periodic.analysis import metrics as legacy_metrics
 
 PIN = np.array([-40, -36, -25.5, -10, -9.5, 0, 5.0])
 # Values recorded from simulator/channel.py before the extraction.

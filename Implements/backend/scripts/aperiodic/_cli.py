@@ -3,8 +3,8 @@
 import argparse
 import json
 
-from app.aperiodic_simulator.analysis.reference_targets import results_dir
-from app.aperiodic_simulator.reproduction.reproduce import run_protocol_figure, write_figure_outputs
+from app.simulator_aperiodic.analysis.reference_targets import results_dir
+from app.simulator_aperiodic.reproduction.reproduce import run_protocol_figure, write_figure_outputs
 
 
 def protocol_figure_main(figure: str) -> dict:
@@ -33,7 +33,7 @@ def protocol_figure_main(figure: str) -> dict:
 
 
 def controller_target_main(target: str) -> dict:
-    from app.aperiodic_simulator.reproduction import controller_reproduce as cr
+    from app.simulator_aperiodic.reproduction import controller_reproduce as cr
 
     ap = argparse.ArgumentParser(description=f"Reproduce {target} of the aperiodic-paging paper (controller level)")
     ap.add_argument("--episodes", type=int, default=100, help="seeded episodes per method/point (paper: 100)")

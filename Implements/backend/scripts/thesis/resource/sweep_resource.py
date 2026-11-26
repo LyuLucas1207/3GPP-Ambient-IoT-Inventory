@@ -28,8 +28,8 @@ sys.path.insert(0, str(HERE.parent))
 
 from _common import mean_or_none, pmap, scene, times, write_csv  # noqa: E402
 
-from app.thesis_simulator.inventory.headless import reader_ids, run_headless  # noqa: E402
-from app.thesis_simulator.inventory.state import EpisodeConfig  # noqa: E402
+from app.simulator_thesis.inventory.headless import reader_ids, run_headless  # noqa: E402
+from app.simulator_thesis.inventory.state import EpisodeConfig  # noqa: E402
 
 POLICIES = ("shared", "fdma", "tdma", "hybrid", "lbt")
 SERIAL = {"mode": "tdma", "conflict_distance_m": 1e9}

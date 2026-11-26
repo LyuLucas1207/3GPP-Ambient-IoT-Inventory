@@ -20,11 +20,11 @@ ROOT = HERE.parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.simulator.core.config import STATE_NAME, paper_device1_config
-from app.simulator.analysis.fig5b_validation import evaluate_fig5b
-from app.simulator.core.scenario import Scenario
-from app.simulator.core.simulation import run_paper_comparison
-from app.simulator.analysis.tail_diagnosis import classify_delay, reconstruct_transitions, remaining_census_at
+from app.simulator_periodic.core.config import STATE_NAME, paper_device1_config
+from app.simulator_periodic.analysis.fig5b_validation import evaluate_fig5b
+from app.simulator_periodic.core.scenario import Scenario
+from app.simulator_periodic.core.simulation import run_paper_comparison
+from app.simulator_periodic.analysis.tail_diagnosis import classify_delay, reconstruct_transitions, remaining_census_at
 
 
 def _percentile_ids(completion: np.ndarray, lo_pct: float, hi_pct: float) -> list[int]:

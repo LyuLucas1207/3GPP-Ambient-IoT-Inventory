@@ -2,9 +2,9 @@ from dataclasses import replace
 
 import numpy as np
 
-from app.simulator.core.config import OFF, paper_device1_config
-from app.simulator.core.scenario import Scenario, initial_arrays, stationary_em_state
-from app.simulator.core.warmup import _advance_em_one, explicit_warmup, remaining_charge_stats
+from app.simulator_periodic.core.config import OFF, paper_device1_config
+from app.simulator_periodic.core.scenario import Scenario, initial_arrays, stationary_em_state
+from app.simulator_periodic.core.warmup import _advance_em_one, explicit_warmup, remaining_charge_stats
 
 
 def test_explicit_em_matches_closed_form_partial_charge():

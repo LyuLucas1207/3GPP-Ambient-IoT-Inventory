@@ -11,7 +11,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { TERM_SOURCE, TermId } from '@/explain/ids'
+import { TERM_SOURCE, TermId } from '@/utils/terms'
 import { CircleHelpIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 

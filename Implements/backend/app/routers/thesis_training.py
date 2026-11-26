@@ -6,8 +6,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from app.thesis_simulator.rl.policy import PolicyMissing, list_policies
-from app.thesis_simulator.training_registry import (
+from app.simulator_thesis.rl.policy import PolicyMissing, list_policies
+from app.simulator_thesis.training_registry import (
     BACKEND_ROOT,
     TrainingNotFound,
     experiment_detail,

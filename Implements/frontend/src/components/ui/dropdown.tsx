@@ -2,7 +2,7 @@ import { Menu } from '@base-ui/react/menu'
 import { CheckIcon, ChevronDownIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/utils'
 
 export type DropdownOption<T extends string> = {
   value: T

@@ -11,7 +11,7 @@ ROOT = HERE.parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.simulator.physics.channel import load_pin_cdf
+from app.simulator_periodic.physics.channel import load_pin_cdf
 
 
 def main():

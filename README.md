@@ -4,8 +4,8 @@
 
 | Paper | Engine | API | Page |
 | --- | --- | --- | --- |
-| *Fast Inventory … Device Unavailability Due to Energy Harvesting* (periodic paging, EM/DCM) | `Implements/backend/app/simulator/` | `/api/simulator/...` | `/periodic-paging` |
-| *3GPP Ambient IoT Inventory with Aperiodic Paging* (Kota et al.) | `Implements/backend/app/aperiodic_simulator/` | `/api/aperiodic-simulator/...` | `/aperiodic-paging` |
+| *Fast Inventory … Device Unavailability Due to Energy Harvesting* (periodic paging, EM/DCM) | `Implements/backend/app/simulator_periodic/` | `/api/simulator/...` | `/periodic-paging` |
+| *3GPP Ambient IoT Inventory with Aperiodic Paging* (Kota et al.) | `Implements/backend/app/simulator_aperiodic/` | `/api/aperiodic-simulator/...` | `/aperiodic-paging` |
 
 `/api/health` is the only shared endpoint. `Implements/backend/app/common/` holds only pure utilities (RF unit conversion, harvester efficiency, inventory-curve metrics). The legacy "EM" strategy is **not** the aperiodic-paging paper's protocol. For the aperiodic paper see [Aperiodic-paging paper](#aperiodic-paging-paper) and [Docs/APERIODIC_MODEL.md](./Docs/APERIODIC_MODEL.md).
 
@@ -44,7 +44,7 @@ Aperiodic-paging page (`/aperiodic-paging`):
     │   │   ├── schemas/              ← request/response models per paper
     │   │   ├── simulator/            ← periodic-paging paper engine (legacy)
     │   │   │   └── core/ physics/ protocol/ strategies/ analysis/ runtime/
-    │   │   ├── aperiodic_simulator/  ← aperiodic-paging paper engine
+    │   │   ├── simulator_aperiodic/  ← aperiodic-paging paper engine
     │   │   └── common/               ← pure shared utilities (rf.py, metrics.py)
     │   ├── scripts/              ← one folder per paper target: script + outputs + paper/ (extracted paper data)
     │   │   ├── menu.sh           ← interactive launcher for every script
@@ -87,7 +87,7 @@ Open http://localhost:3000. Do not run both compose files at once; they share po
 
 ## Aperiodic-paging paper
 
-Engine `Implements/backend/app/aperiodic_simulator/`, page http://localhost:3000/aperiodic-paging. The reproduction scripts and their outputs live in `Implements/backend/scripts/aperiodic/`, one folder per paper target. Run them through the interactive launcher:
+Engine `Implements/backend/app/simulator_aperiodic/`, page http://localhost:3000/aperiodic-paging. The reproduction scripts and their outputs live in `Implements/backend/scripts/aperiodic/`, one folder per paper target. Run them through the interactive launcher:
 
 ```bash
 cd Implements/backend

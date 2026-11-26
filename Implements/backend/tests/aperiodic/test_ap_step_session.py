@@ -1,10 +1,10 @@
 import numpy as np
 from fastapi.testclient import TestClient
 
-from app.aperiodic_simulator.core.runner import run_episode
-from app.aperiodic_simulator.core.simulation import Episode
-from app.aperiodic_simulator.runtime import step_session
-from app.aperiodic_simulator.runtime.service import build_config
+from app.simulator_aperiodic.core.runner import run_episode
+from app.simulator_aperiodic.core.simulation import Episode
+from app.simulator_aperiodic.runtime import step_session
+from app.simulator_aperiodic.runtime.service import build_config
 from app.main import app
 from app.schemas.aperiodic_simulator import AperiodicSimulateRequest
 

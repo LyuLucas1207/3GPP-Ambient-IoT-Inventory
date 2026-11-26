@@ -112,7 +112,7 @@ def test_dead_training_process_reported_interrupted(tmp_path, monkeypatch):
     import json
     import socket
 
-    from app.thesis_simulator import training_registry as reg
+    from app.simulator_thesis import training_registry as reg
 
     monkeypatch.setenv("THESIS_TRAINING_OUTPUTS", str(tmp_path))
     run = tmp_path / "exp" / "20260101T000000__a0p5__b0p5__s0"

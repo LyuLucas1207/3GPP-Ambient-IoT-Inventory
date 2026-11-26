@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from app.simulator.protocol.cbra import (
+from app.simulator_periodic.protocol.cbra import (
     AO_COLLISION,
     AO_IDLE,
     AO_SINGLETON,
@@ -11,7 +11,7 @@ from app.simulator.protocol.cbra import (
     plan_cbra,
     resolve_msg1_time_ao,
 )
-from app.simulator.core.config import ON, paper_device1_config
+from app.simulator_periodic.core.config import ON, paper_device1_config
 
 
 def _forced_same_ao(cfg, n_attempt=2):

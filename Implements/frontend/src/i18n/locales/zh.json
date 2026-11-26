@@ -9,6 +9,10 @@
     "apiUp": "API 正常",
     "apiDown": "API 断开"
   },
+  "home": {
+    "lead": "选择一个仿真。回到这里再打开另一个。",
+    "glossary": "术语表"
+  },
   "app": {
     "title": "3GPP 环境物联网盘点",
     "documentTitle": "3GPP 环境物联网盘点仿真器",

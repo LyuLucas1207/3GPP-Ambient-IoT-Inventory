@@ -28,7 +28,7 @@ if str(ROOT) not in sys.path:
 
 import numpy as np
 
-from app.aperiodic_simulator.analysis.reference_targets import results_dir, scalar_targets, table4, table5, table6
+from app.simulator_aperiodic.analysis.reference_targets import results_dir, scalar_targets, table4, table5, table6
 
 TOL = {
     "cdf_gap_mean_db": 1.0,
@@ -84,7 +84,7 @@ def missing(name: str, cmd: str):
 # ------------------------------------------------------------------ fast checks
 def check_rf():
     from app.common.rf import dbm_to_watts, harvest_power_w, watts_to_dbm
-    from app.simulator.physics import channel as legacy
+    from app.simulator_periodic.physics import channel as legacy
 
     x = np.linspace(-60, 30, 91)
     rt = float(np.max(np.abs(watts_to_dbm(dbm_to_watts(x)) - x)))
@@ -94,8 +94,8 @@ def check_rf():
 
 
 def check_timing_lmax():
-    from app.aperiodic_simulator.physics.energy import compute_global_lmax
-    from app.aperiodic_simulator.core.timing import periodic_round_interval_s
+    from app.simulator_aperiodic.physics.energy import compute_global_lmax
+    from app.simulator_aperiodic.core.timing import periodic_round_interval_s
 
     for L, target, tol in ((1, 82.0, TOL["interval_L1_ms"]), (16, 1089.14, TOL["interval_L16_ms"])):
         v = periodic_round_interval_s(L) * 1e3
@@ -105,7 +105,7 @@ def check_timing_lmax():
 
 
 def check_figure4():
-    from app.aperiodic_simulator.reproduction.reproduce import figure4_data
+    from app.simulator_aperiodic.reproduction.reproduce import figure4_data
 
     st = scalar_targets()
     d = figure4_data(15000, 0)
@@ -140,7 +140,7 @@ def check_figure4():
 
 
 def check_ppo():
-    from app.aperiodic_simulator.rl.checkpoint import CheckpointMissing, load_meta
+    from app.simulator_aperiodic.rl.checkpoint import CheckpointMissing, load_meta
 
     out = []
     ok = True

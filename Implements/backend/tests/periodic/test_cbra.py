@@ -1,7 +1,7 @@
 import numpy as np
 
-from app.simulator.protocol.cbra import run_cbra
-from app.simulator.core.config import paper_device1_config
+from app.simulator_periodic.protocol.cbra import run_cbra
+from app.simulator_periodic.core.config import paper_device1_config
 
 
 def test_idle_success_collision():

@@ -1,7 +1,7 @@
 import numpy as np
 
-from app.simulator.core.config import OFF, ON, paper_device1_config
-from app.simulator.strategies.em import apply_em_thresholds
+from app.simulator_periodic.core.config import OFF, ON, paper_device1_config
+from app.simulator_periodic.strategies.em import apply_em_thresholds
 
 
 def test_em_off_to_on_at_eup():

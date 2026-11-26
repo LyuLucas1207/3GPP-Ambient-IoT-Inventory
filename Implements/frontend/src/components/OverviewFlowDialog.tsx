@@ -8,9 +8,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { StrategyFlow } from '@/components/StrategyFlow'
-import { overviewMap } from '@/strategyMaps/overview'
-import type { StrategyMapDef } from '@/strategyMaps/types'
+import { StrategyFlow } from '@/components/strategy/StrategyFlow'
+import { overviewMap } from '@/features/periodic/maps/overview'
+import type { StrategyMapDef } from '@/components/strategy/types'
 import { WorkflowIcon, XIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'

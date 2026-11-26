@@ -1,6 +1,7 @@
 {
   "nav": {
     "label": "论文仿真器",
+    "home": "首页",
     "periodicPaper": "周期寻呼论文",
     "aperiodicPaper": "非周期寻呼论文"
   },

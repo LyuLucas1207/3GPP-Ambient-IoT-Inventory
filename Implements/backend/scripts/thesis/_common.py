@@ -16,8 +16,8 @@ if str(ROOT) not in sys.path:
 
 import numpy as np  # noqa: E402
 
-from app.thesis_simulator.inventory.headless import HeadlessResult, synthetic_scene  # noqa: E402
-from app.thesis_simulator.scenario import DEFAULT_ACTIVE_BS_XY, default_bs_positions  # noqa: E402
+from app.simulator_thesis.inventory.headless import HeadlessResult, synthetic_scene  # noqa: E402
+from app.simulator_thesis.scenario import DEFAULT_ACTIVE_BS_XY, default_bs_positions  # noqa: E402
 
 
 def active_subset(k: int) -> list[tuple[float, float]]:

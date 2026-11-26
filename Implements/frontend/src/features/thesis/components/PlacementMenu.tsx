@@ -1,0 +1,466 @@
+import { RotateCcw } from 'lucide-react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { findCatalog } from '@/features/thesis/lib/thesisGeometry'
+import { DEFAULT_RING_VISIBLE, DEVICE_SUBTYPES, deriveReaderRanges, ringParamKey } from '@/features/thesis/lib/thesisPhysics'
+import type {
+  CatalogEntry,
+  DerivedRanges,
+  DeviceSubtype,
+  Kind,
+  Params,
+  ParamValue,
+  Placement,
+  PlacementInput,
+} from '@/features/thesis/types'
+
+export function PlacementMenu({
+  placement,
+  catalog,
+  pristineCatalog,
+  anchor,
+  busy,
+  locked,
+  runSelected,
+  onClose,
+  onApply,
+  onDelete,
+  onViewHistory,
+}: {
+  placement: Placement
+  catalog: CatalogEntry[]
+  pristineCatalog: CatalogEntry[]
+  anchor: { x: number; y: number }
+  busy: boolean
+  locked: boolean
+  runSelected: boolean
+  onClose: () => void
+  onApply: (input: PlacementInput) => void
+  onDelete: () => void
+  onViewHistory: () => void
+}) {
+  const { t } = useTranslation()
+  const kind = placement.kind
+  const [subtype, setSubtype] = useState<string | null>(placement.subtype)
+  const [x, setX] = useState(String(placement.x_m))
+  const [y, setY] = useState(String(placement.y_m))
+  const [draft, setDraft] = useState<Record<string, string>>(() =>
+    stringifyParams({
+      ...(findCatalog(catalog, placement.kind, placement.kind === 'device' ? placement.subtype : null)?.defaults ?? {}),
+      ...placement.params,
+    }),
+  )
+  const [formError, setFormError] = useState<string | null>(null)
+  const sample = findCatalog(catalog, kind, kind === 'device' ? subtype : null)?.defaults ?? placement.params
+  const pristine = findCatalog(pristineCatalog, kind, kind === 'device' ? subtype : null)?.defaults ?? sample
+  const { ref: cardRef, pos } = useClampedPosition(anchor)
+
+  const deviceDefaults = useMemo(() => catalogDeviceDefaults(catalog), [catalog])
+  const derivedRanges = useMemo<DerivedRanges | null>(() => {
+    if (kind === 'device') return null
+    const rf = draftToRf(draft, sample)
+    const includeD2r = kind === 'radar' ? draft.include_d2r !== 'false' : true
+    return deriveReaderRanges(rf, deviceDefaults, includeD2r)
+  }, [kind, draft, sample, deviceDefaults])
+
+  function convertKind() {
+    const next: Kind = kind === 'radar' ? 'station' : 'radar'
+    const x_m = Number(x)
+    const y_m = Number(y)
+    if (!Number.isFinite(x_m) || !Number.isFinite(y_m)) {
+      setFormError(t('thesis.errors.bad_param'))
+      return
+    }
+    const nextSample = findCatalog(catalog, next, null)?.defaults ?? sample
+    try {
+      onApply({ kind: next, subtype: null, x_m, y_m, params: parseParams(draft, nextSample) })
+    } catch {
+      setFormError(t('thesis.errors.bad_param'))
+    }
+  }
+
+  function setParam(key: string, value: string) {
+    setDraft((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function resetParam(key: string) {
+    setParam(key, formatDefault(pristine[key]))
+  }
+
+  function resetAll() {
+    setDraft(stringifyParams(pristine))
+  }
+
+  function changeDevice(next: string) {
+    const entry = findCatalog(catalog, 'device', next)
+    setSubtype(next)
+    if (entry) setDraft(stringifyParams(entry.defaults))
+  }
+
+  function apply() {
+    const x_m = Number(x)
+    const y_m = Number(y)
+    if (!Number.isFinite(x_m) || !Number.isFinite(y_m)) {
+      setFormError(t('thesis.errors.bad_param'))
+      return
+    }
+    try {
+      const params = parseParams(draft, sample)
+      onApply({ kind, subtype: kind === 'device' ? subtype : null, x_m, y_m, params })
+    } catch {
+      setFormError(t('thesis.errors.bad_param'))
+    }
+  }
+
+  const keys = orderedKeys(sample, draft).filter(
+    (key) => !(kind !== 'device' && (key === 'show_range' || key === 'show_outer' || key === 'include_d2r' || key.startsWith('show_ring_'))),
+  )
+
+  function ringChecked(subtype: DeviceSubtype) {
+    const raw = draft[ringParamKey(subtype)]
+    return raw === undefined ? DEFAULT_RING_VISIBLE[subtype] : raw === 'true'
+  }
+
+  return (
+    <>
+      <button type="button" className="fixed inset-0 z-40 cursor-default" aria-label={t('thesis.closeMenu')} onClick={onClose} />
+      <Card ref={cardRef} className="fixed z-50 max-h-[calc(100vh-16px)] w-96 overflow-auto" style={pos} size="sm">
+        <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
+          <CardTitle>{t(`thesis.kind.${kind}`)}</CardTitle>
+          <div className="flex gap-1">
+            {runSelected ? (
+              <Button type="button" size="xs" variant="outline" onClick={onViewHistory}>
+                {t('thesis.timeline.viewHistory')}
+              </Button>
+            ) : null}
+            <Button type="button" size="xs" variant="ghost" onClick={resetAll} aria-label={t('thesis.resetAll')}>
+              <RotateCcw className="mr-1 size-3" />
+              {t('thesis.resetAll')}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-2">
+          {locked ? <p className="col-span-2 text-[11px] text-muted-foreground">🔒 {t('thesis.placementMenu.locked')}</p> : null}
+          {kind === 'device' ? (
+            <div className="col-span-2 flex gap-1">
+              {['1', '2a', '2b'].map((item) => (
+                <Button
+                  key={item}
+                  type="button"
+                  size="xs"
+                  variant={subtype === item ? 'default' : 'outline'}
+                  onClick={() => changeDevice(item)}
+                >
+                  {t(`thesis.kind.device${item === '1' ? '1' : item}`)}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <>
+              <label className="col-span-2 flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={draft.show_range === 'true'}
+                  onCheckedChange={(value) => setParam('show_range', value === true ? 'true' : 'false')}
+                />
+                {t('thesis.params.show_range')}
+              </label>
+              {kind === 'radar' ? (
+                <div className="col-span-2 ml-6 flex flex-wrap gap-x-4 gap-y-1">
+                  {DEVICE_SUBTYPES.map((ring) => (
+                    <label key={ring} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Checkbox
+                        checked={ringChecked(ring)}
+                        disabled={draft.show_range !== 'true'}
+                        onCheckedChange={(value) => setParam(ringParamKey(ring), value === true ? 'true' : 'false')}
+                      />
+                      {t(`thesis.params.show_ring_${ring}`)}
+                    </label>
+                  ))}
+                </div>
+              ) : null}
+              <label className="col-span-2 flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={draft.show_outer === 'true'}
+                  onCheckedChange={(value) => setParam('show_outer', value === true ? 'true' : 'false')}
+                />
+                {t('thesis.params.show_outer')}
+              </label>
+              {kind === 'radar' ? (
+                <label className="col-span-2 flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={draft.include_d2r !== 'false'}
+                    onCheckedChange={(value) => setParam('include_d2r', value === true ? 'true' : 'false')}
+                  />
+                  {t('thesis.params.include_d2r')}
+                </label>
+              ) : null}
+              <Button type="button" size="sm" variant="outline" className="col-span-2" onClick={convertKind}>
+                {kind === 'radar' ? t('thesis.toStation') : t('thesis.toRadar')}
+              </Button>
+            </>
+          )}
+          <div className="col-span-2 grid grid-cols-2 gap-2">
+            <Field label={t('thesis.x')} value={x} onChange={setX} />
+            <Field label={t('thesis.y')} value={y} onChange={setY} />
+          </div>
+          {keys.map((key) =>
+            isBool(sample[key], draft[key]) ? (
+              <label key={key} className="col-span-2 flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={draft[key] === 'true'}
+                  onCheckedChange={(value) => setParam(key, value === true ? 'true' : 'false')}
+                />
+                <span className="flex-1">
+                  {paramLabel(t, key)} <DefaultHint value={pristine[key]} />
+                </span>
+                <ResetButton onClick={() => resetParam(key)} label={t('thesis.resetToDefault')} />
+              </label>
+            ) : (
+              <FieldWithReset
+                key={key}
+                label={paramLabel(t, key)}
+                defaultValue={pristine[key]}
+                value={draft[key] ?? ''}
+                onChange={(value) => setParam(key, value)}
+                onReset={() => resetParam(key)}
+                resetLabel={t('thesis.resetToDefault')}
+              />
+            ),
+          )}
+          {derivedRanges ? (
+            <section className="col-span-2 rounded-md border border-dashed p-2 text-xs">
+              <h4 className="mb-1 font-medium text-muted-foreground">{t('thesis.effectiveRange.title')}</h4>
+              <ul className="space-y-0.5">
+                {DEVICE_SUBTYPES.map((subtype) => (
+                  <li key={subtype} className="flex justify-between tabular-nums">
+                    <span>{t(`thesis.effectiveRange.device${subtype}`)}</span>
+                    <span>
+                      {derivedRanges[subtype as DeviceSubtype].toFixed(2)} {t('thesis.effectiveRange.unit')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          {formError ? <p className="col-span-2 text-xs text-destructive">{formError}</p> : null}
+          <div className="col-span-2 flex gap-2">
+            <Button type="button" size="sm" disabled={busy} onClick={apply}>
+              {t('thesis.apply')}
+            </Button>
+            <Button type="button" size="sm" variant="destructive" disabled={busy} onClick={onDelete}>
+              {t('thesis.delete')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  )
+}
+
+export function PlaceMenu({
+  anchor,
+  onClose,
+  onPick,
+}: {
+  anchor: { x: number; y: number }
+  onClose: () => void
+  onPick: (kind: Kind, subtype: string | null) => void
+}) {
+  const { t } = useTranslation()
+  const { ref: cardRef, pos } = useClampedPosition(anchor)
+  const items: Array<{ kind: Kind; subtype: string | null; label: string }> = [
+    { kind: 'device', subtype: '1', label: t('thesis.kind.device1') },
+    { kind: 'device', subtype: '2a', label: t('thesis.kind.device2a') },
+    { kind: 'device', subtype: '2b', label: t('thesis.kind.device2b') },
+    { kind: 'station', subtype: null, label: t('thesis.kind.station') },
+  ]
+  return (
+    <>
+      <button type="button" className="fixed inset-0 z-40 cursor-default" aria-label={t('thesis.closeMenu')} onClick={onClose} />
+      <Card ref={cardRef} className="fixed z-50 max-h-[calc(100vh-16px)] w-52 overflow-auto" style={pos} size="sm">
+        <CardHeader>
+          <CardTitle>{t('thesis.placeHere')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-1">
+          {items.map((item) => (
+            <Button key={`${item.kind}-${item.subtype}`} type="button" size="sm" variant="outline" onClick={() => onPick(item.kind, item.subtype)}>
+              {item.label}
+            </Button>
+          ))}
+        </CardContent>
+      </Card>
+    </>
+  )
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="flex flex-col gap-1 text-xs">
+      <span className="text-muted-foreground">{label}</span>
+      <Input value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  )
+}
+
+function FieldWithReset({
+  label,
+  defaultValue,
+  value,
+  onChange,
+  onReset,
+  resetLabel,
+}: {
+  label: string
+  defaultValue: ParamValue | undefined
+  value: string
+  onChange: (value: string) => void
+  onReset: () => void
+  resetLabel: string
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-xs">
+      <span className="flex items-center justify-between text-muted-foreground">
+        <span>
+          {label} <DefaultHint value={defaultValue} />
+        </span>
+        <ResetButton onClick={onReset} label={resetLabel} />
+      </span>
+      <Input value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  )
+}
+
+function ResetButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <RotateCcw className="size-3" />
+    </button>
+  )
+}
+
+function DefaultHint({ value }: { value: ParamValue | undefined }) {
+  if (value === undefined) return null
+  return <span className="text-muted-foreground/80">({formatDefault(value)})</span>
+}
+
+function paramLabel(t: (key: string) => string, key: string) {
+  const i18nKey = `thesis.params.${key}`
+  const translated = t(i18nKey)
+  return translated === i18nKey ? key : translated
+}
+
+function isBool(sample: ParamValue | undefined, raw: string | undefined) {
+  return typeof sample === 'boolean' || raw === 'true' || raw === 'false'
+}
+
+function stringifyParams(params: Params) {
+  const draft: Record<string, string> = {}
+  for (const [key, value] of Object.entries(params)) {
+    draft[key] = formatDefault(value)
+  }
+  return draft
+}
+
+function formatDefault(value: ParamValue | undefined): string {
+  if (value == null) return ''
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+  return String(value)
+}
+
+function orderedKeys(sample: Params, draft: Record<string, string>) {
+  const extras = Object.keys(draft).filter((key) => !(key in sample))
+  return [...Object.keys(sample), ...extras]
+}
+
+function parseParams(draft: Record<string, string>, sample: Params): Params {
+  const out: Params = {}
+  for (const key of orderedKeys(sample, draft)) {
+    const raw = draft[key]
+    if (raw === undefined) {
+      out[key] = sample[key] ?? null
+      continue
+    }
+    out[key] = parseValue(raw, sample[key])
+  }
+  return out
+}
+
+function parseValue(raw: string, sample: ParamValue | undefined): ParamValue {
+  if (typeof sample === 'boolean' || raw === 'true' || raw === 'false') return raw === 'true'
+  if (typeof sample === 'string') return raw
+  if ((sample == null || typeof sample === 'number') && raw.trim() === '') {
+    if (sample == null) return null
+    throw new Error('bad_param')
+  }
+  const number = Number(raw)
+  if (!Number.isFinite(number)) throw new Error('bad_param')
+  return number
+}
+
+function draftToRf(draft: Record<string, string>, sample: Params) {
+  function num(key: string, fallback: number) {
+    const raw = draft[key] ?? ''
+    if (raw.trim() === '') {
+      const value = sample[key]
+      return typeof value === 'number' ? value : fallback
+    }
+    const parsed = Number(raw)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+  return {
+    tx_power_dbm: num('tx_power_dbm', 33),
+    antenna_gain_dbi: num('antenna_gain_dbi', 6),
+    extra_attenuation_db: num('extra_attenuation_db', 0),
+    carrier_ghz: num('carrier_ghz', 0.9),
+  }
+}
+
+function catalogDeviceDefaults(catalog: CatalogEntry[]): Partial<Record<DeviceSubtype, Params>> {
+  const out: Partial<Record<DeviceSubtype, Params>> = {}
+  for (const subtype of DEVICE_SUBTYPES) {
+    const entry = catalog.find((item) => item.kind === 'device' && item.subtype === subtype)
+    if (entry) out[subtype] = entry.defaults
+  }
+  return out
+}
+
+const VIEWPORT_MARGIN = 8
+
+/** Keep a fixed popover inside the viewport using its measured size, not a guess. */
+function useClampedPosition(anchor: { x: number; y: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState(() => clampAnchor(anchor.x, anchor.y, 0, 0))
+  useLayoutEffect(() => {
+    function update() {
+      const el = ref.current
+      setPos(clampAnchor(anchor.x, anchor.y, el?.offsetWidth ?? 0, el?.offsetHeight ?? 0))
+    }
+    update()
+    const el = ref.current
+    const observer = el && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
+    observer?.observe(el as HTMLDivElement)
+    window.addEventListener('resize', update)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [anchor.x, anchor.y])
+  return { ref, pos }
+}
+
+function clampAnchor(x: number, y: number, width: number, height: number) {
+  return {
+    left: Math.max(VIEWPORT_MARGIN, Math.min(x, window.innerWidth - width - VIEWPORT_MARGIN)),
+    top: Math.max(VIEWPORT_MARGIN, Math.min(y, window.innerHeight - height - VIEWPORT_MARGIN)),
+  }
+}

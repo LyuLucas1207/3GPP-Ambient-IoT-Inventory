@@ -1,7 +1,7 @@
 import numpy as np
 
-from app.simulator.core.config import OFF, ON, SLEEP, paper_device1_config
-from app.simulator.strategies.dcm import apply_dcm_pre_inventory, apply_elow, return_to_sleep
+from app.simulator_periodic.core.config import OFF, ON, SLEEP, paper_device1_config
+from app.simulator_periodic.strategies.dcm import apply_dcm_pre_inventory, apply_elow, return_to_sleep
 
 
 def test_preinventory_timer_returns_to_off():
@@ -38,7 +38,7 @@ def test_elow_forces_off_from_sleep():
 
 
 def test_return_to_sleep_leaves_off_and_done():
-    from app.simulator.core.config import DONE
+    from app.simulator_periodic.core.config import DONE
 
     state = np.array([ON, OFF, DONE, ON], dtype=np.int8)
     on_remaining = np.array([6, 0, 0, 3], dtype=np.int32)

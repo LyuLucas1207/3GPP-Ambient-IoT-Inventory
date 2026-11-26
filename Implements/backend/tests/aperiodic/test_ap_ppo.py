@@ -4,10 +4,10 @@ import math
 import numpy as np
 import pytest
 
-from app.aperiodic_simulator.core.config import EpisodeConfig
-from app.aperiodic_simulator.rl import checkpoint as ck
-from app.aperiodic_simulator.rl.env import AperiodicInventoryEnv
-from app.aperiodic_simulator.rl.transforms import (
+from app.simulator_aperiodic.core.config import EpisodeConfig
+from app.simulator_aperiodic.rl import checkpoint as ck
+from app.simulator_aperiodic.rl.env import AperiodicInventoryEnv
+from app.simulator_aperiodic.rl.transforms import (
     M_RANGE,
     OBS_DIM,
     Q_RANGE,
@@ -15,7 +15,7 @@ from app.aperiodic_simulator.rl.transforms import (
     apply_action,
     normalize_observation,
 )
-from app.aperiodic_simulator.core.timing import collision_time_equivalent_s, success_time_equivalent_s
+from app.simulator_aperiodic.core.timing import collision_time_equivalent_s, success_time_equivalent_s
 
 
 def test_action_transform_ranges_and_log_center():
@@ -75,7 +75,7 @@ def tiny_model():
     from sb3_contrib import RecurrentPPO
     from stable_baselines3.common.vec_env import DummyVecEnv
 
-    from app.aperiodic_simulator.rl.train import policy_kwargs
+    from app.simulator_aperiodic.rl.train import policy_kwargs
 
     venv = DummyVecEnv([lambda: AperiodicInventoryEnv(n_range=(100, 400))])
     model = RecurrentPPO("MlpLstmPolicy", venv, n_steps=64, batch_size=32, n_epochs=1, policy_kwargs=policy_kwargs(), seed=0, device="cpu")
@@ -94,9 +94,9 @@ def test_architecture_separate_actor_critic_lstm(tiny_model):
 
 
 def test_checkpoint_roundtrip_and_controller(tiny_model, tmp_path, monkeypatch):
-    from app.aperiodic_simulator.controllers import recurrent_ppo as rp
-    from app.aperiodic_simulator.core.runner import run_episode
-    from app.aperiodic_simulator.core.states import ControllerName
+    from app.simulator_aperiodic.controllers import recurrent_ppo as rp
+    from app.simulator_aperiodic.core.runner import run_episode
+    from app.simulator_aperiodic.core.states import ControllerName
 
     monkeypatch.setattr(ck, "CHECKPOINT_DIR", tmp_path)
     with pytest.raises(ck.CheckpointMissing):

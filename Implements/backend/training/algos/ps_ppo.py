@@ -27,7 +27,7 @@ DEFAULT_HP = {
 
 def make_env_fn(env_cfg: dict[str, Any], seed: int):
     def _make():
-        from app.thesis_simulator.rl.env import MultiReaderInventoryEnv
+        from app.simulator_thesis.rl.env import MultiReaderInventoryEnv
 
         env = MultiReaderInventoryEnv(env_cfg)
         env.reset(seed=seed)

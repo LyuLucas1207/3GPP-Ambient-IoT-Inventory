@@ -1,26 +1,27 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import {
   APERIODIC_PAGING_PATH,
+  GLOSSARY_PATH,
   PERIODIC_PAGING_PATH,
   THESIS_ANALYSIS_PATH,
   THESIS_RL_PATH,
   THESIS_SIMULATION_PATH,
   THESIS_TRAINING_PATH,
-} from '@/components/PaperNav'
-import { GLOSSARY_PATH } from '@/explain/glossary'
-import AperiodicPagingPage from '@/pages/AperiodicPagingPage'
-import GlossaryPage from '@/pages/GlossaryPage'
-import PeriodicPagingPage from '@/pages/PeriodicPagingPage'
-import ThesisAnalysisPage from '@/pages/ThesisAnalysisPage'
-import ThesisRlPage from '@/pages/ThesisRlPage'
-import ThesisSimulationPage from '@/pages/ThesisSimulationPage'
-import ThesisTrainingPage from '@/pages/ThesisTrainingPage'
+} from '@/navigations/paths'
+import AperiodicPagingPage from '@/pages/Aperiodic'
+import GlossaryPage from '@/pages/Glossary'
+import HomePage from '@/pages/Home'
+import PeriodicPagingPage from '@/pages/Periodic'
+import ThesisAnalysisPage from '@/pages/Thesis/Analysis'
+import ThesisRlPage from '@/pages/Thesis/Rl'
+import ThesisSimulationPage from '@/pages/Thesis/Simulation'
+import ThesisTrainingPage from '@/pages/Thesis/Training'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to={PERIODIC_PAGING_PATH} replace />} />
+        <Route path="/" element={<HomePage />} />
         <Route path={PERIODIC_PAGING_PATH} element={<PeriodicPagingPage />} />
         <Route path={APERIODIC_PAGING_PATH} element={<AperiodicPagingPage />} />
         <Route path={THESIS_SIMULATION_PATH} element={<ThesisSimulationPage />} />

@@ -1,6 +1,7 @@
 {
   "nav": {
     "label": "Paper simulators",
+    "home": "Home",
     "periodicPaper": "Periodic Paging Paper",
     "aperiodicPaper": "Aperiodic Paging Paper"
   },

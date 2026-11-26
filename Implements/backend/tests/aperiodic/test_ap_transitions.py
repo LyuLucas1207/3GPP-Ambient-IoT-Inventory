@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from app.aperiodic_simulator.core.config import EpisodeConfig
-from app.aperiodic_simulator.core.runner import run_episode
-from app.aperiodic_simulator.core.simulation import Episode
-from app.aperiodic_simulator.core.states import HarvestingScenario, Mode, PagingMode, RuntimeMode
+from app.simulator_aperiodic.core.config import EpisodeConfig
+from app.simulator_aperiodic.core.runner import run_episode
+from app.simulator_aperiodic.core.simulation import Episode
+from app.simulator_aperiodic.core.states import HarvestingScenario, Mode, PagingMode, RuntimeMode
 
 MULTI = HarvestingScenario.MULTI_SOURCE
 SINGLE = HarvestingScenario.SINGLE_SOURCE

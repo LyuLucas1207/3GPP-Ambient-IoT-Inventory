@@ -8,7 +8,7 @@ English first, 中文在后。Terms: [VOCABULARY.md](./VOCABULARY.md). Formulas:
 
 ### 1. Scope
 
-The thesis engine (`Implements/backend/app/thesis_simulator`) was extended in three phases, each behind a config block on `POST /sections/{id}/runs` that defaults to the old behaviour:
+The thesis engine (`Implements/backend/app/simulator_thesis`) was extended in three phases, each behind a config block on `POST /sections/{id}/runs` that defaults to the old behaviour:
 
 | Block | Default | What it adds |
 | --- | --- | --- |

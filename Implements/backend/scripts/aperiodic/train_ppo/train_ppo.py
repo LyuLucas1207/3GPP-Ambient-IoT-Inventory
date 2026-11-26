@@ -3,7 +3,7 @@
 
     python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 42 [--alpha 0.5]
 
-Writes aperiodic_simulator/rl/checkpoints/recurrent_ppo_alpha_<a>.zip and a
+Writes simulator_aperiodic/rl/checkpoints/recurrent_ppo_alpha_<a>.zip and a
 .json metadata sidecar (steps, seed, config hash, versions, git commit,
 SHA-256, transforms). Optionally evaluates the result on the Figure 7 setting.
 """
@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.aperiodic_simulator.rl.train import PAPER_TRAINING_STEPS, train
+from app.simulator_aperiodic.rl.train import PAPER_TRAINING_STEPS, train
 
 
 def main() -> None:
@@ -31,7 +31,7 @@ def main() -> None:
     if meta["training_steps"] < PAPER_TRAINING_STEPS:
         print(f"note: {meta['training_steps']} steps < paper's {PAPER_TRAINING_STEPS}; results are not the paper's trained policy")
     if args.eval_episodes > 0:
-        from app.aperiodic_simulator.rl.evaluate import evaluate_ppo
+        from app.simulator_aperiodic.rl.evaluate import evaluate_ppo
 
         br = evaluate_ppo(args.alpha, episodes=args.eval_episodes)
         a = br.aggregate

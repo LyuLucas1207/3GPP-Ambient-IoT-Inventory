@@ -4,16 +4,16 @@ import math
 
 import numpy as np
 
-from app.thesis_simulator.inventory.checkpoint import dump_state, load_state
-from app.thesis_simulator.inventory.config import CONSTANTS
-from app.thesis_simulator.inventory.episode import (
+from app.simulator_thesis.inventory.checkpoint import dump_state, load_state
+from app.simulator_thesis.inventory.config import CONSTANTS
+from app.simulator_thesis.inventory.episode import (
     build_episode,
     finish_episode,
     mark_unreachable,
     step_episode,
 )
-from app.thesis_simulator.inventory.events import EventEmitter
-from app.thesis_simulator.inventory.state import DROP_UNREACHABLE, EpisodeConfig
+from app.simulator_thesis.inventory.events import EventEmitter
+from app.simulator_thesis.inventory.state import DROP_UNREACHABLE, EpisodeConfig
 
 MAX_STEPS = 200_000
 """Loop guard: every test must terminate even if the engine never finishes."""

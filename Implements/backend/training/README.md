@@ -2,7 +2,7 @@
 
 Offline training for the thesis engine's per-reader (K, p\*) controller. The
 backend never trains; it only loads policies from the registry
-(`app/thesis_simulator/rl/policies/`). Terms: [Docs/VOCABULARY.md](../../../Docs/VOCABULARY.md).
+(`app/simulator_thesis/rl/policies/`). Terms: [Docs/VOCABULARY.md](../../../Docs/VOCABULARY.md).
 
 后端不训练，只从策略注册表加载。流程：`train` → `outputs/` → `promote` → 注册表 → 前端 / API 用 `policy_id` 选择。
 
@@ -52,7 +52,7 @@ episodes. `--steps`, `--n-envs`, `--n-devices LO HI`, `--eval-episodes` and
 `alphas`, `betas` and `seeds` are lists: every combination is one job
 (`--jobs N` runs N in parallel). `alpha` weights collisions against new IDs
 in the local reward, `beta` weights the reader's own rate against the team
-rate (`app/thesis_simulator/rl/env.py`).
+rate (`app/simulator_thesis/rl/env.py`).
 
 The two `fixed` configs are the "retrain per configuration" references:
 compare them with `ps_ppo_randomized` in one `evaluate.py` call.
@@ -104,7 +104,7 @@ used unchanged by `zero_shot_single`, as the reference.
 | MAPPO | one shared actor; during training a critic that also sees the global state | yes |
 | IPPO | one actor and one critic per reader slot | yes (config only so far) |
 
-One training loop (PS-PPO; `app/thesis_simulator/rl/env.py`):
+One training loop (PS-PPO; `app/simulator_thesis/rl/env.py`):
 
 1. **Reset: sample a deployment.** From the config's `env` block: the number of
    active readers (`readers`, e.g. 1–18) and which of the 18 lattice positions
@@ -178,7 +178,7 @@ PS-PPO 和 MAPPO 都是在多读写器部署中**从零训练**的。非周期�
 | MAPPO | 共用一个演员网络；训练时另有一个能看到全局状态的评论家 | 是 |
 | IPPO | 每个读写器槽位各有一个演员和一个评论家 | 是（目前只有配置） |
 
-一次训练循环（PS-PPO，`app/thesis_simulator/rl/env.py`）：
+一次训练循环（PS-PPO，`app/simulator_thesis/rl/env.py`）：
 
 1. **重置：随机生成一个部署。** 从配置的 `env` 中取：活跃读写器数量（`readers`，例如 1–18）和它们占 18 个格点中的哪些位置（`subset`）、启动偏移、资源模式、设备类型比例。从 scale 中取：设备数量（`n_devices`）、时间上限、帧数上限。每一局都是一个不同的仓库（域随机化）。
 2. **一步 = 一个读写器的一帧。** 引擎是事件驱动的，时钟最早的读写器先跑。环境把这个读写器的观测交给共享网络，动作决定它这一帧的 (K, p\*)，引擎跑完这一帧，奖励记在这次决策上。下一步换另一个读写器，用的还是同一个网络。18 个读写器不需要 18 个网络。

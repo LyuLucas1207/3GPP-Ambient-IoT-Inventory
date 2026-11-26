@@ -2,11 +2,11 @@ from dataclasses import replace
 
 import numpy as np
 
-from app.simulator.physics.channel import harvest_power_w
-from app.simulator.core.config import paper_device1_config
-from app.simulator.protocol.paging import is_periodic_epoch, next_periodic_epoch_slot
-from app.simulator.core.scenario import Scenario
-from app.simulator.core.simulation import run_strategy
+from app.simulator_periodic.physics.channel import harvest_power_w
+from app.simulator_periodic.core.config import paper_device1_config
+from app.simulator_periodic.protocol.paging import is_periodic_epoch, next_periodic_epoch_slot
+from app.simulator_periodic.core.scenario import Scenario
+from app.simulator_periodic.core.simulation import run_strategy
 
 
 def test_global_epoch_grid():

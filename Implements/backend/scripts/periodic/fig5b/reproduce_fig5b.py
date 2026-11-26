@@ -16,9 +16,9 @@ if str(ROOT) not in sys.path:
 
 from matplotlib.ticker import MultipleLocator
 
-from app.simulator.core.config import paper_device1_config
-from app.simulator.analysis.fig5b_validation import evaluate_fig5b
-from app.simulator.core.simulation import run_paper_comparison
+from app.simulator_periodic.core.config import paper_device1_config
+from app.simulator_periodic.analysis.fig5b_validation import evaluate_fig5b
+from app.simulator_periodic.core.simulation import run_paper_comparison
 
 
 def _fmt(value):

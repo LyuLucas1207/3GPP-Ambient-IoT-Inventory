@@ -34,3 +34,6 @@ Implements/backend/scripts/thesis/*/results/
 Implements/backend/training/outputs/*
 !Implements/backend/training/outputs/.gitkeep
 Implements/backend/training/logs/
+
+Examples/
+Examples/**

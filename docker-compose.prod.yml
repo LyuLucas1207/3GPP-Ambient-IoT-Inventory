@@ -17,7 +17,7 @@ services:
       # Multi-reader training outputs and the policy registry live on the host,
       # so policies trained with `python -m training.train` show up without a rebuild.
       - ./Implements/backend/training/outputs:/app/training/outputs
-      - ./Implements/backend/app/thesis_simulator/rl/policies:/app/app/thesis_simulator/rl/policies
+      - ./Implements/backend/app/simulator_thesis/rl/policies:/app/app/simulator_thesis/rl/policies
 
   frontend:
     build:

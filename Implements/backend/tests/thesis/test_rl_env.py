@@ -5,8 +5,8 @@ pytest.importorskip("gymnasium")
 
 from gymnasium.utils.env_checker import check_env  # noqa: E402
 
-from app.thesis_simulator.rl.env import GLOBAL_DIM, MultiReaderInventoryEnv  # noqa: E402
-from app.thesis_simulator.rl.features import OBS_DIM, apply_action  # noqa: E402
+from app.simulator_thesis.rl.env import GLOBAL_DIM, MultiReaderInventoryEnv  # noqa: E402
+from app.simulator_thesis.rl.features import OBS_DIM, apply_action  # noqa: E402
 
 SPEC = {"n_devices": [30, 60], "readers": [2, 4], "resource_modes": ["independent", "tdma", "fdma"], "offsets": ["none", "random"],
         "subtype_mix": "random", "t_max_s": 20.0, "stall_timeout_s": 20.0, "max_frames": 400}

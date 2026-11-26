@@ -18,7 +18,7 @@ Every (alpha, beta, seed) of the config is one job, written to
     tb/                    TensorBoard logs (only when tensorboard is installed)
 
 ``--promote`` copies the checkpoint into the policy registry
-(``app/thesis_simulator/rl/policies``) under its ``policy_id`` so runs can
+(``app/simulator_thesis/rl/policies``) under its ``policy_id`` so runs can
 select it (``controller = {"kind": "policy", "policy_id": ...}``).
 """
 
@@ -109,7 +109,7 @@ def plot_learning_curve(rows: list[dict[str, Any]], path: Path, title: str) -> N
 
 
 def run_job(job: dict[str, Any]) -> dict[str, Any]:
-    from app.thesis_simulator.rl.features import ACTION_SPEC, OBSERVATION_SPEC
+    from app.simulator_thesis.rl.features import ACTION_SPEC, OBSERVATION_SPEC
 
     out = run_dir(job["experiment"], job["stamp"], job["alpha"], job["beta"], job["seed"])
     pid = policy_id(job["experiment"], job["alpha"], job["beta"], job["seed"], job["stamp"])

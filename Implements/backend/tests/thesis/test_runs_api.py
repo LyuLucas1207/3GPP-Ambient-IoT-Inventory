@@ -3,7 +3,7 @@ import pytest
 from sqlalchemy import create_engine, text
 
 from app.main import app
-from app.thesis_simulator.db import get_engine, init_db, reset_engine
+from app.simulator_thesis.db import get_engine, init_db, reset_engine
 
 DEV_DATABASE_URL = "postgresql+psycopg://thesis:thesis@127.0.0.1:5432/thesis"
 TEST_DATABASE_URL = "postgresql+psycopg://thesis:thesis@127.0.0.1:5432/thesis_test"
@@ -335,7 +335,7 @@ def test_stream_of_finished_run_is_snapshot_then_done(client: TestClient):
 
 
 def _event_rows(run_id: int) -> int:
-    from app.thesis_simulator.db import get_engine
+    from app.simulator_thesis.db import get_engine
 
     with get_engine().connect() as conn:
         dev = conn.execute(text("SELECT count(*) FROM thesis_device_events WHERE run_id = :r"), {"r": run_id}).scalar()

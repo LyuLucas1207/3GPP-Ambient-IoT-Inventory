@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from sqlalchemy import text
 
-from app.thesis_simulator.db import get_engine, init_db
+from app.simulator_thesis.db import get_engine, init_db
 
 
 def main() -> None:

@@ -1,7 +1,7 @@
 import math
 
-from app.thesis_simulator import physics
-from app.thesis_simulator.catalog import derive_reader_ranges, device_params_defaults
+from app.simulator_thesis import physics
+from app.simulator_thesis.catalog import derive_reader_ranges, device_params_defaults
 
 
 def test_r2d_matches_r2d_horizontal_radius_formula():

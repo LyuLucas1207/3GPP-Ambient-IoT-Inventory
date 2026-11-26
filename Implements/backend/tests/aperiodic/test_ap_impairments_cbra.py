@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
 
-from app.aperiodic_simulator.protocol.cbra import NO_STAGE, Fate, ParticipantInputs, run_cbra
-from app.aperiodic_simulator.core.config import SystemParams
-from app.aperiodic_simulator.physics.impairments import resolve_aos
-from app.aperiodic_simulator.core.states import AOObserved, AOPhysical, PagingMode
-from app.aperiodic_simulator.core.timing import periodic_round_interval_s, t_ei_s, t_page_s
+from app.simulator_aperiodic.protocol.cbra import NO_STAGE, Fate, ParticipantInputs, run_cbra
+from app.simulator_aperiodic.core.config import SystemParams
+from app.simulator_aperiodic.physics.impairments import resolve_aos
+from app.simulator_aperiodic.core.states import AOObserved, AOPhysical, PagingMode
+from app.simulator_aperiodic.core.timing import periodic_round_interval_s, t_ei_s, t_page_s
 
 S = SystemParams()
 

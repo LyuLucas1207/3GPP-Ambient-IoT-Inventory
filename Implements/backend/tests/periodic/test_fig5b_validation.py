@@ -1,5 +1,5 @@
-from app.simulator.analysis.fig5b_validation import evaluate_fig5b, weakest_recharge_s
-from app.simulator.physics.channel import sample_pin_dbm
+from app.simulator_periodic.analysis.fig5b_validation import evaluate_fig5b, weakest_recharge_s
+from app.simulator_periodic.physics.channel import sample_pin_dbm
 import numpy as np
 
 
@@ -57,11 +57,11 @@ def test_validation_rejects_80pct_reduction_as_near_50():
 def test_remaining_census_excludes_done():
     from dataclasses import replace
 
-    from app.simulator.physics.channel import harvest_power_w
-    from app.simulator.core.config import paper_device1_config
-    from app.simulator.core.scenario import Scenario
-    from app.simulator.core.simulation import run_strategy
-    from app.simulator.analysis.tail_diagnosis import remaining_census_at
+    from app.simulator_periodic.physics.channel import harvest_power_w
+    from app.simulator_periodic.core.config import paper_device1_config
+    from app.simulator_periodic.core.scenario import Scenario
+    from app.simulator_periodic.core.simulation import run_strategy
+    from app.simulator_periodic.analysis.tail_diagnosis import remaining_census_at
 
     cfg = paper_device1_config(
         num_devices=6, max_time_s=0.08, collect_snapshots=False, collect_paging_events=False, seed=1

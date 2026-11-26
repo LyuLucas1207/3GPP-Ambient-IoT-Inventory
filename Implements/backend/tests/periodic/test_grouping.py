@@ -2,10 +2,10 @@ from dataclasses import replace
 
 import numpy as np
 
-from app.simulator.core.config import paper_device1_config
-from app.simulator.protocol.grouping import preconfigured_groups
-from app.simulator.core.scenario import Scenario
-from app.simulator.core.simulation import run_strategy
+from app.simulator_periodic.core.config import paper_device1_config
+from app.simulator_periodic.protocol.grouping import preconfigured_groups
+from app.simulator_periodic.core.scenario import Scenario
+from app.simulator_periodic.core.simulation import run_strategy
 
 
 def test_four_groups_are_evenly_split_even_id_mod():

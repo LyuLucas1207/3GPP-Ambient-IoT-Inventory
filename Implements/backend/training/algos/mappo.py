@@ -39,9 +39,9 @@ DEFAULT_HP = {
 def train(job: dict[str, Any], out_dir: Path, log: CsvLog, *, shared: bool = True, central: bool = True) -> dict[str, Any]:
     import torch
 
-    from app.thesis_simulator.rl.env import GLOBAL_DIM, MultiReaderInventoryEnv
-    from app.thesis_simulator.rl.features import ACTION_DIM, OBS_DIM
-    from app.thesis_simulator.rl.nets import make_actor, make_critic, save_actor_bytes
+    from app.simulator_thesis.rl.env import GLOBAL_DIM, MultiReaderInventoryEnv
+    from app.simulator_thesis.rl.features import ACTION_DIM, OBS_DIM
+    from app.simulator_thesis.rl.nets import make_actor, make_critic, save_actor_bytes
 
     torch.set_num_threads(1)
     torch.manual_seed(int(job["seed"]))

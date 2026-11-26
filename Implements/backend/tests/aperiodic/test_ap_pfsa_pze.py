@@ -2,8 +2,8 @@ import math
 
 import pytest
 
-from app.aperiodic_simulator.controllers.grouped import GroupedController
-from app.aperiodic_simulator.controllers.pfsa_pze import PFSAPZEController, pze_backlog_estimate, pze_next_p
+from app.simulator_aperiodic.controllers.grouped import GroupedController
+from app.simulator_aperiodic.controllers.pfsa_pze import PFSAPZEController, pze_backlog_estimate, pze_next_p
 
 
 @pytest.mark.parametrize("n,N,p", [(50, 128, 1.0), (500, 128, 0.3), (10, 8, 1.0)])

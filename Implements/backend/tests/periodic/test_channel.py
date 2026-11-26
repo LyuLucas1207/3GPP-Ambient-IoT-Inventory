@@ -2,8 +2,8 @@ import math
 
 import numpy as np
 
-from app.simulator.physics.channel import conversion_efficiency, dbm_to_watts, harvest_power_w, sample_pin_dbm
-from app.simulator.core.config import paper_device1_config
+from app.simulator_periodic.physics.channel import conversion_efficiency, dbm_to_watts, harvest_power_w, sample_pin_dbm
+from app.simulator_periodic.core.config import paper_device1_config
 
 
 def test_dbm_to_watts_minus_36():
@@ -43,7 +43,7 @@ def test_pin_samples_respect_sensitivity():
 
 
 def test_fig5a_cdf_anchors():
-    from app.simulator.physics.channel import load_pin_cdf
+    from app.simulator_periodic.physics.channel import load_pin_cdf
 
     cdf, pin = load_pin_cdf()
     assert np.all(np.diff(cdf) >= -1e-12)

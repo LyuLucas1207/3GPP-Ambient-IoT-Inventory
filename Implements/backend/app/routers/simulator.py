@@ -4,17 +4,17 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.simulator import SimulateRequest
-from app.simulator.core.config import (
+from app.simulator_periodic.core.config import (
     device1_params,
     device2_params,
     paper_device1_config,
     strategy_label,
     validate_strategies,
 )
-from app.simulator.runtime.run_store import device_trace_payload, get_run, put_run
-from app.simulator.analysis.paper_reference import fig5b_reference_payload
-from app.simulator.physics.energy import sleep_net_min_w_from_nw, format_sleep_net_min
-from app.simulator.core.simulation import result_to_web_payload, run_paper_comparison
+from app.simulator_periodic.runtime.run_store import device_trace_payload, get_run, put_run
+from app.simulator_periodic.analysis.paper_reference import fig5b_reference_payload
+from app.simulator_periodic.physics.energy import sleep_net_min_w_from_nw, format_sleep_net_min
+from app.simulator_periodic.core.simulation import result_to_web_payload, run_paper_comparison
 
 router = APIRouter()
 

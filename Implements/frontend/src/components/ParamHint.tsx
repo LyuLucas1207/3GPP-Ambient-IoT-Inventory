@@ -1,6 +1,6 @@
 import { ClickHelp } from '@/components/ClickHelp'
 import { MathText } from '@/components/MathText'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/utils'
 import { CircleHelpIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 

@@ -1,7 +1,7 @@
 """Table II and Table III of the aperiodic journal paper.
 
-Lives next to the three simulators, not inside one of them. ``aperiodic_simulator``,
-``simulator``, and ``thesis_simulator`` read these names and do not import each other.
+Lives next to the three simulators, not inside one of them. ``simulator_aperiodic``,
+``simulator_periodic``, and ``simulator_thesis`` read these names and do not import each other.
 """
 
 from __future__ import annotations

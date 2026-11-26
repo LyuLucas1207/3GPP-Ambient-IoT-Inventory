@@ -9,7 +9,7 @@ import {
   DialogPortal,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ViewId } from '@/explain/ids'
+import { ViewId } from '@/utils/terms'
 import { CircleHelpIcon, XIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'

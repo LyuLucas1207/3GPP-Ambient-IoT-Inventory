@@ -3,7 +3,7 @@ import pytest
 from sqlalchemy import create_engine, text
 
 from app.main import app
-from app.thesis_simulator.db import get_engine, init_db, reset_engine
+from app.simulator_thesis.db import get_engine, init_db, reset_engine
 
 DEV_DATABASE_URL = "postgresql+psycopg://thesis:thesis@127.0.0.1:5432/thesis"
 TEST_DATABASE_URL = "postgresql+psycopg://thesis:thesis@127.0.0.1:5432/thesis_test"

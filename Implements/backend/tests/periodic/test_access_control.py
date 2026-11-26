@@ -1,4 +1,4 @@
-from app.simulator.protocol.access_control import AccessProbabilityController
+from app.simulator_periodic.protocol.access_control import AccessProbabilityController
 
 
 def test_idle_with_no_eligible_does_not_raise_p():

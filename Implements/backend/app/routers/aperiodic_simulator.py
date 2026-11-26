@@ -1,13 +1,13 @@
 """HTTP API for the aperiodic-paging paper, mounted at /api/aperiodic-simulator.
 
-Thin layer: request validation here, all science in ``app.aperiodic_simulator``.
+Thin layer: request validation here, all science in ``app.simulator_aperiodic``.
 """
 
 from fastapi import APIRouter, HTTPException
 
-from app.aperiodic_simulator.runtime import jobs, service, step_session
-from app.aperiodic_simulator.reproduction import presets
-from app.aperiodic_simulator.runtime.run_store import device_trace
+from app.simulator_aperiodic.runtime import jobs, service, step_session
+from app.simulator_aperiodic.reproduction import presets
+from app.simulator_aperiodic.runtime.run_store import device_trace
 from app.schemas.aperiodic_simulator import (
     AperiodicSimulateRequest,
     ReproduceRequest,
@@ -21,8 +21,8 @@ router = APIRouter()
 def _controller_factory(req: AperiodicSimulateRequest):
     if req.controller != "recurrent_ppo":
         return None
-    from app.aperiodic_simulator.rl.checkpoint import CheckpointMissing
-    from app.aperiodic_simulator.controllers.recurrent_ppo import ppo_controller_factory
+    from app.simulator_aperiodic.rl.checkpoint import CheckpointMissing
+    from app.simulator_aperiodic.controllers.recurrent_ppo import ppo_controller_factory
 
     try:
         return ppo_controller_factory(alpha=req.alpha)
@@ -119,7 +119,7 @@ def job_status(job_id: str) -> dict:
 
 @router.get("/ppo/status")
 def ppo_status() -> dict:
-    from app.aperiodic_simulator.rl.checkpoint import ppo_status_payload
+    from app.simulator_aperiodic.rl.checkpoint import ppo_status_payload
 
     return ppo_status_payload()
 

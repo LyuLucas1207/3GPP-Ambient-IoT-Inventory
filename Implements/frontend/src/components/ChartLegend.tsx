@@ -1,5 +1,5 @@
 import { ClickHelp } from '@/components/ClickHelp'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/utils'
 
 export interface LegendItem {
   id: string

@@ -2,10 +2,10 @@ from dataclasses import replace
 
 import numpy as np
 
-from app.simulator.physics.channel import harvest_power_w
-from app.simulator.core.config import paper_device1_config
-from app.simulator.core.scenario import Scenario
-from app.simulator.core.simulation import run_strategy
+from app.simulator_periodic.physics.channel import harvest_power_w
+from app.simulator_periodic.core.config import paper_device1_config
+from app.simulator_periodic.core.scenario import Scenario
+from app.simulator_periodic.core.simulation import run_strategy
 
 
 def _one_device(strategy: str, p_access: float, max_time_s: float = 0.05):
@@ -35,7 +35,7 @@ def _one_device(strategy: str, p_access: float, max_time_s: float = 0.05):
 
 def test_dcm_rejected_device_pays_paging_not_full_ton():
     """Experimental early-sleep: p_access=0 listens then SLEEPs, not full 3 ms."""
-    from app.simulator.core.config import SLEEP
+    from app.simulator_periodic.core.config import SLEEP
 
     cfg = paper_device1_config(
         num_devices=1, max_time_s=0.03, collect_snapshots=False, collect_paging_events=False, seed=1
@@ -71,7 +71,7 @@ def test_dcm_rejected_device_pays_paging_not_full_ton():
 
 def test_dcm_strict_duty_cycle_pays_full_ton():
     """Paper default: Table 1 3 ms ON every synced DCM period, even if p=0."""
-    from app.simulator.core.config import AssumptionParams
+    from app.simulator_periodic.core.config import AssumptionParams
 
     assert AssumptionParams().sleep_when_not_attempting is False
     cfg = paper_device1_config(

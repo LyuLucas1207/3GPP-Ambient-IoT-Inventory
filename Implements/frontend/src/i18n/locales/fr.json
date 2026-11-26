@@ -9,6 +9,10 @@
     "apiUp": "API OK",
     "apiDown": "API hors ligne"
   },
+  "home": {
+    "lead": "Choisissez un simulateur. Revenez ici pour en ouvrir un autre.",
+    "glossary": "Glossaire"
+  },
   "app": {
     "title": "Inventaire IoT ambiant 3GPP",
     "documentTitle": "Simulateur d’inventaire IoT ambiant 3GPP",

@@ -8,7 +8,7 @@ Each target folder holds its script, the outputs of its last run, and `paper/` w
 |---|---|---|---|
 | `figure4/` … `figure8/` | `reproduce_figN.py` | `figureN.json/.png` (Fig. 5/6 also `.csv`), `logs/` | digitized curves |
 | `tables/` | `reproduce_tables.py` | `tables.json` (V, VI), `table_iv.json` (written by Fig. 5) | `table4/5/6_*.csv` |
-| `train_ppo/` | `train_ppo.py` | `logs/`; checkpoints stay in `app/aperiodic_simulator/rl/checkpoints/` because the API loads them | |
+| `train_ppo/` | `train_ppo.py` | `logs/`; checkpoints stay in `app/simulator_aperiodic/rl/checkpoints/` because the API loads them | |
 | `validation/` | `validate.py` | `validation_report.md/.json` | |
 | `digitize/` | `digitize_figures.py` | writes every `figure*/paper/*.csv` and `calibration.json` | |
 
@@ -49,7 +49,7 @@ In `tables/paper/`:
 
 ## Calibration notes
 
-Simulator parameters are never fitted to these y-values. The two named assumptions that were checked against reported paper statistics are documented in `app/aperiodic_simulator/core/config.py` (`Assumptions`):
+Simulator parameters are never fitted to these y-values. The two named assumptions that were checked against reported paper statistics are documented in `app/simulator_aperiodic/core/config.py` (`Assumptions`):
 
 - `uplink_offset_db = -5.6`: the residual uplink budget term. Type 1 and type 2a coverage each independently imply about −5.6 dB.
 - `harvest_during_monitor = False`: the DCM model of [19]. It reproduces the multi-source N_g = 4 first-catch group populations.

@@ -18,10 +18,10 @@ from app.schemas.thesis_simulator import (
     SectionPatch,
     SectionSummary,
 )
-from app.thesis_simulator.catalog import catalog_payload, derive_reader_ranges
-from app.thesis_simulator.db import get_db
-from app.thesis_simulator.scenario import scenario_defaults_payload
-from app.thesis_simulator.service import (
+from app.simulator_thesis.catalog import catalog_payload, derive_reader_ranges
+from app.simulator_thesis.db import get_db
+from app.simulator_thesis.scenario import scenario_defaults_payload
+from app.simulator_thesis.service import (
     SceneError,
     add_placement,
     add_placements,

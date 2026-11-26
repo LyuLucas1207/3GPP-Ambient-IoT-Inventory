@@ -24,10 +24,10 @@ from _common import mean_or_none, pmap, scene, times, write_csv  # noqa: E402
 
 import numpy as np  # noqa: E402
 
-from app.thesis_simulator.inventory.episode import build_episode  # noqa: E402
-from app.thesis_simulator.inventory.headless import run_headless  # noqa: E402
-from app.thesis_simulator.inventory.state import EpisodeConfig  # noqa: E402
-from app.thesis_simulator.inventory.termination import TerminationSpec, _all_specs, replay  # noqa: E402
+from app.simulator_thesis.inventory.episode import build_episode  # noqa: E402
+from app.simulator_thesis.inventory.headless import run_headless  # noqa: E402
+from app.simulator_thesis.inventory.state import EpisodeConfig  # noqa: E402
+from app.simulator_thesis.inventory.termination import TerminationSpec, _all_specs, replay  # noqa: E402
 
 EDGE_CAP_M = 41.4  # Device 2a coverage of a default reader (see Docs/FORMULAS.md, T_wc)
 

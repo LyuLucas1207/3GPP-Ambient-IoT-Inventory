@@ -1,6 +1,6 @@
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from 'lucide-react'
 import { useId, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/utils'
 import { HudDock } from '@/types/hud'
 import { useTranslation } from 'react-i18next'
 

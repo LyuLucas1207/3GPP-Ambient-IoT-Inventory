@@ -28,10 +28,10 @@ from app.schemas.thesis_runs import (
     TerminationReplayOut,
     TimelineOut,
 )
-from app.thesis_simulator.db import ensure_db, get_db, session_factory
-from app.thesis_simulator.inventory.live import stream_events
-from app.thesis_simulator.analysis import analysis_bundle, device_metrics, interference_report, termination_replay
-from app.thesis_simulator.runs_service import (
+from app.simulator_thesis.db import ensure_db, get_db, session_factory
+from app.simulator_thesis.inventory.live import stream_events
+from app.simulator_thesis.analysis import analysis_bundle, device_metrics, interference_report, termination_replay
+from app.simulator_thesis.runs_service import (
     create_run,
     device_map,
     device_states,
@@ -55,9 +55,9 @@ from app.thesis_simulator.runs_service import (
     soft_delete_run,
     stop_run,
 )
-from app.thesis_simulator.service import get_section
-from app.thesis_simulator.service import SceneError
-from app.thesis_simulator.timefreq import device_trace, reader_timefreq
+from app.simulator_thesis.service import get_section
+from app.simulator_thesis.service import SceneError
+from app.simulator_thesis.timefreq import device_trace, reader_timefreq
 
 router = APIRouter(tags=["thesis-simulator-runs"])
 
@@ -77,7 +77,7 @@ def read_runs(section_id: int, db: Session = Depends(get_db)) -> list[dict]:
 @router.post("/sections/{section_id}/runs", response_model=RunDetailOut, status_code=201)
 def post_run(section_id: int, body: RunCreateIn, db: Session = Depends(get_db)) -> dict:
     if body.controller is not None and body.controller.kind == "policy":
-        from app.thesis_simulator.rl.policy import PolicyMissing, load_meta
+        from app.simulator_thesis.rl.policy import PolicyMissing, load_meta
 
         try:
             load_meta(body.controller.policy_id or "")

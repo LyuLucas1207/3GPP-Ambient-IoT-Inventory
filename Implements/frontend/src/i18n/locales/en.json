@@ -9,6 +9,10 @@
     "apiUp": "API up",
     "apiDown": "API down"
   },
+  "home": {
+    "lead": "Choose a simulator. Return here to open another.",
+    "glossary": "Glossary"
+  },
   "app": {
     "title": "3GPP Ambient IoT Inventory",
     "documentTitle": "3GPP Ambient IoT Inventory Simulator",

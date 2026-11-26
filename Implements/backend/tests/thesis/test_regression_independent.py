@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from app.thesis_simulator.inventory.headless import fingerprint, reader_ids, run_headless, synthetic_scene
-from app.thesis_simulator.inventory.state import EpisodeConfig
+from app.simulator_thesis.inventory.headless import fingerprint, reader_ids, run_headless, synthetic_scene
+from app.simulator_thesis.inventory.state import EpisodeConfig
 
 GOLDEN = Path(__file__).parent / "data" / "golden_independent.json"
 

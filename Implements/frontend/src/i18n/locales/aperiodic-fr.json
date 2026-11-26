@@ -1,6 +1,7 @@
 {
   "nav": {
     "label": "Simulateurs d'articles",
+    "home": "Accueil",
     "periodicPaper": "Article radiomessagerie périodique",
     "aperiodicPaper": "Article radiomessagerie apériodique"
   },

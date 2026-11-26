@@ -1,10 +1,10 @@
 # Formulas · 公式表
 
-The formulas the thesis engine (`Implements/backend/app/thesis_simulator`) actually computes. Each formula is written in LaTeX (rendered by the Markdown preview: Ctrl+Shift+V) and followed by a table of its variables and the code location. Terms: [VOCABULARY.md](./VOCABULARY.md). Design and results: [THESIS_MULTI_READER_DESIGN.md](./THESIS_MULTI_READER_DESIGN.md).
+The formulas the thesis engine (`Implements/backend/app/simulator_thesis`) actually computes. Each formula is written in LaTeX (rendered by the Markdown preview: Ctrl+Shift+V) and followed by a table of its variables and the code location. Terms: [VOCABULARY.md](./VOCABULARY.md). Design and results: [THESIS_MULTI_READER_DESIGN.md](./THESIS_MULTI_READER_DESIGN.md).
 
-论文仿真引擎（`Implements/backend/app/thesis_simulator`）实际计算的公式。公式用 LaTeX 书写（用 Markdown 预览查看：Ctrl+Shift+V），每个公式下面是变量表和代码位置。术语见 [VOCABULARY.md](./VOCABULARY.md)，设计与结果见 [THESIS_MULTI_READER_DESIGN.md](./THESIS_MULTI_READER_DESIGN.md)。
+论文仿真引擎（`Implements/backend/app/simulator_thesis`）实际计算的公式。公式用 LaTeX 书写（用 Markdown 预览查看：Ctrl+Shift+V），每个公式下面是变量表和代码位置。术语见 [VOCABULARY.md](./VOCABULARY.md)，设计与结果见 [THESIS_MULTI_READER_DESIGN.md](./THESIS_MULTI_READER_DESIGN.md)。
 
-Code paths are relative to `Implements/backend/app/thesis_simulator/`. 代码路径均相对于该目录。
+Code paths are relative to `Implements/backend/app/simulator_thesis/`. 代码路径均相对于该目录。
 
 **Contents · 目录**
 
@@ -419,7 +419,7 @@ $$
 | L_prev, p_prev | Previous frame's L and p | 上一帧的 L 和 p | — |
 | p_floor | Lowest allowed p | p 的下限 | — |
 
-Code: `rl/features.apply_action`, `aperiodic_simulator/rl/transforms.py`
+Code: `rl/features.apply_action`, `simulator_aperiodic/rl/transforms.py`
 
 ### 7.2 Reward · 奖励
 

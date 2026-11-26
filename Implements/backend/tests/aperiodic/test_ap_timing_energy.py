@@ -2,9 +2,9 @@ import math
 
 import pytest
 
-from app.aperiodic_simulator.core.config import SystemParams
-from app.aperiodic_simulator.physics.device_types import device_types, type_param_arrays
-from app.aperiodic_simulator.physics.energy import (
+from app.simulator_aperiodic.core.config import SystemParams
+from app.simulator_aperiodic.physics.device_types import device_types, type_param_arrays
+from app.simulator_aperiodic.physics.energy import (
     compute_global_lmax,
     e_base_j,
     e_scale_j,
@@ -13,7 +13,7 @@ from app.aperiodic_simulator.physics.energy import (
     lmax_report,
     lmax_type,
 )
-from app.aperiodic_simulator.core.timing import (
+from app.simulator_aperiodic.core.timing import (
     aperiodic_msg3_slots,
     aperiodic_round_duration_s,
     periodic_k_fixed,

@@ -28,7 +28,7 @@ def test_train_evaluate_promote(config, tmp_path, monkeypatch):
     assert set(meta["eval_summary"]) == {"policy", "dfsa"}
     assert (run / "eval_matrix.csv").exists() and (run / "plots" / "eval_heatmap.png").exists()
     pid = meta["promoted"]
-    from app.thesis_simulator.rl.policy import PolicyController
+    from app.simulator_thesis.rl.policy import PolicyController
 
     ctl = PolicyController.from_registry(pid)
     assert ctl.policy_id == pid

@@ -1,8 +1,8 @@
 import numpy as np
 
-from app.aperiodic_simulator.reproduction import controller_reproduce as cr
-from app.aperiodic_simulator.rl import checkpoint as ck
-from app.aperiodic_simulator.core.states import HarvestingScenario
+from app.simulator_aperiodic.reproduction import controller_reproduce as cr
+from app.simulator_aperiodic.rl import checkpoint as ck
+from app.simulator_aperiodic.core.states import HarvestingScenario
 
 
 def test_methods_share_seeds_and_differ_only_in_controller():

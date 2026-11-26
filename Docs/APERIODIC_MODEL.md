@@ -1,11 +1,11 @@
 # Aperiodic-paging paper: model, assumptions, reproduction
 
 Paper: *3GPP Ambient IoT Inventory with Aperiodic Paging* (Kota et al., `Papers/`).
-Engine: `Implements/backend/app/aperiodic_simulator/`. API: `/api/aperiodic-simulator/...`.
+Engine: `Implements/backend/app/simulator_aperiodic/`. API: `/api/aperiodic-simulator/...`.
 Page: `/aperiodic-paging`.
 
 The legacy simulator of *Fast Inventory … Energy Harvesting* stays in
-`backend/app/simulator/` (`/api/simulator/...`, `/periodic-paging`). Its "EM"
+`backend/app/simulator_periodic/` (`/api/simulator/...`, `/periodic-paging`). Its "EM"
 strategy is **not** this paper's aperiodic protocol. The two engines share only
 pure utilities in `backend/app/common/`:
 
@@ -17,7 +17,7 @@ The FastAPI routers in `backend/app/routers/` only validate requests and call
 
 ## Package layout
 
-Paths relative to `backend/app/aperiodic_simulator/`.
+Paths relative to `backend/app/simulator_aperiodic/`.
 
 | Module | Content |
 |---|---|
@@ -36,7 +36,7 @@ Paths relative to `backend/app/aperiodic_simulator/`.
 | `reproduction/reproduce.py`, `reproduction/controller_reproduce.py`, `reproduction/presets.py` | Figures 4–8 and Tables IV–VI |
 | `runtime/service.py`, `runtime/jobs.py`, `runtime/run_store.py` | API payloads, background jobs, run cache |
 
-The legacy engine `backend/app/simulator/` uses the same split: `core/` (config,
+The legacy engine `backend/app/simulator_periodic/` uses the same split: `core/` (config,
 scenario, warm-up, simulation), `physics/` (channel, energy, device), `protocol/`
 (paging, CBRA, grouping, access control, reader), `strategies/` (EM, DCM),
 `analysis/` (metrics, Fig. 5(b) validation) and `runtime/` (run store).
@@ -117,4 +117,4 @@ python backend/scripts/aperiodic/train_ppo/train_ppo.py --steps 1000000 --seed 4
 - The shipped checkpoints are **20,480-step smoke checkpoints** (seed 42, α ∈ {0, 0.25, 0.5, 0.75}). They are real RecurrentPPO policies with SHA-256-verified metadata, but they are not the paper's 1,000,000-step policy.
 - The API (`/ppo/status`, simulation warnings), the page and the validation report all state this.
 - Retraining with the command above replaces them.
-- See `backend/app/aperiodic_simulator/rl/README.md`.
+- See `backend/app/simulator_aperiodic/rl/README.md`.

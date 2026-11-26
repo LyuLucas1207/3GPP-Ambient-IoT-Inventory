@@ -1,7 +1,7 @@
 import numpy as np
 
-from app.simulator.core.config import DONE, OFF, ON, SLEEP, TX, paper_device1_config
-from app.simulator.physics.energy import sleep_net_min_w_from_nw, update_energy
+from app.simulator_periodic.core.config import DONE, OFF, ON, SLEEP, TX, paper_device1_config
+from app.simulator_periodic.physics.energy import sleep_net_min_w_from_nw, update_energy
 
 
 def _step(state_code, peh, n=3):

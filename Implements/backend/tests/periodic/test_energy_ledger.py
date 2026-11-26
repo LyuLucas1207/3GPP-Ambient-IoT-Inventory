@@ -4,12 +4,12 @@ from dataclasses import replace
 
 import numpy as np
 
-from app.simulator.physics.channel import harvest_power_w
-from app.simulator.protocol.cbra import cbra_phase, plan_cbra
-from app.simulator.core.config import OFF, ON, SLEEP, TX, paper_device1_config
-from app.simulator.physics.energy import update_energy
-from app.simulator.core.scenario import Scenario
-from app.simulator.core.simulation import run_strategy
+from app.simulator_periodic.physics.channel import harvest_power_w
+from app.simulator_periodic.protocol.cbra import cbra_phase, plan_cbra
+from app.simulator_periodic.core.config import OFF, ON, SLEEP, TX, paper_device1_config
+from app.simulator_periodic.physics.energy import update_energy
+from app.simulator_periodic.core.scenario import Scenario
+from app.simulator_periodic.core.simulation import run_strategy
 
 
 def test_clip_interval_and_signs():
