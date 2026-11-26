@@ -97,6 +97,42 @@ def test_energy_bound_recharge_time_is_finite_and_conservative():
         assert a.t_wc_s >= b.t_wc_s - 1e-9
 
 
+def test_energy_bound_edge_cap_and_max_wait():
+    """Active 2b devices are covered far beyond the harvesting range (xi = 0 below
+    -41 dBm), so the uncapped edge bound is infinite; the cap and max_wait bound it."""
+    from app.thesis_simulator.catalog import spec_for
+    from app.thesis_simulator.inventory.termination import TermState, evaluate
+
+    scene = synthetic_scene(200, reader_xy=[(60.0, 30.0)], seed=5)
+    for p in scene["placements"]:
+        if p["kind"] == "device" and p["subtype"] == "2b":
+            p["params"] = spec_for("device", "2b").defaults()
+
+    def t_wc(**term):
+        st = build_episode(scene, _cfg(termination={"kind": "energy_bound", **term}), np.random.default_rng(0))
+        return st.readers[0].t_wc_s
+
+    assert t_wc() == math.inf
+    capped = t_wc(edge_cap_m=41.4)
+    assert 1500 < capped < 2000  # Device 2a at its 41.4 m edge
+
+    st = TermState(t_first=0.0, last_id_t=10.0)
+    spec = TerminationSpec.from_json({"kind": "energy_bound", "max_wait_s": 300})
+    assert evaluate(spec, st, 309.0, math.inf) is None
+    assert evaluate(spec, st, 310.0, math.inf) == "energy_bound"
+    assert evaluate(spec, st, 30.0, 15.0) == "energy_bound"  # T_wc below the cap still rules
+    assert evaluate(TerminationSpec.from_json({"kind": "energy_bound"}), st, 1e9, math.inf) is None
+
+
+def test_harvested_power_applies_conversion_efficiency_to_total_cw():
+    st = build_episode(GRID, _cfg(), np.random.default_rng(0))
+    pin_w = sum(r.Ph_contrib for r in st.readers)
+    pin_dbm = 10.0 * np.log10(pin_w) + 30.0
+    xi = np.clip(np.where(pin_dbm <= -10.0, (pin_dbm + 41.0) / 100.0, (-2.0 * pin_dbm + 11.0) / 100.0), 0.0, 1.0)
+    np.testing.assert_allclose(st.world.Ph_total, xi * pin_w, rtol=1e-12)
+    assert (st.world.Ph_total < pin_w).all()
+
+
 # ------------------------------------------------------------------ coordination
 
 

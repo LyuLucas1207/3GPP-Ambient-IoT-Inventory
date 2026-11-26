@@ -55,6 +55,7 @@ export function ThesisWarehouse({
   live,
   flagPending = false,
   run = null,
+  runTime = null,
   selectedDeviceId = null,
   onSelectDevice,
   onSelectReader,
@@ -76,6 +77,8 @@ export function ThesisWarehouse({
   flagPending?: boolean
   /** selected run, used to link the selected device to the readers that cover it */
   run?: RunSummary | null
+  /** simulated time shown (replay position or live clock); readers stopped by then are greyed */
+  runTime?: number | null
   selectedDeviceId?: number | null
   onSelectDevice?: (id: number | null) => void
   /** when set (a run is selected), a left click on a reader inspects it instead of opening the edit menu */
@@ -111,8 +114,14 @@ export function ThesisWarehouse({
   // Conflict graph + colour classes of the selected run's coordination policy.
   const [showCoordination, setShowCoordination] = useState(true)
   const coordinated = run != null && (run.resource_mode ?? 'independent') !== 'independent'
-  const ixQuery = useInterference(coordinated ? run.run_id : null, run?.status ?? null)
+  const ixQuery = useInterference(run ? run.run_id : null, run?.status ?? null)
   const coordination = coordinated && showCoordination ? ixQuery.data ?? null : null
+  const readerStops = ixQuery.data?.readers
+  const stopOf = (id: Placement['id']) => {
+    const info = readerStops?.[String(id)]
+    if (!info?.stopped || info.stop_t == null) return null
+    return runTime == null || runTime >= info.stop_t ? info : null
+  }
   const conflictEdges = useMemo(() => {
     if (!coordination || !scene) return []
     const pos = new Map(scene.placements.filter((p) => p.kind === 'radar').map((p) => [String(p.id), p]))
@@ -788,7 +797,8 @@ export function ThesisWarehouse({
               {scene.placements.map((placement) => {
                 if (placement.kind === 'device') return null
                 if (!layerVisible(placement, layers)) return null
-                const beacon = true
+                const stop = placement.kind === 'radar' ? stopOf(placement.id) : null
+                const beacon = stop == null
                 const tone = beaconTone(placement)
                 const picked = pickedIds.includes(String(placement.id))
                 const isFocus = focusReaderId != null && placement.id === focusReaderId
@@ -800,7 +810,7 @@ export function ThesisWarehouse({
                     data-placement={placement.id}
                     transform={`translate(${placement.x_m} ${placement.y_m})`}
                     className="cursor-pointer"
-                    opacity={dimmed ? 0.18 : 1}
+                    opacity={dimmed ? 0.18 : stop ? 0.55 : 1}
                     onClick={(event) => {
                       event.stopPropagation()
                       if (selecting && placement.kind !== 'device') {
@@ -814,6 +824,11 @@ export function ThesisWarehouse({
                       onEdit(placement.id, event.clientX, event.clientY)
                     }}
                   >
+                    {stop ? (
+                      <title>
+                        {`${t('thesis.readerInspector.stop')}: ${t(`thesis.readerInspector.stopReason.${stop.stop_reason ?? 'stopped'}`, { defaultValue: stop.stop_reason ?? '' })} @ ${(stop.stop_t ?? 0).toFixed(2)} s`}
+                      </title>
+                    ) : null}
                     {picked ? (
                       <circle r={size * 2.2} className="fill-none stroke-foreground" strokeWidth={2} vectorEffect="non-scaling-stroke" />
                     ) : null}
@@ -839,7 +854,7 @@ export function ThesisWarehouse({
                       <MarkerShape
                         shape={shapeOf(placement)}
                         r={size}
-                        className={dimmed ? 'fill-foreground' : fillClass(placement)}
+                        className={dimmed ? 'fill-foreground' : stop ? 'fill-zinc-400' : fillClass(placement)}
                         strokeWidth={0}
                       />
                     </g>

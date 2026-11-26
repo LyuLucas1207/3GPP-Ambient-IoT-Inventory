@@ -81,7 +81,7 @@ class DeviceWorld:
 
     E: np.ndarray  # float64, J
     on: np.ndarray  # float64, s
-    Ph_total: np.ndarray  # float64, W (summed across readers)
+    Ph_total: np.ndarray  # float64, W harvested: xi(P_in) * P_in of the CW summed across readers
 
     Ecap: np.ndarray
     Eoff: np.ndarray
@@ -189,7 +189,7 @@ class ReaderState:
     estimator: BacklogEstimator
 
     cover_mask: np.ndarray  # bool, length N
-    Ph_contrib: np.ndarray  # W per device
+    Ph_contrib: np.ndarray  # incident CW power at each device, W (before conversion efficiency)
     d3d: np.ndarray  # m per device
     exhausted: bool = False  # no non-terminal device left in coverage
     coverage_radius: np.ndarray | None = None  # m per device (type-level link budget)

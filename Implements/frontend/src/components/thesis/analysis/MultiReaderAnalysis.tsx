@@ -202,6 +202,19 @@ const PRESET_RULES: TerminationSpec[] = [
   ...([['edge', 0], ['edge', 0.1], ['actual', 0], ['actual', 0.1]] as const).map(([src, m]): TerminationSpec => ({ kind: 'energy_bound', energy_source: src, margin: m })),
 ]
 
+/** Zoom to the cluster. A few rules that keep paging for hundreds of seconds would otherwise flatten every other point onto the axis. */
+function clusterWindow(values: number[]): { lo: number; hi: number; edge: number | null } {
+  const finite = values.filter((v) => Number.isFinite(v)).sort((a, b) => a - b)
+  if (!finite.length) return { lo: -1, hi: 1, edge: null }
+  const lo0 = Math.min(0, finite[0])
+  const hi0 = finite[finite.length - 1]
+  const pivot = finite[Math.floor((finite.length - 1) * 0.75)]
+  const squash = hi0 > Math.max(pivot * 3, pivot + 40) && pivot > 0
+  const hi = squash ? pivot : hi0
+  const span = Math.max(hi - lo0, 1)
+  return { lo: lo0 - span * 0.08, hi: hi + span * 0.22, edge: squash ? hi + span * 0.12 : null }
+}
+
 function paretoFront(outcomes: TerminationOutcome[]): TerminationOutcome[] {
   const pts = outcomes.filter((o) => o.rule !== 'oracle' && Number.isFinite(o.extra_time_s))
   return pts
@@ -227,6 +240,11 @@ export function TerminationPanel({ analyses }: { analyses: RunAnalysis[] }) {
   const kindOf = (o: TerminationOutcome) => o.spec.kind
   const KIND_COLOR: Record<string, string> = { quiet_rounds: '#0072bd', id_rate: '#d95319', energy_bound: '#77ac30', combined: '#7e2f8e' }
   const pts = (data?.outcomes ?? []).filter((o) => o.rule !== 'oracle')
+  const xWindow = clusterWindow(pts.map((o) => o.extra_time_s))
+  const missedPct = pts.map((o) => 100 * o.missed_fraction)
+  const yMax = Math.max(0, ...missedPct, 0)
+  const yHi = yMax < 1 ? 8 : yMax * 1.25
+  const placeX = (v: number) => (xWindow.edge != null && v > xWindow.edge ? xWindow.edge : v)
   const multi = Object.keys(data?.outcomes[0]?.reader_stop ?? {}).length > 1
   return (
     <div className="grid gap-3">
@@ -253,28 +271,38 @@ export function TerminationPanel({ analyses }: { analyses: RunAnalysis[] }) {
               const sel = pts.filter((o) => kindOf(o) === k)
               return {
                 type: 'scatter' as const,
-                mode: 'markers' as const,
+                mode: 'markers+text' as const,
                 name: t(`thesis.newRun.termination.kinds.${k}`),
-                x: sel.map((o) => (Number.isFinite(o.extra_time_s) ? o.extra_time_s : null)),
+                x: sel.map((o) => (Number.isFinite(o.extra_time_s) ? placeX(o.extra_time_s) : null)),
                 y: sel.map((o) => 100 * o.missed_fraction),
-                text: sel.map((o) => o.rule),
-                hovertemplate: '%{text}<br>+%{x:.2f} s · %{y:.2f}% missed<extra></extra>',
-                marker: { size: 9, color: KIND_COLOR[k] },
+                text: sel.map((o) => (xWindow.edge != null && o.extra_time_s > xWindow.edge ? `${o.extra_time_s.toFixed(0)} s` : '')),
+                textposition: 'top center' as const,
+                textfont: { size: 10, color: KIND_COLOR[k] },
+                customdata: sel.map((o) => [o.rule, o.extra_time_s, 100 * o.missed_fraction]),
+                hovertemplate: '%{customdata[0]}<br>+%{customdata[1]:.2f} s · %{customdata[2]:.2f}% missed<extra></extra>',
+                cliponaxis: false,
+                marker: {
+                  size: 13,
+                  color: KIND_COLOR[k],
+                  symbol: sel.map((o) => (xWindow.edge != null && o.extra_time_s > xWindow.edge ? 'triangle-right' : 'circle')),
+                  line: { width: 1, color: plot.paper },
+                },
               }
             }),
             {
               type: 'scatter' as const,
               mode: 'lines' as const,
               name: t('thesis.analysis.multi.termination.front'),
-              x: front.map((o) => o.extra_time_s),
+              x: front.map((o) => placeX(o.extra_time_s)),
               y: front.map((o) => 100 * o.missed_fraction),
-              line: { color: plot.line, width: 1, dash: 'dot' as const },
+              line: { color: plot.line, width: 1.5, dash: 'dot' as const },
+              hoverinfo: 'skip' as const,
             },
           ]}
           layout={{
-            ...baseLayout(plot, { height: 320 }),
-            xaxis: axis(plot, t('thesis.analysis.multi.termination.extra')),
-            yaxis: axis(plot, t('thesis.analysis.multi.termination.missed'), { rangemode: 'tozero' }),
+            ...baseLayout(plot, { height: 320, hovermode: 'closest' }),
+            xaxis: axis(plot, t('thesis.analysis.multi.termination.extra'), { range: [xWindow.lo, xWindow.hi], zeroline: false }),
+            yaxis: axis(plot, t('thesis.analysis.multi.termination.missed'), { range: [-Math.max(1.5, yHi * 0.18), yHi], zeroline: true, zerolinecolor: plot.grid, zerolinewidth: 1 }),
             shapes: oracle && Number.isFinite(oracle.extra_time_s)
               ? [{ type: 'line' as const, yref: 'paper' as const, x0: oracle.extra_time_s, x1: oracle.extra_time_s, y0: 0, y1: 1, line: { color: plot.grid, width: 1, dash: 'dash' as const } }]
               : [],
@@ -283,6 +311,9 @@ export function TerminationPanel({ analyses }: { analyses: RunAnalysis[] }) {
           style={{ width: '100%' }}
           useResizeHandler
         />
+      ) : null}
+      {data && xWindow.edge != null ? (
+        <p className="text-[11px] text-muted-foreground">{t('thesis.analysis.multi.termination.zoomed', { max: Math.max(...pts.map((o) => o.extra_time_s).filter((v) => Number.isFinite(v))).toFixed(0) })}</p>
       ) : null}
       <div className="grid grid-cols-2 gap-2 rounded-md border border-dashed p-2 text-xs md:max-w-xl">
         <TerminationEditor value={draft} onChange={setDraft} allowCombined />

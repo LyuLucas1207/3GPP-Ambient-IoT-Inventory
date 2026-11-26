@@ -109,9 +109,9 @@
         "kind": "Contrôleur",
         "kinds": {
           "auto": "Auto (selon l’interrupteur K adaptatif)",
-          "fixed": "K fixe",
-          "dfsa": "DFSA (K ≈ 2N̂)",
-          "policy": "Politique RL"
+          "fixed": "Taille de trame fixe (K)",
+          "dfsa": "ALOHA à trames dynamiques (DFSA)",
+          "policy": "Apprentissage par renforcement (RL)"
         },
         "autoDfsa": "K adaptatif activé → DFSA",
         "autoFixed": "K adaptatif désactivé → K fixe",
@@ -215,6 +215,10 @@
         },
         "margin": "Marge",
         "marginHint": "Fraction ajoutée à t_wc (0,1 = +10 %).",
+        "edgeCap": "Bord au plus (m)",
+        "edgeCapHint": "Distance maximale retenue pour le pire cas. Le Device 2b est entendu jusqu'à ~137 m mais ne récolte plus d'énergie au-delà de ~62 m (ξ = 0 sous −41 dBm) : sans plafond, t_wc est infini et la règle ne se déclenche jamais. 41,4 m = couverture du Device 2a, le dispositif à rétrodiffusion le plus lointain. Décocher pour utiliser le rayon de couverture de chaque type.",
+        "maxWait": "Attente max (s)",
+        "maxWaitHint": "Borne sur l'attente après la dernière identification : le lecteur s'arrête après min(t_wc × (1 + marge), cette valeur). Décocher pour aucune borne.",
         "combine": "Combinaison",
         "combineModes": {
           "all": "Toutes (ET)",
@@ -309,6 +313,7 @@
           "notOracle": "Ce run utilisait déjà une règle non oracle ; le rejeu ne voit que les trames jusqu’à son arrêt, les règles plus tardives sont tronquées.",
           "multiApprox": "Plusieurs lecteurs : chacun est rejoué sur son propre historique. Un dispositif que son lecteur n’aurait trouvé qu’après son arrêt compte comme manqué, alors qu’en run réel un voisin aurait pu le trouver : les manqués sont une borne supérieure (voir le document de conception).",
           "front": "Front de Pareto",
+          "zoomed": "L’axe est zoomé sur le groupe principal. Les règles qui continuent bien plus longtemps (jusqu’à {{max}} s) sont les triangles sur le bord droit.",
           "extra": "Temps après la dernière ID (s)",
           "missed": "Dispositifs manqués (%)",
           "addRule": "Ajouter à la comparaison",

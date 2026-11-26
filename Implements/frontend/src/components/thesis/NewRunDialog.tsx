@@ -40,7 +40,7 @@ export function NewRunDialog({
 }) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
-  const [scheme, setScheme] = useState<RunScheme>('periodic')
+  const [scheme, setScheme] = useState<RunScheme>('aperiodic')
   const [speed, setSpeed] = useState('1')
   const [stallTimeout, setStallTimeout] = useState('300')
   const [kInitial, setKInitial] = useState('128')
@@ -120,10 +120,12 @@ export function NewRunDialog({
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose() }}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-h-[calc(100dvh-32px)] w-[min(560px,calc(100vw-32px))] gap-3 overflow-y-auto p-4">
+        <DialogPopup className="h-auto max-h-[calc(100dvh-32px)] w-[min(1100px,calc(100vw-32px))] gap-3 overflow-y-auto p-4">
           <DialogTitle>{t('thesis.newRun.title')}</DialogTitle>
           <DialogDescription>{t('thesis.newRun.hint')}</DialogDescription>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 items-start gap-x-6">
+            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 content-start gap-3">
             <label className="col-span-2 flex flex-col gap-1 text-xs">
               <span className="text-muted-foreground">{t('thesis.newRun.name')}</span>
               <Input
@@ -138,7 +140,7 @@ export function NewRunDialog({
               <Select
                 value={scheme}
                 items={{ periodic: t('thesis.newRun.schemePeriodic'), aperiodic: t('thesis.newRun.schemeAperiodic') }}
-                onValueChange={(v) => setScheme((v ?? 'periodic') as RunScheme)}
+                onValueChange={(v) => setScheme((v ?? 'aperiodic') as RunScheme)}
               >
                 <SelectTrigger className="h-8 w-full">
                   <SelectValue />
@@ -250,6 +252,10 @@ export function NewRunDialog({
                 ) : null}
               </>
             ) : null}
+            </div>
+            <TerminationSection value={termination} onChange={setTermination} />
+            </div>
+            <div className="flex flex-col gap-3">
             <ControllerSection value={controller} adaptiveK={adaptiveK} onChange={setController} />
             <ResourceSection
               value={resource}
@@ -258,9 +264,8 @@ export function NewRunDialog({
               onChange={setResource}
               onFFreq={setFFreq}
             />
-            <TerminationSection value={termination} onChange={setTermination} />
             {readers.length > 0 ? (
-              <fieldset className="col-span-2 flex flex-col gap-1 rounded-md border p-2 text-xs">
+              <fieldset className="flex flex-col gap-1 rounded-md border p-2 text-xs">
                 <legend className="px-1 text-muted-foreground">{t('thesis.newRun.disableReaders')}</legend>
                 <p className="text-muted-foreground">{t('thesis.newRun.disableReadersHint')}</p>
                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
@@ -279,6 +284,7 @@ export function NewRunDialog({
                 ) : null}
               </fieldset>
             ) : null}
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" disabled={busy} onClick={onClose}>

@@ -1,6 +1,6 @@
 # Multi-reader thesis extension — design notes · 多读写器论文扩展设计说明
 
-English first, 中文在后。Terms: [VOCABULARY.md](./VOCABULARY.md).
+English first, 中文在后。Terms: [VOCABULARY.md](./VOCABULARY.md). Formulas: [FORMULAS.md](./FORMULAS.md).
 
 ---
 
@@ -76,7 +76,7 @@ G = 1 keeps the whole ideal multi-reader gain; G = 0 is no better than serving c
 
 A reader cannot see how many devices are left. All rules use only reader-side observations: frame times and new IDs per frame.
 
-`energy_bound` also uses the worst-case recharge time `T_wc = (E_cap − E_off) / P_h,min + T_on`. The `edge` source takes `P_h,min` at the coverage edge; `actual` takes it from the reader's own devices. `P_h` is used without harvester efficiency, as in the existing energy model.
+`energy_bound` also uses the worst-case recharge time `T_wc = (E_cap − E_off) / P_h,min + T_on`. The `edge` source takes `P_h,min` at the coverage edge; `actual` takes it from the reader's own devices. `P_h = ξ(P_in)·P_in` as in the aperiodic paper's Eq. (9) and `Sources/`; see [FORMULAS.md § 2](./FORMULAS.md#2-energy--能量). Before 2026-11-12 the engine omitted ξ, so earlier results are not comparable.
 
 **Tail fast-forward.** Once a reader has nothing left (oracle), or keeps paging empty frames under a heuristic rule, the engine advances those empty frames analytically instead of simulating them one by one.
 
@@ -88,6 +88,8 @@ A reader cannot see how many devices are left. All rules use only reader-side ob
 An oracle run ends at the last identification, which no real reader can know. So the replay extrapolates: a reader whose rule has not fired yet keeps paging empty frames until it does.
 
 ### 6. RL controller and training
+
+Step-by-step training loop, what `--scale` changes and the registry policies: [training/README.md › How training works](../Implements/backend/training/README.md#how-training-works).
 
 * **Environment.** `rl/env.py` is `MultiReaderInventoryEnv`; it passes `gymnasium.utils.env_checker.check_env`.
   * One step is one reader frame.
@@ -113,6 +115,8 @@ An oracle run ends at the last identification, which no real reader can know. So
 * **Registry.** `python -m training.promote` (or the Training page) copies a run to `rl/policies/<policy_id>.zip` with a SHA-256 json sidecar. A run with `controller.kind = "policy"` refuses a missing file or a hash mismatch with 422 `policy_unavailable`.
 
 ### 7. Results so far (small scale; regenerate before quoting)
+
+> **Outdated (2026-11-12).** The tables below were produced before the conversion efficiency ξ was added to the energy model ([FORMULAS.md § 2.1](./FORMULAS.md#21-harvested-power--采能功率)). With ξ, devices recharge up to about 20× slower, and the default time caps (120 s for `small` training and evaluation, 300 s for the sweeps) cut several runs short. The trained policies were trained under the old physics and need retraining. Re-run the sweeps and evaluation with longer caps before quoting any number.
 
 **Resource sweep** (aperiodic, F = 8, 300 devices, 2 seeds, `scripts/thesis/resource/sweep_resource.py`):
 
@@ -228,7 +232,7 @@ PYTHONPATH=. .venv/bin/python -m training.train --config mappo --scale small --p
 
 读写器看不到剩余设备数，所有规则只使用帧时间和每帧新识别数。
 
-`energy_bound` 还使用最坏充电时间 `T_wc = (E_cap − E_off) / P_h,min + T_on`：`edge` 取覆盖边缘的采能，`actual` 取该读写器自身设备的采能。P_h 未乘采能效率，与现有能量模型一致。
+`energy_bound` 还使用最坏充电时间 `T_wc = (E_cap − E_off) / P_h,min + T_on`：`edge` 取覆盖边缘的采能，`actual` 取该读写器自身设备的采能。采能功率为 `P_h = ξ(P_in)·P_in`，与非周期论文式 (9) 和 `Sources/` 一致，见 [FORMULAS.md 第 2 节](./FORMULAS.md#2-energy--能量)。2026-11-12 之前引擎漏乘了 ξ，此前的结果不可比。
 
 **尾部快进：** 读写器没有剩余设备（oracle 模式），或在启发式规则下持续寻呼空帧时，引擎会解析地推进这些空帧，不逐帧仿真。
 
@@ -241,12 +245,16 @@ oracle 运行在最后一次识别时结束，真实读写器无法知道这一�
 
 ### 6. 强化学习控制器与训练
 
+逐步的训练流程、`--scale` 改变什么、注册表里的策略：见 [training/README.md › 训练过程](../Implements/backend/training/README.md#训练过程中文)。
+
 * **环境与算法：** 环境为 `MultiReaderInventoryEnv`，一步就是一帧。算法包括 PS-PPO（sb3）、MAPPO（集中式评论家）、IPPO（每个槽位独立的 actor/critic）和零样本（非周期单读写器 RecurrentPPO）。
 * **规模与输出：** 用 `--scale` 控制训练规模，输出写到 `training/outputs/`。`meta.json` 记录 PID 和主机名；进程被杀后，API 显示 `interrupted`。
 * **评估：** 策略与 DFSA 在相同部署上成对比较。
 * **注册表：** 发布后进入 `rl/policies`（带 SHA-256 校验）。运行时若文件缺失或哈希不符，返回 422。
 
 ### 7. 当前结果
+
+> **已过时（2026-11-12）。** 下面的结果是在能量模型加入转换效率 ξ 之前得到的（见 [FORMULAS.md 2.1 节](./FORMULAS.md#21-harvested-power--采能功率)）。加入 ξ 后，设备充电最多慢约 20 倍，默认的时间上限（`small` 训练和评估 120 s、扫描 300 s）会让部分运行提前截断。已训练的策略是在旧物理模型下训练的，需要重新训练。引用任何数字之前，请用更长的时间上限重跑扫描和评估。
 
 数值见上方英文表格（小规模实验，引用前请重新生成）。要点：
 

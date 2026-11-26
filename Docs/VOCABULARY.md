@@ -3,7 +3,7 @@
 Abbreviations and terms used in the papers, TR 38.769, the simulators and the multi-reader training code.
 本项目（论文、TR 38.769、仿真器与多读写器训练代码）中出现的缩写与术语。
 
-The beginner chapter [96 · acronym table](./en/chapters/96-acronym-table.md) ([中文](./zh/chapters/96-acronym-table.md)) explains the first few in context; this file is the complete list.
+The beginner chapter [96 · acronym table](./en/chapters/96-acronym-table.md) ([中文](./zh/chapters/96-acronym-table.md)) explains the first few in context; this file is the complete list. Formulas: [FORMULAS.md](./FORMULAS.md) · 公式表。
 
 ## 3GPP and radio · 3GPP 与无线
 

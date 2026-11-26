@@ -1,8 +1,8 @@
 {
-  "policy_id": "ps_ppo_randomized__a0p5__b0p5__s0__20261111T033923",
-  "algo": "sb3_ppo",
-  "experiment": "ps_ppo_randomized",
-  "description": "Parameter-sharing PPO with domain randomization over 1-18 readers (random lattice subsets), start offsets, resource policies and subtype mixes: train once, deploy anywhere.",
+  "policy_id": "mappo__a0p5__b0p5__s0__20261112T173120",
+  "algo": "torch_mlp",
+  "experiment": "mappo",
+  "description": "MAPPO: shared actor on local observations, centralized critic that also sees the global state (CTDE), same randomization as ps_ppo_randomized.",
   "alpha": 0.5,
   "beta": 0.5,
   "seed": 0,
@@ -20,11 +20,11 @@
     "n_steps": 1024,
     "batch_size": 256,
     "n_epochs": 5,
-    "t_max_s": 120.0,
-    "max_frames": 10000
+    "t_max_s": 600.0,
+    "max_frames": 100000
   },
   "training_steps": 53248,
-  "architecture": "MLP(128, 128) tanh -> Gaussian(2) (shared by all readers); critic MLP(128, 128)",
+  "architecture": "MAPPO (shared actor, centralized critic); actor MLP(128, 128) tanh -> Gaussian(2); critic MLP(128, 128) on obs + global state",
   "hyperparameters": {
     "learning_rate": 0.0003,
     "gamma": 0.99,
@@ -33,15 +33,16 @@
     "ent_coef": 0.005,
     "vf_coef": 0.5,
     "max_grad_norm": 0.5,
-    "net_arch": [
+    "hidden": [
       128,
       128
-    ]
+    ],
+    "slots": 18
   },
   "train_config": {
-    "name": "ps_ppo_randomized",
-    "algo": "ps_ppo",
-    "description": "Parameter-sharing PPO with domain randomization over 1-18 readers (random lattice subsets), start offsets, resource policies and subtype mixes: train once, deploy anywhere.",
+    "name": "mappo",
+    "algo": "mappo",
+    "description": "MAPPO: shared actor on local observations, centralized critic that also sees the global state (CTDE), same randomization as ps_ppo_randomized.",
     "alphas": [
       0.5
     ],
@@ -77,7 +78,7 @@
       "learning_rate": 0.0003,
       "gamma": 0.99,
       "ent_coef": 0.005,
-      "net_arch": [
+      "hidden": [
         128,
         128
       ]
@@ -110,9 +111,9 @@
       100,
       400
     ],
-    "t_max_s": 120.0,
-    "stall_timeout_s": 120.0,
-    "max_frames": 10000
+    "t_max_s": 600.0,
+    "stall_timeout_s": 600.0,
+    "max_frames": 100000
   },
   "observation_spec": {
     "history": 4,
@@ -169,28 +170,28 @@
     "sb3_contrib": "2.9.0",
     "gymnasium": "1.4.0"
   },
-  "git_commit": "b4e7522",
-  "config_hash": "40cba0bee061030573b9190bb9d0cc5a66def5efaf4ebc735126ad8e4fa67533",
-  "created_at": "2026-11-10T20:40:32-07:00",
-  "wall_time_s": 69.0,
-  "sha256": "9df6c20a99400c783dc57a474c23d2476cb3009cce5eb7f086c81d43ce281609",
-  "training_episodes": 107,
-  "mean_return_last20": 58.56102947501931,
+  "git_commit": "3938b9b",
+  "config_hash": "d482da4ee7f771bfdf682e6b8122e1bdc55bb16ea7304d2d41500224ef8cb0cc",
+  "created_at": "2026-11-12T10:34:54-07:00",
+  "wall_time_s": 213.3,
+  "sha256": "843f157bd6724d654fa3b79a2091703f829a628c6efeb3e1deda8165870ee59d",
+  "training_episodes": 41,
+  "mean_return_last20": 17.298130871658778,
   "eval_summary": {
     "dfsa": {
       "cells": 18,
-      "cells_reaching_99": 16,
-      "mean_identified_fraction": 0.9923607394516281,
+      "cells_reaching_99": 14,
+      "mean_identified_fraction": 0.9909464843216507,
       "geo_mean_t99_vs_dfsa": 1.0,
-      "mean_resource_efficiency": 0.05477395545357337
+      "mean_resource_efficiency": 0.012672303063214343
     },
     "policy": {
       "cells": 18,
-      "cells_reaching_99": 16,
-      "mean_identified_fraction": 0.963096032651975,
-      "geo_mean_t99_vs_dfsa": 0.977927914766967,
-      "mean_resource_efficiency": 0.07650402335407797
+      "cells_reaching_99": 14,
+      "mean_identified_fraction": 0.9852490031902073,
+      "geo_mean_t99_vs_dfsa": 1.362064635801291,
+      "mean_resource_efficiency": 0.006073416251298405
     }
   },
-  "promoted_from": "/home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/backend/training/outputs/ps_ppo_randomized/20261111T033923__a0p5__b0p5__s0"
+  "promoted_from": "/home/kali/Documents/Code/3GPP-Ambient-IoT-Inventory/Implements/backend/training/outputs/mappo/20261112T173120__a0p5__b0p5__s0"
 }

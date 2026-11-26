@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ParamHint } from '@/components/ParamHint'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,8 @@ import type {
 export const CONTROLLER_KINDS: ControllerKind[] = ['auto', 'fixed', 'dfsa', 'policy']
 export const RESOURCE_MODES: ResourceMode[] = ['independent', 'shared', 'fdma', 'tdma', 'hybrid', 'lbt']
 export const TERMINATION_KINDS: TerminationKind[] = ['oracle', 'quiet_rounds', 'id_rate', 'energy_bound', 'combined']
+/** Device 2a coverage of a default reader: the farthest backscatter device, still inside the harvesting range. */
+export const DEFAULT_EDGE_CAP_M = 41.4
 
 export const DEFAULT_RESOURCE: ResourceSpec = {
   mode: 'independent',
@@ -42,7 +45,7 @@ export function defaultTermination(kind: TerminationKind): TerminationSpec {
     case 'id_rate':
       return { kind, window_mode: 'rounds', window: 20, ewma_alpha: 0.1, r_min: null, r_rel: 0.01, min_frames: 5 }
     case 'energy_bound':
-      return { kind, margin: 0, energy_source: 'edge' }
+      return { kind, margin: 0, energy_source: 'edge', edge_cap_m: DEFAULT_EDGE_CAP_M, max_wait_s: null }
     case 'combined':
       return { kind, combine: 'all', rules: [defaultTermination('quiet_rounds'), defaultTermination('energy_bound')] }
     default:
@@ -60,8 +63,12 @@ export function terminationLabel(s: TerminationSpec): string {
       const win = s.window_mode === 'ewma' ? `alpha=${s.ewma_alpha ?? 0.1}` : `${s.window_mode ?? 'rounds'}=${s.window ?? 20}`
       return `id_rate(${win}, ${thr})`
     }
-    case 'energy_bound':
-      return `energy_bound(${s.energy_source ?? 'edge'}, margin=${s.margin ?? 0})`
+    case 'energy_bound': {
+      const src = s.energy_source ?? 'edge'
+      const cap = src === 'edge' && s.edge_cap_m != null ? `, edge<=${s.edge_cap_m}m` : ''
+      const wait = s.max_wait_s != null ? `, max_wait=${s.max_wait_s}s` : ''
+      return `energy_bound(${src}, margin=${s.margin ?? 0}${cap}${wait})`
+    }
     case 'combined':
       return `${s.combine ?? 'all'}(${(s.rules ?? []).map(terminationLabel).join(', ')})`
     default:
@@ -88,6 +95,44 @@ function Field({ label, hint, children, wide = false }: { label: string; hint?: 
       </span>
       {children}
     </label>
+  )
+}
+
+/** A number that can be switched off (null); unchecking keeps the typed value for re-checking. */
+function OptionalNumber({
+  label,
+  hint,
+  value,
+  fallback,
+  onChange,
+}: {
+  label: string
+  hint?: string
+  value: number | null | undefined
+  fallback: number
+  onChange: (v: number | null) => void
+}) {
+  const [last, setLast] = useState(value ?? fallback)
+  const on = value != null
+  return (
+    <div className="flex flex-col gap-1 text-xs">
+      <span className="flex items-center gap-1.5 text-muted-foreground">
+        <Checkbox checked={on} onCheckedChange={(v) => onChange(v === true ? last : null)} />
+        {label}
+        {hint ? <ParamHint text={hint} title={label} /> : null}
+      </span>
+      <Input
+        value={String(on ? value : last)}
+        disabled={!on}
+        onChange={(e) => {
+          const n = num(e.target.value, last)
+          if (n <= 0) return
+          setLast(n)
+          onChange(n)
+        }}
+        inputMode="decimal"
+      />
+    </div>
   )
 }
 
@@ -410,6 +455,22 @@ export function TerminationEditor({
           <Field label={t('thesis.newRun.termination.margin')} hint={t('thesis.newRun.termination.marginHint')}>
             <Input value={String(value.margin ?? 0)} onChange={(e) => set({ margin: Math.max(0, num(e.target.value, 0)) })} inputMode="decimal" />
           </Field>
+          {(value.energy_source ?? 'edge') === 'edge' ? (
+            <OptionalNumber
+              label={t('thesis.newRun.termination.edgeCap')}
+              hint={t('thesis.newRun.termination.edgeCapHint')}
+              value={value.edge_cap_m}
+              fallback={DEFAULT_EDGE_CAP_M}
+              onChange={(edge_cap_m) => set({ edge_cap_m })}
+            />
+          ) : null}
+          <OptionalNumber
+            label={t('thesis.newRun.termination.maxWait')}
+            hint={t('thesis.newRun.termination.maxWaitHint')}
+            value={value.max_wait_s}
+            fallback={1800}
+            onChange={(max_wait_s) => set({ max_wait_s })}
+          />
         </>
       ) : null}
       {value.kind === 'combined' ? (

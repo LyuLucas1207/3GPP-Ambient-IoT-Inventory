@@ -131,6 +131,10 @@ export type TerminationSpec = {
   min_frames?: number
   margin?: number
   energy_source?: 'edge' | 'actual'
+  /** energy_bound edge: farthest distance assumed for the worst case (null = each type's coverage radius) */
+  edge_cap_m?: number | null
+  /** energy_bound: upper bound on the wait after the last ID (null = none) */
+  max_wait_s?: number | null
   combine?: 'all' | 'any'
   rules?: TerminationSpec[]
 }

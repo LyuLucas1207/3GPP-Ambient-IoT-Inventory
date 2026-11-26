@@ -14,7 +14,6 @@ Outputs (next to this script, under ``results/``): ``termination_sweep.csv``
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -23,9 +22,14 @@ sys.path.insert(0, str(HERE.parent))
 
 from _common import mean_or_none, pmap, scene, times, write_csv  # noqa: E402
 
+import numpy as np  # noqa: E402
+
+from app.thesis_simulator.inventory.episode import build_episode  # noqa: E402
 from app.thesis_simulator.inventory.headless import run_headless  # noqa: E402
 from app.thesis_simulator.inventory.state import EpisodeConfig  # noqa: E402
-from app.thesis_simulator.inventory.termination import TerminationSpec, replay  # noqa: E402
+from app.thesis_simulator.inventory.termination import TerminationSpec, _all_specs, replay  # noqa: E402
+
+EDGE_CAP_M = 41.4  # Device 2a coverage of a default reader (see Docs/FORMULAS.md, T_wc)
 
 
 def rule_grid(quick: bool) -> list[dict]:
@@ -41,11 +45,24 @@ def rule_grid(quick: bool) -> list[dict]:
         for r in ([0.01, 0.05] if quick else [0.005, 0.01, 0.05]):
             rules.append({"kind": "id_rate", "window_mode": "ewma", "ewma_alpha": a, "r_rel": r})
     for m in ([0.0, 0.5] if quick else [0.0, 0.25, 0.5, 1.0]):
-        rules.append({"kind": "energy_bound", "margin": m, "energy_source": "edge"})
+        rules.append({"kind": "energy_bound", "margin": m, "energy_source": "edge", "edge_cap_m": EDGE_CAP_M})
+    rules.append({"kind": "energy_bound", "margin": 0.0, "energy_source": "edge"})
+    rules.append({"kind": "energy_bound", "margin": 0.0, "energy_source": "edge", "edge_cap_m": EDGE_CAP_M, "max_wait_s": 300.0})
     rules.append({"kind": "energy_bound", "margin": 0.0, "energy_source": "actual"})
-    rules.append({"kind": "combined", "combine": "any", "rules": [{"kind": "quiet_rounds", "quiet_rounds": 32}, {"kind": "energy_bound"}]})
-    rules.append({"kind": "combined", "combine": "all", "rules": [{"kind": "quiet_rounds", "quiet_rounds": 8}, {"kind": "energy_bound", "margin": 0.25}]})
+    eb = {"kind": "energy_bound", "edge_cap_m": EDGE_CAP_M}
+    rules.append({"kind": "combined", "combine": "any", "rules": [{"kind": "quiet_rounds", "quiet_rounds": 32}, eb]})
+    rules.append({"kind": "combined", "combine": "all", "rules": [{"kind": "quiet_rounds", "quiet_rounds": 8}, {**eb, "margin": 0.25}]})
     return rules
+
+
+def _t_wc_key(spec: TerminationSpec) -> tuple[str, float | None]:
+    """The (energy source, edge cap) a rule's T_wc is computed with."""
+    bounds = [s for s in _all_specs(spec) if s.kind == "energy_bound"]
+    if not bounds:
+        return ("edge", None)
+    src = "actual" if all(s.energy_source == "actual" for s in bounds) else "edge"
+    caps = [s.edge_cap_m for s in bounds if s.energy_source == "edge"]
+    return (src, max(caps) if caps and None not in caps else None)
 
 
 def _episode(job: dict) -> list[dict]:
@@ -55,23 +72,25 @@ def _episode(job: dict) -> list[dict]:
         "max_time_s": job["max_time"], "use_grouping": job["scheme"] == "periodic", "g": 2,
     }
     oracle = run_headless(sc, EpisodeConfig.from_json(job["scheme"], base), job["seed"])
-    t_wc = {r.reader_id: r.t_wc_s for r in oracle.state.readers}
-    # t_wc depends on the energy source; rebuild for "actual" rules.
-    t_wc_actual = None
+    # T_wc depends on the energy source and the edge cap; build each variant once.
+    t_wc_cache: dict[tuple[str, float | None], dict[int, float | None]] = {}
+
+    def t_wc_for(key: tuple[str, float | None]) -> dict[int, float | None]:
+        if key not in t_wc_cache:
+            term = {"kind": "energy_bound", "energy_source": key[0], "edge_cap_m": key[1]}
+            st = build_episode(sc, EpisodeConfig.from_json(job["scheme"], {**base, "termination": term}), np.random.default_rng(0))
+            t_wc_cache[key] = {r.reader_id: r.t_wc_s for r in st.readers}
+        return t_wc_cache[key]
+
     w = oracle.state.world
     reachable = int(w.N - (w.dropped & (w.drop_cause == 1)).sum())
     ot = times(oracle)
     rows = []
     for rule in job["rules"]:
         spec = TerminationSpec.from_json(rule)
-        uses_actual = "actual" in json.dumps(rule)
-        if uses_actual and t_wc_actual is None:
-            from app.thesis_simulator.inventory.episode import build_episode
-            import numpy as np
-
-            st = build_episode(sc, EpisodeConfig.from_json(job["scheme"], {**base, "termination": {"kind": "energy_bound", "energy_source": "actual"}}), np.random.default_rng(0))
-            t_wc_actual = {r.reader_id: r.t_wc_s for r in st.readers}
-        out = replay(spec, oracle.rounds, t_wc_by_reader=t_wc_actual if uses_actual else t_wc, reachable=reachable)
+        key = _t_wc_key(spec)
+        t_wc = t_wc_for(key)
+        out = replay(spec, oracle.rounds, t_wc_by_reader=t_wc, reachable=reachable)
         row = {
             "scheme": job["scheme"], "readers": job["readers"], "n": job["n"], "seed": job["seed"],
             "rule": spec.label(), "kind": spec.kind, "method": "replay",
@@ -79,7 +98,7 @@ def _episode(job: dict) -> list[dict]:
             "missed": out.missed, "missed_fraction": out.missed / max(1, out.identified_total),
             "t_stop": out.t_stop, "t_last_id": out.t_last_id, "t99": ot["t99"],
             "extra_time_s": out.extra_time_s, "extra_vs_t99_s": out.extra_vs_t99_s,
-            "t_wc_max_s": max((v for v in (t_wc_actual if uses_actual else t_wc).values() if v is not None), default=None),
+            "t_wc_max_s": max((v for v in t_wc.values() if v is not None), default=None),
         }
         rows.append(row)
         if job["online"] and not spec.is_oracle:

@@ -49,6 +49,10 @@ class TerminationSpec:
     min_frames: int = 5  # id_rate: frames after the first ID before the rule may fire
     margin: float = 0.0  # energy_bound safety factor
     energy_source: str = "edge"  # edge: link-budget worst case; actual: true min harvested power
+    # edge: farthest distance assumed for the worst case. Device 2b is heard far
+    # beyond where it can harvest (xi = 0 below -41 dBm), which makes T_wc infinite.
+    edge_cap_m: float | None = None
+    max_wait_s: float | None = None  # energy_bound: upper bound on T_wc * (1 + margin)
     combine: str = "all"  # combined: all | any
     rules: tuple["TerminationSpec", ...] = ()
 
@@ -78,6 +82,8 @@ class TerminationSpec:
             min_frames=max(0, int(raw.get("min_frames", default.min_frames))),
             margin=max(0.0, float(raw.get("margin", default.margin))),
             energy_source=str(raw.get("energy_source", default.energy_source)),
+            edge_cap_m=opt("edge_cap_m"),
+            max_wait_s=opt("max_wait_s"),
             combine=str(raw.get("combine", default.combine)),
             rules=tuple(cls.from_json(r) for r in raw.get("rules", ()) or ()),
         )
@@ -85,7 +91,7 @@ class TerminationSpec:
     def to_json(self) -> dict[str, Any]:
         out = {k: getattr(self, k) for k in (
             "kind", "quiet_rounds", "window_mode", "window", "ewma_alpha", "r_min", "r_rel",
-            "min_frames", "margin", "energy_source", "combine",
+            "min_frames", "margin", "energy_source", "edge_cap_m", "max_wait_s", "combine",
         )}
         out["rules"] = [r.to_json() for r in self.rules]
         return out
@@ -106,7 +112,11 @@ class TerminationSpec:
             win = f"alpha={self.ewma_alpha:g}" if self.window_mode == "ewma" else f"{self.window_mode}={self.window:g}"
             return f"id_rate({win}, {thr})"
         if k == "energy_bound":
-            return f"energy_bound({self.energy_source}, margin={self.margin:g})"
+            extra = "".join((
+                f", edge<={self.edge_cap_m:g}m" if self.edge_cap_m is not None and self.energy_source == "edge" else "",
+                f", max_wait={self.max_wait_s:g}s" if self.max_wait_s is not None else "",
+            ))
+            return f"energy_bound({self.energy_source}, margin={self.margin:g}{extra})"
         if k == "combined":
             return f"{self.combine}(" + ", ".join(r.label() for r in self.rules) + ")"
         return k
@@ -218,6 +228,14 @@ def spec_ewma_alpha(spec: TerminationSpec) -> float:
     return spec.ewma_alpha
 
 
+def energy_wait_s(spec: TerminationSpec, t_wc: float | None) -> float | None:
+    """Quiet time after the last ID before ``energy_bound`` fires (None = never)."""
+    wait = t_wc * (1.0 + spec.margin) if t_wc is not None and math.isfinite(t_wc) else math.inf
+    if spec.max_wait_s is not None:
+        wait = min(wait, spec.max_wait_s)
+    return wait if math.isfinite(wait) else None
+
+
 def evaluate(spec: TerminationSpec, st: TermState, t_now: float, t_wc: float | None) -> str | None:
     """Return a stop reason, or None to keep paging."""
     k = spec.kind
@@ -241,10 +259,11 @@ def evaluate(spec: TerminationSpec, st: TermState, t_now: float, t_wc: float | N
             return "id_rate"
         return None
     if k == "energy_bound":
-        if t_wc is None or not math.isfinite(t_wc):
+        wait = energy_wait_s(spec, t_wc)
+        if wait is None:
             return None
         ref = st.last_id_t if st.last_id_t is not None else (st.t_first or 0.0)
-        return "energy_bound" if t_now - ref >= t_wc * (1.0 + spec.margin) else None
+        return "energy_bound" if t_now - ref >= wait else None
     if k == "combined":
         if not spec.rules:
             return None

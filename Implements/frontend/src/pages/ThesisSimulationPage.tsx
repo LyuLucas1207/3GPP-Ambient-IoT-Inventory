@@ -232,6 +232,7 @@ export default function ThesisSimulationPage() {
             live={runs.selectedRunId != null ? live.devices : null}
             flagPending={flagPending}
             run={selectedRun}
+            runTime={runs.selectedRunId != null ? live.viewTime ?? live.simTime : null}
             selectedDeviceId={selectedDeviceId}
             onSelectDevice={inspectDevice}
             onSelectReader={selectedRun ? (id) => inspectReader(id) : undefined}

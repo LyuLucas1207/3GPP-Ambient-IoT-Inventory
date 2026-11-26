@@ -30,6 +30,7 @@ from app.thesis_simulator.inventory.energy import (
     _pl_nlos_vector,
     advance_availability,
     compute_reader_contribution,
+    harvested_power_w,
     init_stationary,
 )
 from app.thesis_simulator.inventory.estimator import BacklogEstimator
@@ -52,6 +53,7 @@ from app.thesis_simulator.inventory.termination import (
     _all_specs,
     advance_empty,
     empty_frames_to_stop,
+    energy_wait_s,
     evaluate,
     observe,
     worst_case_recharge_s,
@@ -115,11 +117,12 @@ class EpisodeState:
         spec = self.config.termination
         if limit is None or spec.is_oracle:
             return limit
-        bounds = [s for s in _all_specs(spec) if s.kind == "energy_bound"]
-        t_wc = [r.t_wc_s for r in self.readers if r.t_wc_s is not None and math.isfinite(r.t_wc_s)]
-        if bounds and t_wc:
-            margin = max(s.margin for s in bounds)
-            limit = max(limit, 1.2 * max(t_wc) * (1.0 + margin))
+        waits = [
+            w for s in _all_specs(spec) if s.kind == "energy_bound"
+            for w in (energy_wait_s(s, r.t_wc_s) for r in self.readers) if w is not None
+        ]
+        if waits:
+            limit = max(limit, 1.2 * max(waits))
         return limit
 
     def stalled(self) -> bool:
@@ -159,9 +162,10 @@ def build_episode(
     placements = snapshot.get("placements", [])
     world = _build_world(placements)
     readers = _build_readers(placements, world, config) if world.N else []
-    world.Ph_total[:] = 0.0
+    pin_total = np.zeros(world.N)
     for r in readers:
-        world.Ph_total += r.Ph_contrib
+        pin_total += r.Ph_contrib
+    world.Ph_total[:] = harvested_power_w(pin_total)
     if readers:
         world.readers_in_range[:] = np.sum([r.cover_mask for r in readers], axis=0).astype(np.int16)
     _assign_recharge_bounds(readers, world, config)
@@ -423,8 +427,10 @@ def _assign_recharge_bounds(readers: list[ReaderState], world: DeviceWorld, conf
     and charged by this reader only. ``actual``: the true minimum harvested
     power among covered devices (all readers' CW), an oracle variant.
     """
-    sources = {s.energy_source for s in _all_specs(config.termination) if s.kind == "energy_bound"}
-    source = "actual" if sources == {"actual"} else "edge"
+    bounds = [s for s in _all_specs(config.termination) if s.kind == "energy_bound"]
+    source = "actual" if bounds and all(s.energy_source == "actual" for s in bounds) else "edge"
+    caps = [s.edge_cap_m for s in bounds if s.energy_source == "edge"]
+    edge_cap = max(caps) if caps and None not in caps else None
     for r in readers:
         cov = r.cover_mask
         if not cov.any():
@@ -434,6 +440,8 @@ def _assign_recharge_bounds(readers: list[ReaderState], world: DeviceWorld, conf
             ph = world.Ph_total[cov]
         else:
             radius = r.coverage_radius[cov]
+            if edge_cap is not None:
+                radius = np.minimum(radius, edge_cap)
             d3 = np.sqrt(radius * radius + (physics.H_BS - physics.H_AIOT) ** 2)
             rf = r.rf
             pin_dbm = (
@@ -441,7 +449,7 @@ def _assign_recharge_bounds(readers: list[ReaderState], world: DeviceWorld, conf
                 - _pl_nlos_vector(d3, float(rf.get("carrier_ghz", physics.FC_GHZ)))
                 - physics.FIXED_DEV_DB - physics.L_OBJ_DB - float(rf.get("extra_attenuation_db", 0.0))
             )
-            ph = 10.0 ** ((pin_dbm - 30.0) / 10.0)
+            ph = harvested_power_w(10.0 ** ((pin_dbm - 30.0) / 10.0))
         t_on = np.maximum(world.T_on_default[cov], world.T_on_dcm[cov])
         r.t_wc_s = worst_case_recharge_s(ecap=world.Ecap[cov], eoff=world.Eoff[cov], ph=ph, t_on=t_on)
 

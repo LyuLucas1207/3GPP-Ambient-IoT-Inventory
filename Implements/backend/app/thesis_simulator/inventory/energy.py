@@ -7,6 +7,7 @@ import math
 
 import numpy as np
 
+from app.common.rf import harvest_power_w, watts_to_dbm
 from app.thesis_simulator import physics
 from app.thesis_simulator.inventory.state import DeviceWorld, ReaderState
 
@@ -166,6 +167,16 @@ def compute_reader_contribution(reader: ReaderState, world: DeviceWorld) -> np.n
     pl = _pl_nlos_vector(d3, carrier)
     pin_dbm = tx + gain - pl - physics.FIXED_DEV_DB - physics.L_OBJ_DB - extra
     return _dbm_to_w_vector(pin_dbm)
+
+
+def harvested_power_w(pin_w: np.ndarray) -> np.ndarray:
+    """P_h = xi(P_in) * P_in on the total incident CW power (W), as in the
+    aperiodic paper's Eq. (9) and ``Sources/.../grouping_logic.py``."""
+    pin_w = np.asarray(pin_w, dtype=np.float64)
+    out = np.zeros_like(pin_w)
+    pos = pin_w > 0.0
+    out[pos] = harvest_power_w(watts_to_dbm(pin_w[pos]))
+    return out
 
 
 def _pl_nlos_vector(d_m: np.ndarray, fc_ghz: float) -> np.ndarray:

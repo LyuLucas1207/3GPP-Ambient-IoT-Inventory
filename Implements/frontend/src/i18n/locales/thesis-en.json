@@ -109,9 +109,9 @@
         "kind": "Controller",
         "kinds": {
           "auto": "Auto (from the Adaptive K switch)",
-          "fixed": "Fixed K",
-          "dfsa": "DFSA (K ≈ 2N̂)",
-          "policy": "RL policy"
+          "fixed": "Fixed frame size (K)",
+          "dfsa": "Dynamic Framed Slotted ALOHA (DFSA)",
+          "policy": "Reinforcement Learning (RL)"
         },
         "autoDfsa": "Adaptive K is on → DFSA",
         "autoFixed": "Adaptive K is off → fixed K",
@@ -215,6 +215,10 @@
         },
         "margin": "Margin",
         "marginHint": "Extra fraction added to t_wc (0.1 = +10 %).",
+        "edgeCap": "Edge at most (m)",
+        "edgeCapHint": "Farthest distance used for the worst case. Device 2b is heard up to ~137 m but cannot harvest beyond ~62 m (ξ = 0 below −41 dBm), so without a cap t_wc is infinite and the rule never fires. 41.4 m = Device 2a coverage, the farthest backscatter device. Untick to use each type's own coverage radius.",
+        "maxWait": "Max wait (s)",
+        "maxWaitHint": "Upper bound on the wait after the last ID: the reader stops after min(t_wc × (1 + margin), this). Untick for no bound.",
         "combine": "Combine",
         "combineModes": {
           "all": "All (AND)",
@@ -309,6 +313,7 @@
           "notOracle": "This run already used a non-oracle rule; the replay only sees frames up to its own stop, so rules that would stop later are cut off.",
           "multiApprox": "Several readers: each is replayed on its own frame history. A device its reader would only have found after stopping counts as missed, although in a live run a neighbouring reader might still have found it, so missed devices are an upper bound (see the design doc).",
           "front": "Pareto front",
+          "zoomed": "The axis is zoomed to the cluster. Rules that keep paging much longer (up to {{max}} s) are the triangles on the right edge.",
           "extra": "Extra time after last ID (s)",
           "missed": "Missed devices (%)",
           "addRule": "Add to comparison",

@@ -59,6 +59,8 @@ class TerminationIn(BaseModel):
     min_frames: int = Field(default=5, ge=0, le=100000)
     margin: float = Field(default=0.0, ge=0.0, le=100.0)
     energy_source: Literal["edge", "actual"] = "edge"
+    edge_cap_m: float | None = Field(default=None, gt=0.0, le=10000.0)
+    max_wait_s: float | None = Field(default=None, gt=0.0, le=1e6)
     combine: Literal["all", "any"] = "all"
     rules: list["TerminationIn"] = Field(default_factory=list, max_length=8)
 
