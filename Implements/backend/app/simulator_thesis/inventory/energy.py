@@ -153,20 +153,28 @@ def init_stationary(world: DeviceWorld, rng: np.random.Generator) -> None:
     world.on[world.on < 0.0] = 0.0
 
 
-def compute_reader_contribution(reader: ReaderState, world: DeviceWorld) -> np.ndarray:
-    """Return per-device Pin (W) contributed by this reader."""
-    rf = reader.rf
+def incident_cw_w(x_m: float, y_m: float, rf: dict, world: DeviceWorld) -> np.ndarray:
+    """Incident CW power (W) at every device from one base station.
+
+    Readers and stations use the same link budget. A station only contributes
+    this power; it does not page.
+    """
     tx = float(rf.get("tx_power_dbm", 33.0))
     gain = float(rf.get("antenna_gain_dbi", 6.0))
     extra = float(rf.get("extra_attenuation_db", 0.0))
     carrier = float(rf.get("carrier_ghz", 0.9))
-    dx = world.x_m - reader.x_m
-    dy = world.y_m - reader.y_m
+    dx = world.x_m - x_m
+    dy = world.y_m - y_m
     dz = physics.H_BS - physics.H_AIOT
     d3 = np.sqrt(dx * dx + dy * dy + dz * dz)
     pl = _pl_nlos_vector(d3, carrier)
     pin_dbm = tx + gain - pl - physics.FIXED_DEV_DB - physics.L_OBJ_DB - extra
     return _dbm_to_w_vector(pin_dbm)
+
+
+def compute_reader_contribution(reader: ReaderState, world: DeviceWorld) -> np.ndarray:
+    """Return per-device Pin (W) contributed by this reader."""
+    return incident_cw_w(reader.x_m, reader.y_m, reader.rf, world)
 
 
 def harvested_power_w(pin_w: np.ndarray) -> np.ndarray:

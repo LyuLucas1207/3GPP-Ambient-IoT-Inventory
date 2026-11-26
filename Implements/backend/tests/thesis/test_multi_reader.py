@@ -124,6 +124,20 @@ def test_energy_bound_edge_cap_and_max_wait():
     assert evaluate(TerminationSpec.from_json({"kind": "energy_bound"}), st, 1e9, math.inf) is None
 
 
+def test_stations_add_cw_without_becoming_readers():
+    """Paper multi-source: a station radiates CW for harvest and does not page."""
+    scene = synthetic_scene(40, reader_xy=[(60.0, 30.0)], seed=1)
+    bare = build_episode(scene, _cfg(), np.random.default_rng(0))
+    scene["placements"].append(
+        {"id": 200_000, "kind": "station", "subtype": None, "x_m": 20.0, "y_m": 30.0, "params": {}}
+    )
+    with_station = build_episode(scene, _cfg(), np.random.default_rng(0))
+    readers_only = build_episode(scene, _cfg(station_cw=False), np.random.default_rng(0))
+    assert len(with_station.readers) == len(bare.readers) == 1
+    assert (with_station.world.Ph_total > bare.world.Ph_total).all()
+    np.testing.assert_allclose(readers_only.world.Ph_total, bare.world.Ph_total)
+
+
 def test_harvested_power_applies_conversion_efficiency_to_total_cw():
     st = build_episode(GRID, _cfg(), np.random.default_rng(0))
     pin_w = sum(r.Ph_contrib for r in st.readers)

@@ -55,6 +55,7 @@ export function NewRunDialog({
   const [useEbi, setUseEbi] = useState(true)
   const [includeD2r, setIncludeD2r] = useState(true)
   const [singleReply, setSingleReply] = useState(false)
+  const [stationCw, setStationCw] = useState(true)
   const [seed, setSeed] = useState('')
   const [disabledReaders, setDisabledReaders] = useState<Set<number>>(new Set())
   const [stagger, setStagger] = useState(false)
@@ -102,6 +103,7 @@ export function NewRunDialog({
       use_ebi: useEbi,
       include_d2r: includeD2r,
       single_reply: singleReply,
+      station_cw: stationCw,
       seed: seed === '' ? null : Number(seed),
       disabled_reader_ids: Array.from(disabledReaders),
       f_freq: positiveOrNull(fFreq),
@@ -253,6 +255,12 @@ export function NewRunDialog({
               hint={t('thesis.newRun.includeD2rHint')}
             />
             <OptionToggle
+              checked={stationCw}
+              onChange={setStationCw}
+              label={t('thesis.newRun.stationCw')}
+              hint={t('thesis.newRun.stationCwHint')}
+            />
+            <OptionToggle
               checked={singleReply}
               onChange={setSingleReply}
               label={t('thesis.newRun.singleReply')}
@@ -368,6 +376,7 @@ export function NewRunDialog({
                 useEbi={useEbi}
                 includeD2r={includeD2r}
                 singleReply={singleReply}
+                stationCw={stationCw}
                 kInitial={kInitial}
                 pFixed={pFixed}
                 controller={controller}
@@ -468,6 +477,7 @@ function RunPreview({
   useEbi,
   includeD2r,
   singleReply,
+  stationCw,
   kInitial,
   pFixed,
   controller,
@@ -494,6 +504,7 @@ function RunPreview({
   useEbi: boolean
   includeD2r: boolean
   singleReply: boolean
+  stationCw: boolean
   kInitial: string
   pFixed: string
   controller: ControllerSpec
@@ -524,6 +535,7 @@ function RunPreview({
         <PreviewRow label={t('thesis.newRun.useCapture')} value={flag(useCapture)} />
         <PreviewRow label={t('thesis.newRun.useEbi')} value={flag(useEbi)} />
         <PreviewRow label={t('thesis.newRun.includeD2r')} value={flag(includeD2r)} />
+        <PreviewRow label={t('thesis.newRun.stationCw')} value={flag(stationCw)} />
         <PreviewRow label={t('thesis.newRun.singleReply')} value={flag(singleReply)} />
       </PreviewGroup>
       <PreviewGroup title={t('thesis.newRun.tabs.frame')} onEdit={() => onEdit(1)} editLabel={t('thesis.newRun.wizard.edit')}>

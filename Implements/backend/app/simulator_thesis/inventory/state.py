@@ -249,6 +249,8 @@ class EpisodeConfig:
     adaptive_k: bool = False
     # Fixed controller only. None keeps the backlog estimator; a number is sent in every page.
     p_fixed: float | None = None
+    # Paper multi-source harvest: stations radiate CW. False keeps reader CW only.
+    station_cw: bool = True
     controller: ControllerSpec = field(default_factory=ControllerSpec)
     termination: TerminationSpec = field(default_factory=TerminationSpec)
     resource: ResourceSpec = field(default_factory=ResourceSpec)
@@ -282,6 +284,7 @@ class EpisodeConfig:
             stall_timeout_s=None if stall in (None, "") else float(stall),
             adaptive_k=adaptive_k,
             p_fixed=_fixed_p(cfg.get("p_fixed")),
+            station_cw=bool(cfg.get("station_cw", True)),
             controller=ControllerSpec.from_json(cfg.get("controller")),
             termination=TerminationSpec.from_json(cfg.get("termination")),
             resource=ResourceSpec.from_json(cfg.get("resource")),

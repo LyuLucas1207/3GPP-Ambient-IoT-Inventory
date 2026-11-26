@@ -365,6 +365,15 @@ function runConfigChips(
     key: 'ebi',
     label: bool('use_ebi', true) ? t('thesis.live.configOn', { name: 'EBI' }) : t('thesis.live.configOff', { name: 'EBI' }),
   })
+  if (typeof cfg.station_cw === 'boolean') {
+    chips.push({
+      key: 'stationCw',
+      label: cfg.station_cw
+        ? t('thesis.live.configOn', { name: t('thesis.newRun.stationCw') })
+        : t('thesis.live.configOff', { name: t('thesis.newRun.stationCw') }),
+      title: t('thesis.newRun.stationCwHint'),
+    })
+  }
   chips.push({
     key: 'd2r',
     label: bool('include_d2r', run.include_d2r !== false)

@@ -31,6 +31,7 @@ from app.simulator_thesis.inventory.energy import (
     advance_availability,
     compute_reader_contribution,
     harvested_power_w,
+    incident_cw_w,
     init_stationary,
 )
 from app.simulator_thesis.inventory.estimator import BacklogEstimator
@@ -162,9 +163,16 @@ def build_episode(
     placements = snapshot.get("placements", [])
     world = _build_world(placements)
     readers = _build_readers(placements, world, config) if world.N else []
+    # Paper multi-source harvest: every BS transmits CW. Readers page; stations
+    # only add incident power (no paging, no extra uplink interference).
     pin_total = np.zeros(world.N)
     for r in readers:
         pin_total += r.Ph_contrib
+    if config.station_cw:
+        for p in placements:
+            if p.get("kind") != "station":
+                continue
+            pin_total += incident_cw_w(float(p["x_m"]), float(p["y_m"]), dict(p.get("params") or {}), world)
     world.Ph_total[:] = harvested_power_w(pin_total)
     if readers:
         world.readers_in_range[:] = np.sum([r.cover_mask for r in readers], axis=0).astype(np.int16)
@@ -425,7 +433,7 @@ def _assign_recharge_bounds(readers: list[ReaderState], world: DeviceWorld, conf
     ``edge``: link-budget worst case the reader can compute from device-type
     knowledge alone - every covered device placed at its type's coverage edge
     and charged by this reader only. ``actual``: the true minimum harvested
-    power among covered devices (all readers' CW), an oracle variant.
+    power among covered devices (CW from every reader and station), an oracle variant.
     """
     bounds = [s for s in _all_specs(config.termination) if s.kind == "energy_bound"]
     source = "actual" if bounds and all(s.energy_source == "actual" for s in bounds) else "edge"

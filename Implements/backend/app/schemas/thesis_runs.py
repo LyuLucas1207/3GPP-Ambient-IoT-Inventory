@@ -91,6 +91,8 @@ class RunCreateIn(BaseModel):
     # Fixed controller: this access probability is written into every paging message.
     # None keeps the backlog estimator (older runs).
     p_fixed: float | None = Field(default=None, gt=0.0, le=1.0)
+    # Paper multi-source: stations also transmit CW for harvest. Off = reader CW only.
+    station_cw: bool = True
     seed: int | None = None
     reader_start_offsets: dict[str, float] = Field(default_factory=dict)
     # Staggered start, recorded for analysis: reader ids per start group (group i

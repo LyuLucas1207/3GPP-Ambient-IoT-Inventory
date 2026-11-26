@@ -159,6 +159,8 @@ export type RunCreateInput = {
   include_d2r: boolean
   /** After joining one reader, ignore other readers until that round ends. */
   single_reply?: boolean
+  /** Stations also transmit CW so devices can harvest. Default matches the paper multi-source case. */
+  station_cw?: boolean
   /** Fixed controller: access probability written into every paging message. */
   p_fixed?: number | null
   seed?: number | null
