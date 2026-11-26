@@ -231,6 +231,8 @@ def run_summary(run: ThesisInventoryRun) -> dict[str, Any]:
         "policy_id": (cfg.get("controller") or {}).get("policy_id"),
         "resource_mode": str((cfg.get("resource") or {}).get("mode") or "independent"),
         "termination_label": str((metrics.get("termination") or {}).get("label") or (cfg.get("termination") or {}).get("kind") or "oracle"),
+        "episodes": max(1, int(cfg.get("episodes") or 1)),
+        "episodes_done": int(metrics.get("episodes_done") or 0),
     }
 
 

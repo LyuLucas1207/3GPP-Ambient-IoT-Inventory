@@ -161,6 +161,8 @@ export type RunCreateInput = {
   single_reply?: boolean
   /** Stations also transmit CW so devices can harvest. Default matches the paper multi-source case. */
   station_cw?: boolean
+  /** Every device starts at full stored energy and on. Off keeps the random charge-cycle phase. */
+  full_energy?: boolean
   /** Fixed controller: access probability written into every paging message. */
   p_fixed?: number | null
   seed?: number | null
@@ -174,6 +176,8 @@ export type RunCreateInput = {
   controller?: ControllerSpec
   resource?: ResourceSpec
   termination?: TerminationSpec
+  /** 1 = one replayable trajectory. Above 1 averages that many seeds and keeps only the mean curves. */
+  episodes?: number
 }
 
 export type IdentificationPoint = [number, number]
@@ -205,6 +209,8 @@ export type RunAnalysis = {
   summary: RunSummary
   config?: Record<string, unknown>
   identification_curve: IdentificationPoint[]
+  /** Average runs: [time_s, 5th percentile, 95th percentile] of the identified count. */
+  identification_band?: Array<[number, number, number]> | null
   identification_by_subtype?: Record<string, IdentificationPoint[]>
   completion_times: CompletionTimes
   population_completion_times?: CompletionTimes
@@ -245,6 +251,9 @@ export type RunSummary = {
   policy_id?: string | null
   resource_mode?: string
   termination_label?: string
+  /** 1 for a single trajectory. Above 1 is an average over that many seeds. */
+  episodes?: number
+  episodes_done?: number
 }
 
 export type RunDetail = {

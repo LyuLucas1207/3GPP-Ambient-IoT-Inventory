@@ -185,6 +185,10 @@ class LiveRunner(threading.Thread):
             return
         config = EpisodeConfig.from_json(run.scheme, run.config_json or {})
         scene = dict(run.scene_snapshot_json or {})
+        episodes = int((run.config_json or {}).get("episodes") or 1)
+        if episodes > 1:
+            self._run_batch(db, run, config, scene, episodes)
+            return
         emit = EventEmitter(run_id=run.id)
         ckpt = db.get(ThesisRunCheckpoint, run.id)
         if ckpt is not None:
@@ -281,6 +285,96 @@ class LiveRunner(threading.Thread):
                     emit_ckpt = False
                 self._persist(db, run, state, emit, now - active_since, checkpoint=emit_ckpt)
                 last_flush = time.monotonic()
+
+    def _run_batch(self, db: Session, run: ThesisInventoryRun, config: EpisodeConfig, scene: dict[str, Any], episodes: int) -> None:
+        """Repeat the episode and keep the mean. No event log, so the run cannot be replayed."""
+        from app.simulator_thesis.inventory.batch import average_samples, sample_episode
+
+        base = int(config.seed) if config.seed is not None else int(run.id)
+        run.status = "running"
+        run.started_at = run.started_at or utcnow()
+        run.completed_at = None
+        run.updated_at = utcnow()
+        self._write_batch_summary(db, run, config, [], episodes, base, 0.0)
+        db.commit()
+        self.status = "running"
+        self._publish_status()
+
+        active_since = time.monotonic()
+        samples: list[dict[str, Any]] = []
+        stopped = False
+        for index in range(episodes):
+            if self._stop.is_set() or self._pause.is_set():
+                stopped = True
+                break
+            sample = sample_episode(scene, config, base + index, self._stop)
+            if sample is None:
+                stopped = True
+                break
+            samples.append(sample)
+            self._write_batch_summary(db, run, config, samples, episodes, base, time.monotonic() - active_since)
+            db.commit()
+            self._publish_status()
+        status = "stopped" if stopped or self._stop.is_set() or self._pause.is_set() else "completed"
+        run.duration_s = (run.duration_s or 0.0) + (time.monotonic() - active_since)
+        run.status = status
+        run.updated_at = utcnow()
+        run.completed_at = run.updated_at
+        self._write_batch_summary(db, run, config, samples, episodes, base, 0.0)
+        db.commit()
+        self.status = status
+        self._publish_status()
+
+    def _write_batch_summary(
+        self,
+        db: Session,
+        run: ThesisInventoryRun,
+        config: EpisodeConfig,
+        samples: list[dict[str, Any]],
+        episodes: int,
+        base_seed: int,
+        extra_wall: float,
+    ) -> None:
+        summary = run.summary
+        if summary is None:
+            summary = ThesisRunSummary(run_id=run.id, identified_by_subtype_json={})
+            db.add(summary)
+            run.summary = summary
+        if samples:
+            avg = average_samples(samples, episodes=episodes, base_seed=base_seed)
+            summary.total_devices = int(avg["total"])
+            summary.identified_total = int(round(avg["identified"]))
+            summary.identified_by_subtype_json = {k: int(round(v)) for k, v in avg["identified_by_subtype"].items()}
+            summary.died_count = int(round(avg["depletions"]))
+            summary.dropped_count = int(round(avg["dropped"]))
+            summary.rounds_total = int(round(avg["rounds"]))
+            sim_time = float(avg["sim_time_s"])
+            unreachable = int(round(avg["unreachable"]))
+            terminated = int(round(avg["terminated_early"]))
+            readers_stopped = int(round(avg["readers_stopped"]))
+            batch = avg
+        else:
+            summary.total_devices = len(scene_device_ids(run))
+            summary.identified_total = 0
+            summary.identified_by_subtype_json = {}
+            summary.died_count = 0
+            summary.dropped_count = 0
+            summary.rounds_total = 0
+            sim_time = 0.0
+            unreachable = terminated = readers_stopped = 0
+            batch = {"episodes": episodes, "episodes_done": 0, "curve": [], "band": [], "by_subtype": {}, "contribution": {}, "aggregates": None}
+        summary.wall_duration_s = float((run.duration_s or 0.0) + extra_wall)
+        summary.metrics_json = {
+            "sim_time_s": sim_time,
+            "unreachable": unreachable,
+            "episodes_done": len(samples),
+            "terminated_early": terminated,
+            "readers_stopped": readers_stopped,
+            "batch": batch,
+            "controller": config.controller.to_json(),
+            "termination": {**config.termination.to_json(), "label": config.termination.label()},
+            "resource": config.resource.to_json(),
+        }
 
     def _persist(
         self,

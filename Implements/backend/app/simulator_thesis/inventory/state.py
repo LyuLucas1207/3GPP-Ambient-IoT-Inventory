@@ -251,6 +251,8 @@ class EpisodeConfig:
     p_fixed: float | None = None
     # Paper multi-source harvest: stations radiate CW. False keeps reader CW only.
     station_cw: bool = True
+    # True: every device starts at Ecap and on. False: random point in the charge cycle.
+    full_energy: bool = False
     controller: ControllerSpec = field(default_factory=ControllerSpec)
     termination: TerminationSpec = field(default_factory=TerminationSpec)
     resource: ResourceSpec = field(default_factory=ResourceSpec)
@@ -285,6 +287,7 @@ class EpisodeConfig:
             adaptive_k=adaptive_k,
             p_fixed=_fixed_p(cfg.get("p_fixed")),
             station_cw=bool(cfg.get("station_cw", True)),
+            full_energy=bool(cfg.get("full_energy", False)),
             controller=ControllerSpec.from_json(cfg.get("controller")),
             termination=TerminationSpec.from_json(cfg.get("termination")),
             resource=ResourceSpec.from_json(cfg.get("resource")),

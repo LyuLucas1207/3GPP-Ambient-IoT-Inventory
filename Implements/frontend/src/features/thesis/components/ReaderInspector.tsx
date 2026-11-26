@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { X } from 'lucide-react'
-import { useMemo } from 'react'
+import { GripVertical, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchDeviceMap, fetchIdentifications } from '@/apis/thesisRuns'
 import { axis, baseLayout, MATLAB, PLOT_CONFIG } from '@/features/aperiodic/components/plotLayout'
@@ -19,11 +19,23 @@ import type { InterferenceReport, Placement, RunRound, RunStatus } from '@/featu
 const SUBTYPES = ['1', '2a', '2b'] as const
 const STAGES = ['paging', 'm1', 'ebi', 'm2', 'm3'] as const
 const IDENTIFIED = RUN_STATE_LABELS.indexOf('identified')
+const WIDTH_KEY = 'thesis.readerDrawer.width'
+const WIDTH_MIN = 420
+const WIDTH_DEFAULT = 560
+
+function readDrawerWidth(): number {
+  try {
+    const v = Number(localStorage.getItem(WIDTH_KEY))
+    return Number.isFinite(v) && v >= WIDTH_MIN ? v : WIDTH_DEFAULT
+  } catch {
+    return WIDTH_DEFAULT
+  }
+}
 
 /**
- * Right-hand drawer for one reader of the selected run: what it covers, how
- * many devices it identified itself (vs. other readers inside its coverage),
- * its slot statistics, and its cumulative identifications over time.
+ * Right-hand column for one reader of the selected run, same shell as the
+ * device drawer: full height, slides in from the right, close and a width
+ * drag at the top. Contents: coverage, identifications, slots, and the curve.
  * Device map + identifications come from the same TanStack queries as the charts.
  */
 export function ReaderInspector({
@@ -42,6 +54,13 @@ export function ReaderInspector({
   onClose: () => void
 }) {
   const { t } = useTranslation()
+  const [width, setWidth] = useState(readDrawerWidth)
+  const [shown, setShown] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
   const rid = reader.id as number
   const isLive = runStatus === 'running' || runStatus === 'pending'
   const mapQuery = useQuery({ queryKey: thesisKeys.deviceMap(runId), queryFn: () => fetchDeviceMap(runId), staleTime: Infinity })
@@ -132,17 +151,62 @@ export function ReaderInspector({
   const pct = (a: number, b: number) => (b > 0 ? `${((100 * a) / b).toFixed(1)}%` : '—')
   const rf = reader.params
 
+  function startResize(event: React.PointerEvent) {
+    event.preventDefault()
+    const startX = event.clientX
+    const startW = width
+    setDragging(true)
+    const move = (ev: PointerEvent) => {
+      const max = Math.min(960, window.innerWidth * 0.72)
+      const next = Math.min(max, Math.max(WIDTH_MIN, startW + startX - ev.clientX))
+      setWidth(next)
+    }
+    const up = () => {
+      setDragging(false)
+      setWidth((current) => {
+        try {
+          localStorage.setItem(WIDTH_KEY, String(Math.round(current)))
+        } catch {
+          /* per-viewer convenience only */
+        }
+        return current
+      })
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }
+
   return (
-    <aside className="absolute top-14 right-0 bottom-0 z-20 flex w-[min(440px,calc(100%-16px))] flex-col overflow-hidden rounded-tl-xl border-t border-l bg-card/95 shadow-xl backdrop-blur-md">
-      <header className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
-        <div className="min-w-0">
+    <aside
+      className={`relative flex h-full shrink-0 flex-col overflow-hidden border-l bg-card ${dragging ? '' : 'transition-[width] duration-200 ease-out'}`}
+      style={{ width: shown ? width : 0 }}
+    >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={t('thesis.inspector.resize')}
+        className="absolute inset-y-0 left-0 z-10 w-1.5 cursor-ew-resize hover:bg-foreground/15"
+        onPointerDown={startResize}
+      />
+      <header className="flex shrink-0 items-center gap-2 border-b px-2 py-1.5 pr-12">
+        <button
+          type="button"
+          aria-label={t('thesis.inspector.resize')}
+          className="inline-flex size-7 cursor-ew-resize items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          onPointerDown={startResize}
+        >
+          <GripVertical className="size-4" />
+        </button>
+        <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-medium">{t('thesis.readerInspector.title', { id: rid })}</h2>
           <p className="text-[11px] text-muted-foreground tabular-nums">
             ({reader.x_m.toFixed(1)}, {reader.y_m.toFixed(1)}) m · {String(rf.tx_power_dbm ?? 33)} dBm ·{' '}
             {String(rf.antenna_gain_dbi ?? 6)} dBi · {String(rf.carrier_ghz ?? 0.9)} GHz
           </p>
         </div>
-        <Button type="button" size="icon-sm" variant="ghost" onClick={onClose} aria-label={t('thesis.inspector.close')}>
+        <Button type="button" size="icon-sm" variant="outline" className="relative z-40 bg-background" onClick={onClose} aria-label={t('thesis.inspector.close')} title={t('thesis.inspector.closeKey')}>
           <X />
         </Button>
       </header>

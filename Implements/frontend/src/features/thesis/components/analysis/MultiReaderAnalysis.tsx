@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { fetchDeviceMetrics, fetchInterference } from '@/apis/thesisRuns'
 import { axis, baseLayout, PLOT_CONFIG } from '@/features/aperiodic/components/plotLayout'
 import { defaultTermination, terminationLabel, TerminationEditor } from '@/features/thesis/components/MultiReaderOptions'
+import { ParamHint } from '@/components/ParamHint'
 import { Button } from '@/components/ui/button'
 import { Dropdown } from '@/components/ui/dropdown'
 import { useTerminationReplay } from '@/features/thesis/hooks/useMultiReader'
@@ -471,7 +472,10 @@ export function DeviceMetricsPanel({ analyses }: { analyses: RunAnalysis[] }) {
       <div className="grid gap-3 xl:grid-cols-3">
         {METRIC_KEYS.map((key) => (
           <div key={key}>
-            <h4 className="mb-1 text-[11px] font-medium">{t(`thesis.deviceMetrics.${camel(key)}`)}</h4>
+            <h4 className="mb-1 flex items-center gap-1 text-[11px] font-medium">
+              {t(`thesis.deviceMetrics.${camel(key)}`)}
+              <ParamHint text={t(`thesis.deviceMetrics.chart.${camel(key)}`)} title={t(`thesis.deviceMetrics.${camel(key)}`)} />
+            </h4>
             <Plot
               data={finished.map((a, i) => {
                 const hist = data[i]?.aggregate.all?.[key]?.hist ?? {}
@@ -486,7 +490,7 @@ export function DeviceMetricsPanel({ analyses }: { analyses: RunAnalysis[] }) {
                 }
               })}
               layout={{
-                ...baseLayout(plot, { height: 220, barmode: 'group', margin: { t: 8, r: 12, b: 32, l: 44 } }),
+                ...baseLayout(plot, { height: 220, barmode: 'group', margin: { t: 8, r: 12, b: 36, l: 44 } }),
                 xaxis: axis(plot, t('thesis.analysis.multi.devices.perDevice'), { dtick: 1 }),
                 yaxis: axis(plot, t('thesis.analysis.multi.devices.pctDevices'), { rangemode: 'tozero' }),
               }}
@@ -497,16 +501,20 @@ export function DeviceMetricsPanel({ analyses }: { analyses: RunAnalysis[] }) {
           </div>
         ))}
       </div>
+      <div className="mb-1 flex items-center gap-1 text-[11px] font-medium">
+        {t('thesis.deviceMetrics.tableTitle')}
+        <ParamHint text={t('thesis.deviceMetrics.tableHint')} title={t('thesis.deviceMetrics.tableTitle')} />
+      </div>
       <div className="overflow-auto">
         <table className="w-full text-xs tabular-nums">
           <thead className="text-left text-muted-foreground">
             <tr>
               <th className="py-0.5 pr-2 font-normal">{t('thesis.analysis.cols.run')}</th>
               <th className="py-0.5 pr-2 font-normal">{t('thesis.charts.type')}</th>
-              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.readersInRange')} ⌀</th>
-              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.cbraFailures')} ⌀ / p95</th>
-              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.readerChanges')} %</th>
-              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.failToPage')} ⌀ / p95</th>
+              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.readersInRange')} {t('thesis.deviceMetrics.mean')}</th>
+              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.cbraFailures')} {t('thesis.deviceMetrics.meanP95')}</th>
+              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.changedShare')}</th>
+              <th className="py-0.5 pr-2 font-normal">{t('thesis.deviceMetrics.failToPage')} {t('thesis.deviceMetrics.meanP95')}</th>
             </tr>
           </thead>
           <tbody>
@@ -534,7 +542,6 @@ export function DeviceMetricsPanel({ analyses }: { analyses: RunAnalysis[] }) {
           </tbody>
         </table>
       </div>
-      <p className="text-[11px] text-muted-foreground">{t('thesis.deviceMetrics.hint')}</p>
     </div>
   )
 }

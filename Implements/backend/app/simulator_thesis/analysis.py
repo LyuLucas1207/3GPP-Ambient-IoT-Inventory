@@ -6,7 +6,6 @@ Pure session-level functions. Every helper raises :class:`SceneError` via
 
 from __future__ import annotations
 
-import math
 from typing import Any
 
 from sqlalchemy import select
@@ -24,8 +23,20 @@ STAGES = ("paging", "m1", "ebi", "m2", "m3")
 SUBTYPES = ("1", "2a", "2b")
 
 
-def identification_curve(session: Session, run_id: int) -> list[tuple[float, int]]:
-    get_run(session, run_id)
+def _stored_batch(session: Session, run_id: int) -> dict[str, Any] | None:
+    """Mean curves of an average run. ``None`` for a single-trajectory run."""
+    run = get_run(session, run_id)
+    metrics = (run.summary.metrics_json or {}) if run.summary else {}
+    batch = metrics.get("batch")
+    if isinstance(batch, dict) and "curve" in batch:
+        return batch
+    return None
+
+
+def identification_curve(session: Session, run_id: int) -> list[tuple[float, float]]:
+    batch = _stored_batch(session, run_id)
+    if batch is not None:
+        return [(float(point[0]), float(point[1])) for point in batch.get("curve") or []]
     rows = session.scalars(
         select(ThesisDeviceEvent.t_s)
         .where(ThesisDeviceEvent.run_id == run_id)
@@ -55,7 +66,7 @@ def completion_time_percentiles(
     out: dict[str, float | None] = {str(p): None for p in PERCENTILES}
     if total_identified <= 0:
         return out
-    targets = {pct: math.ceil(pct * total_identified / 100) for pct in PERCENTILES}
+    targets = {pct: pct * float(total_identified) / 100 for pct in PERCENTILES}
     remaining = {k: v for k, v in targets.items()}
     for t_s, cumulative in curve:
         for pct, target in list(remaining.items()):
@@ -67,8 +78,10 @@ def completion_time_percentiles(
     return out
 
 
-def reader_contribution(session: Session, run_id: int) -> dict[int, int]:
-    get_run(session, run_id)
+def reader_contribution(session: Session, run_id: int) -> dict[int, float]:
+    batch = _stored_batch(session, run_id)
+    if batch is not None:
+        return {int(reader_id): float(count) for reader_id, count in (batch.get("contribution") or {}).items()}
     rows = session.execute(
         select(ThesisDeviceEvent.reader_id, ThesisDeviceEvent.id)
         .where(ThesisDeviceEvent.run_id == run_id)
@@ -102,8 +115,12 @@ def scheme_vs_round_breakdown(session: Session, run_id: int) -> list[dict[str, A
     ]
 
 
-def identification_curve_by_subtype(session: Session, run_id: int) -> dict[str, list[tuple[float, int]]]:
+def identification_curve_by_subtype(session: Session, run_id: int) -> dict[str, list[tuple[float, float]]]:
     """Cumulative identifications per device subtype (subtype read from the run's scene snapshot)."""
+    batch = _stored_batch(session, run_id)
+    if batch is not None:
+        stored = batch.get("by_subtype") or {}
+        return {label: [(float(point[0]), float(point[1])) for point in stored.get(label) or []] for label in SUBTYPES}
     run = get_run(session, run_id)
     subtype_of = {
         int(p["id"]): str(p.get("subtype"))
@@ -126,7 +143,11 @@ def identification_curve_by_subtype(session: Session, run_id: int) -> dict[str, 
 
 def round_aggregates(session: Session, run_id: int) -> dict[str, Any]:
     """Totals over every round: resource efficiency, time overhead per stage,
-    depletions per stage x subtype, protocol energy per subtype."""
+    depletions per stage x subtype, protocol energy per subtype.
+    An average run returns the mean of those totals instead of summing stored rounds."""
+    batch = _stored_batch(session, run_id)
+    if batch is not None and batch.get("aggregates"):
+        return batch["aggregates"]
     rows = session.scalars(select(ThesisRunRound).where(ThesisRunRound.run_id == run_id)).all()
     slots = sum(int(r.slot_count or 0) for r in rows)
     success = sum(int(r.success_count or 0) for r in rows)
@@ -158,7 +179,10 @@ def analysis_bundle(session: Session, run_id: int) -> dict[str, Any]:
     run = get_run(session, run_id)
     summary = run_summary(run)
     curve = identification_curve(session, run_id)
-    total = int(summary.get("identified_total", 0))
+    batch = _stored_batch(session, run_id)
+    # The stored mean already ends at the average identified count. Rounding that
+    # count for the card would push T100 just past the last point.
+    total = float(curve[-1][1]) if batch is not None and curve else int(summary.get("identified_total", 0))
     percentiles = completion_time_percentiles(
         session, run_id, curve=curve, total_identified=total
     )
@@ -181,6 +205,7 @@ def analysis_bundle(session: Session, run_id: int) -> dict[str, Any]:
         "summary": summary,
         "config": run.config_json or {},
         "identification_curve": curve,
+        "identification_band": batch.get("band") if batch else None,
         "identification_by_subtype": identification_curve_by_subtype(session, run_id),
         "completion_times": percentiles,
         "population_completion_times": population_times,

@@ -50,14 +50,16 @@ export default function ThesisSimulationPage() {
   const [inspectedReaderId, setInspectedReaderId] = useState<number | null>(null)
   const [chartReader, setChartReader] = useState<number | 'all'>('all')
   function inspectReader(id: number | null) {
-    setInspectedReaderId(id)
-    setFocusReaderId(id)
-    setChartReader(id ?? 'all')
-    if (id != null) setSelectedDeviceId(null)
+    const next = id != null && id === inspectedReaderId ? null : id
+    setInspectedReaderId(next)
+    setFocusReaderId(next)
+    setChartReader(next ?? 'all')
+    if (next != null) setSelectedDeviceId(null)
   }
   function inspectDevice(id: number | null) {
-    setSelectedDeviceId(id)
-    if (id != null) setInspectedReaderId(null)
+    const next = id != null && id === selectedDeviceId ? null : id
+    setSelectedDeviceId(next)
+    if (next != null) setInspectedReaderId(null)
   }
   const [dockOpen, setDockOpen] = useState(true)
   const [dockSize, setDockSize] = useState(readDockSize)
@@ -83,6 +85,23 @@ export default function ThesisSimulationPage() {
   const [selecting, setSelecting] = useState(false)
   const [picked, setPicked] = useState<string[]>([])
   const [focusReaderId, setFocusReaderId] = useState<PlacementId | null>(null)
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== 'Escape' || event.defaultPrevented) return
+      const el = event.target
+      if (el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return
+      if (inspectedReaderId == null && selectedDeviceId == null) return
+      event.preventDefault()
+      if (inspectedReaderId != null) {
+        setInspectedReaderId(null)
+        setFocusReaderId(null)
+        setChartReader('all')
+      }
+      setSelectedDeviceId(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [inspectedReaderId, selectedDeviceId])
   const [menuKey, setMenuKey] = useState(sceneKey)
   if (menuKey !== sceneKey) {
     setMenuKey(sceneKey)
@@ -117,6 +136,12 @@ export default function ThesisSimulationPage() {
       : r
   const panelRuns = runs.runs.map(liveSummary)
   const selectedRun = runs.selectedRun ? liveSummary(runs.selectedRun) : null
+  const aggregate = (selectedRun?.episodes ?? 1) > 1
+  useEffect(() => {
+    if (!aggregate) return
+    setSelectedDeviceId(null)
+    setInspectedReaderId(null)
+  }, [aggregate, selectedRun?.run_id])
   // Paused / stopped runs leave unfinished devices un-dropped; flag them so they stand out at the latest frame.
   const selectedStatus = live.status ?? selectedRun?.status
   const flagPending = live.viewTime == null && (selectedStatus === 'paused' || selectedStatus === 'stopped')
@@ -236,8 +261,8 @@ export default function ThesisSimulationPage() {
             run={selectedRun}
             runTime={runs.selectedRunId != null ? live.viewTime ?? live.simTime : null}
             selectedDeviceId={selectedDeviceId}
-            onSelectDevice={inspectDevice}
-            onSelectReader={selectedRun ? (id) => inspectReader(id) : undefined}
+            onSelectDevice={aggregate ? undefined : inspectDevice}
+            onSelectReader={selectedRun ? (aggregate ? () => undefined : (id) => inspectReader(id)) : undefined}
             selecting={selecting}
             pickedIds={picked}
             onTogglePick={(id) => {
@@ -247,15 +272,10 @@ export default function ThesisSimulationPage() {
             onEdit={(id, x, y) => setMenu({ type: 'edit', id, x, y })}
             onPlace={(worldX, worldY, x, y) => setMenu({ type: 'place', worldX, worldY, x, y })}
           />
-          {inspectedReader && selectedRun ? (
-            <ReaderInspector
-              reader={inspectedReader}
-              runId={selectedRun.run_id}
-              runStatus={live.status ?? selectedRun.status}
-              rounds={live.viewTime == null ? live.rounds : live.rounds.filter((r) => r.t_start_s <= (live.viewTime ?? 0))}
-              devices={live.devices}
-              onClose={() => inspectReader(null)}
-            />
+          {aggregate ? (
+            <p className="pointer-events-none absolute top-2 right-3 left-3 z-10 rounded-md border bg-card/95 px-2 py-1 text-[11px] text-muted-foreground">
+              {t('thesis.runsPanel.aggregateBanner', { n: selectedRun?.episodes ?? 0 })}
+            </p>
           ) : null}
           {scene && selectedRun ? (
             <HudPanel
@@ -268,7 +288,7 @@ export default function ThesisSimulationPage() {
               minSize={DOCK_MIN}
               maxSize={Math.max(DOCK_MIN, mainHeight - 72)}
               defaultSize={DOCK_DEFAULT}
-              inset={{ left: 12, right: inspectedReader ? 452 : 56, bottom: 12 }}
+              inset={{ left: 12, right: 56, bottom: 12 }}
             >
               <div className="flex h-full min-h-0 w-full gap-3 overflow-hidden p-2 pt-3">
                 <aside className="w-72 shrink-0 overflow-auto border-r pr-3">
@@ -298,6 +318,16 @@ export default function ThesisSimulationPage() {
             </HudPanel>
           ) : null}
         </main>
+        {inspectedReader && selectedRun ? (
+          <ReaderInspector
+            reader={inspectedReader}
+            runId={selectedRun.run_id}
+            runStatus={live.status ?? selectedRun.status}
+            rounds={live.viewTime == null ? live.rounds : live.rounds.filter((r) => r.t_start_s <= (live.viewTime ?? 0))}
+            devices={live.devices}
+            onClose={() => inspectReader(null)}
+          />
+        ) : null}
         {scene && inspected ? (
           <DeviceInspector
             scene={scene}

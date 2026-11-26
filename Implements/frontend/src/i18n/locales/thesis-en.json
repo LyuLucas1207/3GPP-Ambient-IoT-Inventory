@@ -53,6 +53,10 @@
       "workingTitle": "Running inventory…",
       "workingHint": "The simulation engine is generating the full event log. This can take a few seconds for large scenes.",
       "rounds": "{{count}} rounds",
+      "averageTag": "avg ×{{n}}",
+      "averageProgress": "avg {{done}}/{{n}}",
+      "aggregateBanner": "Average of {{n}} seeds. The map, device energy chart and reader time-frequency are a single trajectory, so they stay closed. Compare the mean curve on the Analysis page.",
+      "aggregateCompare": "An average run draws the mean identification curve and the 5–95% band. It has no per-device or per-frame trace.",
       "stop": "Stop",
       "delete": "Delete",
       "rename": "Rename run",
@@ -85,6 +89,12 @@
         "edit": "Edit",
         "previewHint": "Check these choices, then start the run."
       },
+      "record": "Record",
+      "recordHint": "**Single** keeps one trajectory: the map, a device's energy and a reader's time-frequency can all be opened. **Average** repeats the same setup on seeds base, base+1, … and keeps the mean curve for the analysis page. It does not keep a trajectory, so those views stay closed.",
+      "recordSingle": "Single",
+      "recordAverage": "Average",
+      "episodes": "Repetitions",
+      "episodesHint": "At least 2, at most 100. Episode i uses the seed above plus i. Playback speed is ignored; the repetitions run as fast as possible.",
       "on": "on",
       "name": "Name (optional)",
       "namePlaceholder": "e.g. baseline · no EBI",
@@ -98,6 +108,8 @@
       "kInitial": "Initial K (first round)",
       "g": "N_g (groups)",
       "seed": "Seed (empty = random)",
+      "fullEnergy": "Start fully charged",
+      "fullEnergyHint": "Every device starts with a full capacitor and just turned on, so the first page can reach all of them. Off keeps each device at a random point in its charge cycle.",
       "randomSeed": "Fill a random seed",
       "adaptiveK": "Adaptive K (Schoute DFSA)",
       "adaptiveKHint": "Round 1 uses the Initial $K$. Later rounds set $K \\approx 2\\hat{N}$ from the Schoute / empty-slot backlog estimate.",
@@ -264,6 +276,9 @@
       "pendingRun": "Not completed yet.",
       "charts": {
         "identification": "Cumulative identifications",
+        "scale": "Cumulative identification scale",
+        "asPercent": "%",
+        "asCount": "Count",
         "contribution": "Devices identified per reader",
         "rounds": "Round outcomes per reader",
         "metrics": "Completion-time metrics",
@@ -598,6 +613,7 @@
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
       "close": "Close",
+      "closeKey": "Close (Esc)",
       "resize": "Drag to change the width",
       "clickHint": "click for details",
       "live": "Live state",
@@ -894,6 +910,16 @@
         "terminated_early": "Its readers terminated early"
       },
       "none": "No metrics for this device.",
+      "mean": "mean",
+      "meanP95": "mean / p95",
+      "changedShare": "Switched at least once",
+      "tableTitle": "Summary",
+      "chart": {
+        "readersInRange": "**The whole chart.** Each device is counted by how many readers cover it, then the devices are grouped by that count. Two bars at the same position are two runs. **Horizontal.** How many readers cover this device. 10 means 10 readers, not 10%. **Vertical.** The share of all devices that have that many readers. A bar at 30 means 30% of devices are covered by that many readers.",
+        "cbraFailures": "**The whole chart.** How many times each device's Msg1 failed (collision, loss, or interference), grouped by that count. Two bars at the same position are two runs. **Horizontal.** Failures of this device. 10 means it failed 10 times. **Vertical.** The share of all devices with that many failures.",
+        "readerChanges": "**The whole chart.** How many times each device answered a different reader from its previous attempt. Two bars at the same position are two runs. **Horizontal.** Switch count. 0 means it stayed with one reader; 10 means it switched 10 times. **Vertical.** The share of all devices with that many switches."
+      },
+      "tableHint": "**The whole table.** The three charts above, split by device type. The number in parentheses is how many devices are in that row. **Mean** is the average per device. **p95** is the value 95% of devices stay under, so 23 means only the worst 5% are higher. **Switched at least once** is the share of devices that changed reader, not the number of switches. **Fail → next page** is the time from a failure until the device hears another page, as mean / p95. That column has no bar chart.",
       "hint": "Readers in range: readers whose coverage includes the device. CBRA failures: Msg1 attempts that collided, were lost or interfered. Reader changes: how often the identifying reader differed from the previous attempt. Fail → next page: mean time from a failed attempt to the next paging it heard."
     },
     "coord": {

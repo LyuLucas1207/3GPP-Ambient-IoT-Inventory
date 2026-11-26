@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchSections } from '@/apis/thesisSimulator'
 import { LanguageToggle } from '@/components/LanguageToggle'
@@ -167,6 +167,7 @@ export default function ThesisAnalysisPage() {
                     <div className="flex justify-between text-muted-foreground">
                       <span>
                         {run.scheme}
+                        {(run.episodes ?? 1) > 1 ? ` · ${t('thesis.runsPanel.averageTag', { n: run.episodes })}` : ''}
                         {run.resource_mode && run.resource_mode !== 'independent' ? ` · ${run.resource_mode}` : ''}
                         {run.controller_kind === 'policy' ? ' · RL' : ''}
                         {run.termination_label && run.termination_label !== 'oracle' ? ' · ⏹' : ''}
@@ -215,10 +216,11 @@ export default function ThesisAnalysisPage() {
                     ))}
                   </TabsList>
                   <TabsContent value="overview" className="flex flex-col gap-4">
+                    {selectedAnalyses.some((a) => (a.summary.episodes ?? 1) > 1) ? (
+                      <p className="text-[11px] text-muted-foreground">{t('thesis.runsPanel.aggregateCompare')}</p>
+                    ) : null}
                     <div className="grid items-start gap-4 lg:grid-cols-2">
-                      <ChartPanel title={t('thesis.analysis.charts.identification')}>
-                        <IdentificationChart analyses={selectedAnalyses} />
-                      </ChartPanel>
+                      <IdentificationChart analyses={selectedAnalyses} />
                       <ChartPanel title={t('thesis.analysis.charts.bySubtype')}>
                         <SubtypeChart analyses={selectedAnalyses} />
                       </ChartPanel>
@@ -274,10 +276,13 @@ export default function ThesisAnalysisPage() {
   )
 }
 
-function ChartPanel({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+function ChartPanel({ title, hint, action, children }: { title: string; hint?: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="rounded-xl border bg-card p-3">
-      <h3 className="mb-2 text-xs font-medium text-muted-foreground">{title}</h3>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
+        {action}
+      </div>
       {hint ? <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">{hint}</p> : null}
       {children}
     </section>
@@ -287,41 +292,98 @@ function ChartPanel({ title, hint, children }: { title: string; hint?: string; c
 function IdentificationChart({ analyses }: { analyses: RunAnalysis[] }) {
   const { t } = useTranslation()
   const plot = usePlotTheme()
+  const [asCount, setAsCount] = useState(false)
   // Frame up to the last identification: a run that stalls keeps simulating
   // for stall_timeout_s afterwards without adding anything to the curve.
   const xMax = 1.05 * Math.max(0, ...analyses.map((a) => a.identification_curve.at(-1)?.[0] ?? 0))
-  const runs = analyses.map((a, i) => {
+  const yMax = asCount ? 1.05 * Math.max(1, ...analyses.map((a) => a.identification_curve.at(-1)?.[1] ?? a.summary.total_devices)) : 101
+  const runs = analyses.flatMap((a, i) => {
     const n = Math.max(1, a.summary.total_devices)
-    return {
-      x: [0, ...a.identification_curve.map((p) => p[0])],
-      y: [0, ...a.identification_curve.map((p) => (100 * p[1]) / n)],
-      type: 'scattergl' as const,
-      mode: 'lines' as const,
-      name: runLabel(a),
-      line: { shape: 'hv' as const, width: 2, color: RUN_COLORS[i % RUN_COLORS.length] },
-    }
+    const color = RUN_COLORS[i % RUN_COLORS.length]
+    const scale = (value: number) => (asCount ? value : (100 * value) / n)
+    const band = a.identification_band
+    const shade =
+      band && band.length > 0
+        ? [
+            {
+              x: band.map((p) => p[0]),
+              y: band.map((p) => scale(p[2])),
+              type: 'scatter' as const,
+              mode: 'lines' as const,
+              line: { width: 0, color },
+              hoverinfo: 'skip' as const,
+              showlegend: false,
+            },
+            {
+              x: band.map((p) => p[0]),
+              y: band.map((p) => scale(p[1])),
+              type: 'scatter' as const,
+              mode: 'lines' as const,
+              fill: 'tonexty' as const,
+              fillcolor: `${color}33`,
+              line: { width: 0, color },
+              hoverinfo: 'skip' as const,
+              showlegend: false,
+            },
+          ]
+        : []
+    return [
+      ...shade,
+      {
+        x: [0, ...a.identification_curve.map((p) => p[0])],
+        y: [0, ...a.identification_curve.map((p) => scale(p[1]))],
+        type: 'scattergl' as const,
+        mode: 'lines' as const,
+        name: runLabel(a),
+        line: { shape: 'hv' as const, width: 2, color },
+      },
+    ]
   })
+  const modeButton = (count: boolean, label: string) => (
+    <button
+      type="button"
+      aria-pressed={asCount === count}
+      className={`rounded-md px-2 py-0.5 ${asCount === count ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+      onClick={() => setAsCount(count)}
+    >
+      {label}
+    </button>
+  )
   return (
-    <Plot
-      data={runs}
-      layout={{
-        ...baseLayout(plot, { height: 320 }),
-        xaxis: axis(plot, t('thesis.analysis.axis.time'), xMax > 0 ? { range: [0, xMax] } : {}),
-        yaxis: axis(plot, t('thesis.charts.identifiedPct'), { range: [0, 101], tickvals: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100] }),
-        shapes: LEVELS.map((l) => ({
-          type: 'line' as const,
-          xref: 'paper' as const,
-          x0: 0,
-          x1: 1,
-          y0: l,
-          y1: l,
-          line: { color: plot.grid, width: 1, dash: 'dash' as const },
-        })),
-      }}
-      config={PLOT_CONFIG}
-      style={{ width: '100%' }}
-      useResizeHandler
-    />
+    <ChartPanel
+      title={t('thesis.analysis.charts.identification')}
+      action={
+        <div className="inline-flex rounded-lg border bg-muted p-0.5 text-[11px]" role="group" aria-label={t('thesis.analysis.charts.scale')}>
+          {modeButton(false, t('thesis.analysis.charts.asPercent'))}
+          {modeButton(true, t('thesis.analysis.charts.asCount'))}
+        </div>
+      }
+    >
+      <Plot
+        data={runs}
+        layout={{
+          ...baseLayout(plot, { height: 320 }),
+          xaxis: axis(plot, t('thesis.analysis.axis.time'), xMax > 0 ? { range: [0, xMax] } : {}),
+          yaxis: asCount
+            ? axis(plot, t('thesis.charts.identifiedCount'), { range: [0, yMax] })
+            : axis(plot, t('thesis.charts.identifiedPct'), { range: [0, 101], tickvals: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100] }),
+          shapes: asCount
+            ? []
+            : LEVELS.map((l) => ({
+                type: 'line' as const,
+                xref: 'paper' as const,
+                x0: 0,
+                x1: 1,
+                y0: l,
+                y1: l,
+                line: { color: plot.grid, width: 1, dash: 'dash' as const },
+              })),
+        }}
+        config={PLOT_CONFIG}
+        style={{ width: '100%' }}
+        useResizeHandler
+      />
+    </ChartPanel>
   )
 }
 

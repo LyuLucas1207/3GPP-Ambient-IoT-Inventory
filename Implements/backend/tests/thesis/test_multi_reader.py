@@ -24,6 +24,15 @@ def _cfg(scheme: str = "aperiodic", **extra) -> EpisodeConfig:
     return EpisodeConfig.from_json(scheme, {"k_initial": 32, "adaptive_k": True, **extra})
 
 
+def test_full_energy_starts_every_device_on_and_full():
+    ordinary = build_episode(GRID, _cfg(), np.random.default_rng(0))
+    full = build_episode(GRID, _cfg(full_energy=True), np.random.default_rng(0))
+    assert ordinary.world.on.min() == 0.0
+    assert np.array_equal(full.world.E, full.world.Ecap)
+    assert np.all(full.world.on == full.world.T_on_default)
+    assert np.all(full.world.on > 0)
+
+
 # ------------------------------------------------------------------ device metrics
 
 

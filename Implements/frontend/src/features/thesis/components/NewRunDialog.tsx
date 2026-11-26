@@ -56,6 +56,7 @@ export function NewRunDialog({
   const [includeD2r, setIncludeD2r] = useState(true)
   const [singleReply, setSingleReply] = useState(false)
   const [stationCw, setStationCw] = useState(true)
+  const [fullEnergy, setFullEnergy] = useState(false)
   const [seed, setSeed] = useState('')
   const [disabledReaders, setDisabledReaders] = useState<Set<number>>(new Set())
   const [stagger, setStagger] = useState(false)
@@ -67,6 +68,8 @@ export function NewRunDialog({
   const [termination, setTermination] = useState<TerminationSpec>(defaultTermination('oracle'))
   const [fFreq, setFFreq] = useState('')
   const [step, setStep] = useState(0)
+  const [record, setRecord] = useState<'single' | 'average'>('single')
+  const [episodes, setEpisodes] = useState('10')
 
   useEffect(() => {
     if (open) setStep(0)
@@ -104,7 +107,11 @@ export function NewRunDialog({
       include_d2r: includeD2r,
       single_reply: singleReply,
       station_cw: stationCw,
+      full_energy: fullEnergy,
       seed: seed === '' ? null : Number(seed),
+      episodes: record === 'average' ? Math.min(100, Math.max(2, Math.round(Number(episodes) || 2))) : 1,
+      // An average has no playback; it runs as fast as the machine allows.
+      ...(record === 'average' ? { speed: null } : {}),
       disabled_reader_ids: Array.from(disabledReaders),
       f_freq: positiveOrNull(fFreq),
       controller: controller.kind === 'policy' ? controller : { kind: controller.kind },
@@ -228,6 +235,12 @@ export function NewRunDialog({
                 </Button>
               </div>
             </label>
+            <OptionToggle
+              checked={fullEnergy}
+              onChange={setFullEnergy}
+              label={t('thesis.newRun.fullEnergy')}
+              hint={t('thesis.newRun.fullEnergyHint')}
+            />
             {periodic ? (
               <OptionToggle
                 checked={useGrouping}
@@ -364,6 +377,8 @@ export function NewRunDialog({
             </div>
             ) : null}
             {step === 4 ? (
+              <div className="flex w-full min-w-0 max-w-md flex-col gap-4">
+              <RecordChoice record={record} episodes={episodes} onRecord={setRecord} onEpisodes={setEpisodes} />
               <RunPreview
                 name={name}
                 scheme={scheme}
@@ -377,6 +392,7 @@ export function NewRunDialog({
                 includeD2r={includeD2r}
                 singleReply={singleReply}
                 stationCw={stationCw}
+                fullEnergy={fullEnergy}
                 kInitial={kInitial}
                 pFixed={pFixed}
                 controller={controller}
@@ -392,6 +408,7 @@ export function NewRunDialog({
                 policyMissing={policyMissing}
                 onEdit={setStep}
               />
+              </div>
             ) : null}
             </div>
           </div>
@@ -429,6 +446,57 @@ export function NewRunDialog({
         }}
       />
     </Dialog>
+  )
+}
+
+function RecordChoice({
+  record,
+  episodes,
+  onRecord,
+  onEpisodes,
+}: {
+  record: 'single' | 'average'
+  episodes: string
+  onRecord: (next: 'single' | 'average') => void
+  onEpisodes: (next: string) => void
+}) {
+  const { t } = useTranslation()
+  const button = (id: 'single' | 'average', label: string) => (
+    <button
+      type="button"
+      aria-pressed={record === id}
+      className={`rounded-md px-2 py-1 ${record === id ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+      onClick={() => onRecord(id)}
+    >
+      {label}
+    </button>
+  )
+  return (
+    <div className="grid gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+          {t('thesis.newRun.record')}
+          <ParamHint text={t('thesis.newRun.recordHint')} title={t('thesis.newRun.record')} />
+        </span>
+        <div className="inline-flex rounded-lg border bg-muted p-0.5 text-xs" role="group" aria-label={t('thesis.newRun.record')}>
+          {button('single', t('thesis.newRun.recordSingle'))}
+          {button('average', t('thesis.newRun.recordAverage'))}
+        </div>
+      </div>
+      {record === 'average' ? (
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-muted-foreground">{t('thesis.newRun.episodes')}</span>
+          <Input
+            type="number"
+            min={2}
+            max={100}
+            value={episodes}
+            onChange={(event) => onEpisodes(event.target.value)}
+          />
+          <span className="text-[11px] text-muted-foreground">{t('thesis.newRun.episodesHint')}</span>
+        </label>
+      ) : null}
+    </div>
   )
 }
 
@@ -478,6 +546,7 @@ function RunPreview({
   includeD2r,
   singleReply,
   stationCw,
+  fullEnergy,
   kInitial,
   pFixed,
   controller,
@@ -505,6 +574,7 @@ function RunPreview({
   includeD2r: boolean
   singleReply: boolean
   stationCw: boolean
+  fullEnergy: boolean
   kInitial: string
   pFixed: string
   controller: ControllerSpec
@@ -536,6 +606,7 @@ function RunPreview({
         <PreviewRow label={t('thesis.newRun.useEbi')} value={flag(useEbi)} />
         <PreviewRow label={t('thesis.newRun.includeD2r')} value={flag(includeD2r)} />
         <PreviewRow label={t('thesis.newRun.stationCw')} value={flag(stationCw)} />
+        <PreviewRow label={t('thesis.newRun.fullEnergy')} value={flag(fullEnergy)} />
         <PreviewRow label={t('thesis.newRun.singleReply')} value={flag(singleReply)} />
       </PreviewGroup>
       <PreviewGroup title={t('thesis.newRun.tabs.frame')} onEdit={() => onEdit(1)} editLabel={t('thesis.newRun.wizard.edit')}>

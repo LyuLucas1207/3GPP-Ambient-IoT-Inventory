@@ -173,7 +173,7 @@ export function DeviceInspector({
         className="absolute inset-y-0 left-0 z-10 w-1.5 cursor-ew-resize hover:bg-foreground/15"
         onPointerDown={startResize}
       />
-      <header className="flex shrink-0 items-center gap-2 border-b px-2 py-1.5">
+      <header className="flex shrink-0 items-center gap-2 border-b px-2 py-1.5 pr-12">
         <button
           type="button"
           aria-label={t('thesis.inspector.resize')}
@@ -190,7 +190,7 @@ export function DeviceInspector({
             ({placement.x_m.toFixed(2)}, {placement.y_m.toFixed(2)}) m
           </p>
         </div>
-        <Button type="button" size="icon-sm" variant="ghost" onClick={onClose} aria-label={t('thesis.inspector.close')}>
+        <Button type="button" size="icon-sm" variant="outline" className="relative z-40 bg-background" onClick={onClose} aria-label={t('thesis.inspector.close')} title={t('thesis.inspector.closeKey')}>
           <X />
         </Button>
       </header>

@@ -32,6 +32,7 @@ from app.simulator_thesis.inventory.energy import (
     compute_reader_contribution,
     harvested_power_w,
     incident_cw_w,
+    init_full,
     init_stationary,
 )
 from app.simulator_thesis.inventory.estimator import BacklogEstimator
@@ -178,7 +179,10 @@ def build_episode(
         world.readers_in_range[:] = np.sum([r.cover_mask for r in readers], axis=0).astype(np.int16)
     _assign_recharge_bounds(readers, world, config)
     if warm_start and world.N:
-        init_stationary(world, rng)
+        if config.full_energy:
+            init_full(world)
+        else:
+            init_stationary(world, rng)
     coord = Coordinator(config.resource, readers, world, config) if readers else None
     width = float(snapshot.get("width_m") or 120.0)
     height = float(snapshot.get("height_m") or 60.0)

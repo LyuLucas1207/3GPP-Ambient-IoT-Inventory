@@ -53,6 +53,10 @@
       "workingTitle": "Run en cours…",
       "workingHint": "Le moteur génère le journal complet. Patientez quelques secondes pour les grandes scènes.",
       "rounds": "{{count}} tours",
+      "averageTag": "moy. ×{{n}}",
+      "averageProgress": "moy. {{done}}/{{n}}",
+      "aggregateBanner": "Moyenne de {{n}} graines. La carte, l'énergie d'un device et le temps-fréquence d'un reader décrivent une seule trajectoire, donc ils restent fermés. Comparez la courbe moyenne dans l'analyse.",
+      "aggregateCompare": "Un run moyen trace la courbe moyenne des identifications et la bande 5–95 %. Il n'a pas de trajectoire par device ni par trame.",
       "stop": "Arrêter",
       "delete": "Supprimer",
       "rename": "Renommer",
@@ -85,6 +89,12 @@
         "edit": "Modifier",
         "previewHint": "Vérifiez ces choix, puis démarrez le run."
       },
+      "record": "Enregistrement",
+      "recordHint": "**Unique** garde une trajectoire : la carte, l'énergie d'un device et le temps-fréquence d'un reader s'ouvrent. **Moyenne** répète le même réglage avec les graines base, base+1, … et ne garde que la courbe moyenne pour l'analyse. Sans trajectoire, ces vues restent fermées.",
+      "recordSingle": "Unique",
+      "recordAverage": "Moyenne",
+      "episodes": "Répétitions",
+      "episodesHint": "Au moins 2, au plus 100. L'épisode i utilise la graine ci-dessus plus i. La vitesse de lecture est ignorée : les répétitions vont aussi vite que possible.",
       "on": "oui",
       "name": "Nom (facultatif)",
       "namePlaceholder": "ex. baseline · sans EBI",
@@ -98,6 +108,8 @@
       "kInitial": "K initial (1ʳᵉ ronde)",
       "g": "N_g (groupes)",
       "seed": "Graine (vide = aléatoire)",
+      "fullEnergy": "Départ batterie pleine",
+      "fullEnergyHint": "Chaque device commence condensateur plein et vient de s'allumer, donc le premier paging peut tous les atteindre. Décochez pour garder un point aléatoire du cycle de charge.",
       "randomSeed": "Remplir une graine aléatoire",
       "adaptiveK": "K adaptatif (DFSA Schoute)",
       "adaptiveKHint": "Le tour 1 utilise le $K$ initial ; ensuite $K \\approx 2\\hat{N}$ d’après l’estimation de backlog Schoute / créneaux vides.",
@@ -264,6 +276,9 @@
       "pendingRun": "Pas encore terminé.",
       "charts": {
         "identification": "Identifications cumulées",
+        "scale": "Échelle des identifications cumulées",
+        "asPercent": "%",
+        "asCount": "Nombre",
         "contribution": "Devices identifiés par reader",
         "rounds": "Résultats par round / reader",
         "metrics": "Métriques de temps d'achèvement",
@@ -598,6 +613,7 @@
     "inspector": {
       "title": "Device #{{id}} · {{subtype}}",
       "close": "Fermer",
+      "closeKey": "Fermer (Échap)",
       "resize": "Glisser pour changer la largeur",
       "clickHint": "cliquer pour les détails",
       "live": "État en direct",
@@ -894,6 +910,16 @@
         "terminated_early": "Ses lecteurs se sont arrêtés tôt"
       },
       "none": "Aucune métrique pour ce dispositif.",
+      "mean": "moyenne",
+      "meanP95": "moyenne / p95",
+      "changedShare": "A changé au moins une fois",
+      "tableTitle": "Récapitulatif",
+      "chart": {
+        "readersInRange": "**Toute la figure.** On compte combien de lecteurs couvrent chaque dispositif, puis on regroupe les dispositifs par ce nombre. Deux barres au même endroit sont deux runs. **Horizontal.** Nombre de lecteurs qui couvrent ce dispositif. 10 veut dire 10 lecteurs, pas 10 %. **Vertical.** Part de tous les dispositifs qui ont autant de lecteurs. Une barre à 30 veut dire que 30 % des dispositifs sont couverts par autant de lecteurs.",
+        "cbraFailures": "**Toute la figure.** Combien de fois le Msg1 de chaque dispositif a échoué (collision, perte ou brouillage), regroupé par ce nombre. Deux barres au même endroit sont deux runs. **Horizontal.** Échecs de ce dispositif. 10 veut dire 10 échecs. **Vertical.** Part de tous les dispositifs avec autant d'échecs.",
+        "readerChanges": "**Toute la figure.** Combien de fois chaque dispositif a répondu à un lecteur différent de la tentative précédente. Deux barres au même endroit sont deux runs. **Horizontal.** Nombre de changements. 0 : un seul lecteur ; 10 : dix changements. **Vertical.** Part de tous les dispositifs avec autant de changements."
+      },
+      "tableHint": "**Tout le tableau.** Les trois figures ci-dessus, séparées par type de dispositif. Le nombre entre parenthèses est le nombre de dispositifs de la ligne. **Moyenne** : par dispositif. **p95** : valeur sous laquelle restent 95 % des dispositifs ; 23 veut dire que seuls les 5 % les pires sont au-dessus. **A changé au moins une fois** est la part des dispositifs qui ont changé de lecteur, pas le nombre de changements. **Échec → page suivante** est le temps entre un échec et la page suivante, en moyenne / p95. Cette colonne n'a pas de figure.",
       "hint": "Lecteurs à portée : lecteurs dont la couverture inclut le dispositif. Échecs CBRA : tentatives Msg1 en collision, perdues ou brouillées. Changements de lecteur : nombre de fois où le lecteur différait de la tentative précédente. Échec → page suivante : temps moyen entre un échec et la page suivante entendue."
     },
     "coord": {

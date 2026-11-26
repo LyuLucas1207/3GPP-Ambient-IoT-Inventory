@@ -388,6 +388,7 @@ function runConfigChips(
   }
 
   if (seed != null) chips.push({ key: 'seed', label: t('thesis.live.configSeed', { seed }) })
+  if (cfg.full_energy) chips.push({ key: 'fullEnergy', label: t('thesis.newRun.fullEnergy') })
 
   if (startGroups.length > 1 && startInterval != null) {
     chips.push({

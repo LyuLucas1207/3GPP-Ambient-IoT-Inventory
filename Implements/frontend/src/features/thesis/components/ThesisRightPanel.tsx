@@ -124,7 +124,16 @@ export function ThesisRightPanel({
                           onClick={() => onSelectRun(active ? null : run.run_id)}
                         >
                           <div className="flex w-full justify-between text-muted-foreground">
-                            <span>{t(`thesis.newRun.scheme${run.scheme === 'periodic' ? 'Periodic' : 'Aperiodic'}`)}</span>
+                            <span className="inline-flex items-center gap-1">
+                              {t(`thesis.newRun.scheme${run.scheme === 'periodic' ? 'Periodic' : 'Aperiodic'}`)}
+                              {(run.episodes ?? 1) > 1 ? (
+                                <span className="rounded bg-foreground/10 px-1 text-[10px] font-medium text-foreground">
+                                  {run.status === 'running' || run.status === 'pending'
+                                    ? t('thesis.runsPanel.averageProgress', { done: run.episodes_done ?? 0, n: run.episodes })
+                                    : t('thesis.runsPanel.averageTag', { n: run.episodes })}
+                                </span>
+                              ) : null}
+                            </span>
                             <span className="tabular-nums">
                               {run.identified_total}/{run.total_devices}
                             </span>
@@ -144,7 +153,7 @@ export function ThesisRightPanel({
                         </button>
                         {active && (run.status === 'running' || run.status === 'pending' || run.status === 'paused') ? (
                           <div className="mt-2 flex gap-1 border-t pt-2">
-                            {run.status === 'running' || run.status === 'pending' ? (
+                            {(run.episodes ?? 1) <= 1 && (run.status === 'running' || run.status === 'pending') ? (
                               <Button type="button" size="xs" variant="outline" disabled={runsBusy} onClick={() => void onPauseRun(run.run_id)}>
                                 <Pause className="mr-1 size-3" />
                                 {t('thesis.live.pause')}

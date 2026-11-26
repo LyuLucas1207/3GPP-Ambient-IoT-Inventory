@@ -115,6 +115,21 @@ def advance_availability(dt: float, world: DeviceWorld, *, freeze: np.ndarray | 
     on[on < 0.0] = 0.0
 
 
+def init_full(world: DeviceWorld) -> None:
+    """Every device starts at its storage ceiling and just turned on.
+
+    The first page can therefore reach the whole covered population. The
+    default ``init_stationary`` instead drops each device at a random point
+    in its charge cycle, so most are still off.
+    """
+    n = world.N
+    if n == 0:
+        return
+    world.E[:] = world.Ecap
+    world.on[:] = world.T_on_default
+    world.on[world.on < 0.0] = 0.0
+
+
 def init_stationary(world: DeviceWorld, rng: np.random.Generator) -> None:
     """Phase-randomized warm-up — ports ``harvest.py`` _init_stationary."""
     n = world.N

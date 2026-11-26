@@ -93,6 +93,9 @@ class RunCreateIn(BaseModel):
     p_fixed: float | None = Field(default=None, gt=0.0, le=1.0)
     # Paper multi-source: stations also transmit CW for harvest. Off = reader CW only.
     station_cw: bool = True
+    # Off: each device starts at a random point in its charge cycle.
+    # On: every device starts with a full capacitor and just turned on.
+    full_energy: bool = False
     seed: int | None = None
     reader_start_offsets: dict[str, float] = Field(default_factory=dict)
     # Staggered start, recorded for analysis: reader ids per start group (group i
@@ -105,6 +108,9 @@ class RunCreateIn(BaseModel):
     controller: ControllerIn = Field(default_factory=ControllerIn)
     resource: ResourceIn = Field(default_factory=ResourceIn)
     termination: TerminationIn = Field(default_factory=TerminationIn)
+    # 1 = one trajectory with a full event log. Above 1 = that many seeds
+    # (base, base+1, …) averaged; only the mean curves are kept.
+    episodes: int = Field(default=1, ge=1, le=100)
     # Run to completion inside the request (tests / scripted sweeps).
     sync: bool = False
 
@@ -153,6 +159,8 @@ class RunSummaryOut(BaseModel):
     policy_id: str | None = None
     resource_mode: str = "independent"
     termination_label: str = "oracle"
+    episodes: int = 1
+    episodes_done: int = 0
 
 
 class RunDetailOut(BaseModel):
@@ -290,13 +298,13 @@ class RoundBreakdownOut(BaseModel):
 
 
 class RoundAggregatesOut(BaseModel):
-    slots_total: int
-    success_total: int
-    collision_total: int
-    empty_total: int
+    slots_total: float
+    success_total: float
+    collision_total: float
+    empty_total: float
     resource_efficiency: float
     overhead_s: dict[str, float]
-    deaths_by_stage: dict[str, dict[str, int]]
+    deaths_by_stage: dict[str, dict[str, float]]
     energy_j_by_subtype: dict[str, float]
 
 
@@ -306,13 +314,15 @@ class AnalysisOut(BaseModel):
     status: RunStatus
     summary: RunSummaryOut
     config: dict[str, Any] = Field(default_factory=dict)
-    identification_curve: list[tuple[float, int]]
-    identification_by_subtype: dict[str, list[tuple[float, int]]] = Field(default_factory=dict)
+    identification_curve: list[tuple[float, float]]
+    # Average runs: [time_s, 5th percentile count, 95th percentile count] on the same grid.
+    identification_band: list[tuple[float, float, float]] | None = None
+    identification_by_subtype: dict[str, list[tuple[float, float]]] = Field(default_factory=dict)
     # percentiles of the identified devices / of the whole population
     completion_times: dict[str, float | None]
     population_completion_times: dict[str, float | None] = Field(default_factory=dict)
     reachable_completion_times: dict[str, float | None] = Field(default_factory=dict)
-    reader_contribution: dict[int, int]
+    reader_contribution: dict[int, float]
     rounds_breakdown: list[RoundBreakdownOut]
     aggregates: RoundAggregatesOut | None = None
 
