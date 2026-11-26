@@ -62,12 +62,13 @@ def test_bad_resource_mode_is_rejected(client: TestClient):
 def test_run_with_registry_policy(client: TestClient):
     sid = _init_section(client, device_count=20, readers=[(10.0, 10.0), (40.0, 10.0)])
     policies = client.get("/api/thesis-simulator/policies").json()
-    zs = next(p for p in policies if p["policy_id"] == "zero_shot_aperiodic_a0p5")
+    zs = next(p for p in policies if p["policy_id"] == "A_IoT_PPO_LSTM")
     assert zs["available"] and zs["algo"] == "zero_shot_aperiodic"
-    run = _run(client, sid, max_time_s=20, k_initial=16, controller={"kind": "policy", "policy_id": "zero_shot_aperiodic_a0p5"})
+    assert zs["training_steps"] == 1001472
+    run = _run(client, sid, max_time_s=20, k_initial=16, controller={"kind": "policy", "policy_id": "A_IoT_PPO_LSTM"})
     assert run["status"] == "completed"
     assert run["summary"]["controller_kind"] == "policy"
-    assert run["summary"]["policy_id"] == "zero_shot_aperiodic_a0p5"
+    assert run["summary"]["policy_id"] == "A_IoT_PPO_LSTM"
     assert run["summary"]["identified_total"] > 0
 
 

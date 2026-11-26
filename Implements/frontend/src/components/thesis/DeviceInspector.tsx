@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { X } from 'lucide-react'
-import { useMemo } from 'react'
+import { GripVertical, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchTimeline } from '@/api/thesisRuns'
 import { axis, baseLayout, PLOT_CONFIG } from '@/components/aperiodic/plotLayout'
@@ -44,6 +44,18 @@ const DROP_CAUSES = ['', 'unreachable', 'max_time_reached', 'stopped', 'no_progr
 
 const TIMELINE_REFRESH_MS = 1000
 const MAX_TABLE_ROWS = 400
+const WIDTH_KEY = 'thesis.deviceDrawer.width'
+const WIDTH_MIN = 420
+const WIDTH_DEFAULT = 560
+
+function readDrawerWidth(): number {
+  try {
+    const v = Number(localStorage.getItem(WIDTH_KEY))
+    return Number.isFinite(v) && v >= WIDTH_MIN ? v : WIDTH_DEFAULT
+  } catch {
+    return WIDTH_DEFAULT
+  }
+}
 
 /**
  * Right-hand, non-modal drawer for one device: static radio facts (works
@@ -56,6 +68,7 @@ export function DeviceInspector({
   runId,
   runStatus,
   run = null,
+  nowS = null,
   onClose,
 }: {
   scene: Scene
@@ -65,9 +78,18 @@ export function DeviceInspector({
   runStatus: RunStatus | null
   /** selected run: skipped readers and the D2R default */
   run?: RunSummary | null
+  /** Live simulation clock, or the replay position. Null shows the finished trace. */
+  nowS?: number | null
   onClose: () => void
 }) {
   const { t } = useTranslation()
+  const [width, setWidth] = useState(readDrawerWidth)
+  const [shown, setShown] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
   const deviceId = placement.id as number
   const idx = live?.indexById.get(deviceId)
   const code = idx != null && live ? live.codes[idx] : null
@@ -112,11 +134,55 @@ export function DeviceInspector({
     }
   }, [timeline])
 
+  function startResize(event: React.PointerEvent) {
+    event.preventDefault()
+    const startX = event.clientX
+    const startW = width
+    setDragging(true)
+    const move = (ev: PointerEvent) => {
+      const max = Math.min(960, window.innerWidth * 0.72)
+      const next = Math.min(max, Math.max(WIDTH_MIN, startW + startX - ev.clientX))
+      setWidth(next)
+    }
+    const up = () => {
+      setDragging(false)
+      setWidth((current) => {
+        try {
+          localStorage.setItem(WIDTH_KEY, String(Math.round(current)))
+        } catch {
+          /* per-viewer convenience only */
+        }
+        return current
+      })
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }
+
   return (
-    // Starts below the map's top-right buttons (layers, right-panel toggle) so it never covers them.
-    <aside className="absolute top-14 right-0 bottom-0 z-20 flex w-[min(440px,calc(100%-16px))] flex-col overflow-hidden rounded-tl-xl border-t border-l bg-card/95 shadow-xl backdrop-blur-md">
-      <header className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
-        <div className="min-w-0">
+    <aside
+      className={`relative flex h-full shrink-0 flex-col overflow-hidden border-l bg-card ${dragging ? '' : 'transition-[width] duration-200 ease-out'}`}
+      style={{ width: shown ? width : 0 }}
+    >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={t('thesis.inspector.resize')}
+        className="absolute inset-y-0 left-0 z-10 w-1.5 cursor-ew-resize hover:bg-foreground/15"
+        onPointerDown={startResize}
+      />
+      <header className="flex shrink-0 items-center gap-2 border-b px-2 py-1.5">
+        <button
+          type="button"
+          aria-label={t('thesis.inspector.resize')}
+          className="inline-flex size-7 cursor-ew-resize items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          onPointerDown={startResize}
+        >
+          <GripVertical className="size-4" />
+        </button>
+        <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-medium">
             {t('thesis.inspector.title', { id: deviceId, subtype: placement.subtype ?? '' })}
           </h2>
@@ -193,7 +259,9 @@ export function DeviceInspector({
 
           {runId != null ? (
             <TimeFreqSection title={t('thesis.tf.deviceTitle', { id: deviceId })}>
-              {(wide) => <DeviceTimeline runId={runId} deviceId={deviceId} live={liveRun} wide={wide} />}
+              {(wide) => (
+                <DeviceTimeline runId={runId} deviceId={deviceId} live={liveRun} wide={wide} energyJ={energyJ} nowS={nowS} />
+              )}
             </TimeFreqSection>
           ) : null}
 

@@ -9,36 +9,56 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from app.journal.tables import (
+    BS_RX_SENSITIVITY_DBM,
+    CAPTURE_RATIO_DB,
+    DATA_RATE_BPS,
+    F,
+    FALSE_ALARM_RATE,
+    MISSED_DETECTION_RATE,
+    MSG1_BITS,
+    MSG2_BITS,
+    MSG3_BITS,
+    P_SL_W,
+    PAGING_BITS,
+    TYPE1_P_RX_W,
+    TYPE1_P_TX_W,
+    TYPE2A_P_RX_W,
+    TYPE2A_P_TX_W,
+    TYPE2B_P_RX_W,
+    TYPE2B_P_TX_W,
+)
+
 
 @dataclass(frozen=True)
 class EngineConstants:
     # Message bits + line rate -> message durations (s)
-    r_bps: float = 7000.0
-    b_page: int = 80
-    b_m1: int = 38
-    b_m2: int = 88
-    b_m3: int = 144
+    r_bps: float = DATA_RATE_BPS
+    b_page: int = PAGING_BITS
+    b_m1: int = MSG1_BITS
+    b_m2: int = MSG2_BITS
+    b_m3: int = MSG3_BITS
     ebi_preamble_bits: int = 16
 
-    # Capture-effect ratio (6 dB) and energy-detector thresholds
-    capture_f_lin: float = 10.0 ** (6.0 / 10.0)
-    nplusi_dbm: float = -106.0
+    # Capture-effect ratio (Table II) and energy-detector thresholds
+    capture_f_lin: float = 10.0 ** (CAPTURE_RATIO_DB / 10.0)
+    nplusi_dbm: float = BS_RX_SENSITIVITY_DBM
     det_nc: int = 4
     det_k_th: float = 4.0
-    p_fa: float = 1e-3
-    p_md: float = 1e-2
+    p_fa: float = FALSE_ALARM_RATE
+    p_md: float = MISSED_DETECTION_RATE
 
     # Frequency subbands per round (determines parallel M1 capacity)
-    f_freq: int = 8
+    f_freq: int = F
 
     # Per-type RX/TX (W) — used for mid-frame energy debits
-    p_rx_1: float = 1e-6
-    p_tx_1: float = 1e-6
-    p_rx_2a: float = 50e-6
-    p_tx_2a: float = 200e-6
-    p_rx_2b: float = 50e-6
-    p_tx_2b: float = 200e-6
-    p_sleep: float = 1e-7
+    p_rx_1: float = TYPE1_P_RX_W
+    p_tx_1: float = TYPE1_P_TX_W
+    p_rx_2a: float = TYPE2A_P_RX_W
+    p_tx_2a: float = TYPE2A_P_TX_W
+    p_rx_2b: float = TYPE2B_P_RX_W
+    p_tx_2b: float = TYPE2B_P_TX_W
+    p_sleep: float = P_SL_W
 
     # Estimator cold-start
     p0_init: float = 0.1

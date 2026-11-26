@@ -23,11 +23,11 @@ interface Block {
   note?: string
 }
 
-function GridBlock({ b, F, toScale }: { b: Block; F: number; toScale: boolean }) {
+function GridBlock({ b, F, toScale, fill }: { b: Block; F: number; toScale: boolean; fill: boolean }) {
   const grow = toScale ? Math.max(b.ms, 0.5) : Math.max(b.cols, 1)
   return (
-    <div className="flex min-w-0 flex-col" style={{ flex: `${grow} 1 0`, minWidth: b.span ? 14 : Math.min(b.cols, 40) * 2 + 6 }}>
-      <div className="rounded-[2px] border border-border/70 p-px" style={{ height: F * ROW_PX + 4 }}>
+    <div className={`flex min-w-0 flex-col ${fill ? 'h-full' : ''}`} style={{ flex: `${grow} 1 0`, minWidth: b.span ? 14 : Math.min(b.cols, 40) * 2 + 6 }}>
+      <div className={`rounded-[2px] border border-border/70 p-px ${fill ? 'min-h-0 flex-1' : ''}`} style={fill ? undefined : { height: F * ROW_PX + 4 }}>
         {b.span ? (
           <div className={`h-full w-full rounded-[1px] ${b.span}`} />
         ) : b.cols === 0 ? (
@@ -53,7 +53,7 @@ function GridBlock({ b, F, toScale }: { b: Block; F: number; toScale: boolean })
           </div>
         )}
       </div>
-      <div className="mt-0.5 min-w-0 text-center leading-tight">
+      <div className={`mt-0.5 min-w-0 text-center leading-tight ${fill ? 'min-h-12 shrink-0' : ''}`}>
         <div className="truncate text-[10px] font-medium">{b.label}</div>
         <div className="truncate font-mono text-[9px] text-muted-foreground">
           {b.ms.toFixed(b.ms < 10 ? 1 : 0)} ms{b.hidden > 0 ? ` · +${b.hidden}` : ''}
@@ -64,7 +64,7 @@ function GridBlock({ b, F, toScale }: { b: Block; F: number; toScale: boolean })
   )
 }
 
-export function TimeFrequencyMap({ r, toScale = false, compact = false }: { r: CbraInspectRound; toScale?: boolean; compact?: boolean }) {
+export function TimeFrequencyMap({ r, toScale = false, compact = false, fill = false }: { r: CbraInspectRound; toScale?: boolean; compact?: boolean; fill?: boolean }) {
   const { t } = useTranslation()
   const F = r.F
   const c = r.components_s
@@ -125,21 +125,27 @@ export function TimeFrequencyMap({ r, toScale = false, compact = false }: { r: C
 
   const ticks = F <= 16 ? Array.from({ length: F }, (_, i) => F - i) : [F, 1]
   return (
-    <div className="grid gap-1" aria-label={t('ap.tf.aria')}>
-      <div className="flex items-stretch gap-1">
-        <div className="flex shrink-0 items-start gap-0.5">
-          <span className="text-[10px] text-muted-foreground [writing-mode:vertical-rl] rotate-180 self-center">
-            {t('ap.tf.freqAxis', { F })} ↑
-          </span>
-          <div className="flex flex-col justify-between py-[3px] font-mono text-[8px] leading-none text-muted-foreground" style={{ height: F * ROW_PX + 4 }}>
-            {ticks.map((f) => (
-              <span key={f}>f{f}</span>
-            ))}
+    <div className={fill ? 'flex h-full min-h-0 flex-col gap-1' : 'grid gap-1'} aria-label={t('ap.tf.aria')}>
+      <div className={`flex items-stretch gap-1 ${fill ? 'min-h-0 flex-1' : ''}`}>
+        <div className={`flex shrink-0 gap-0.5 ${fill ? 'h-full flex-col' : 'items-start'}`}>
+          <div className={`flex min-h-0 gap-0.5 ${fill ? 'flex-1' : ''}`}>
+            <span className="self-center text-[10px] text-muted-foreground [writing-mode:vertical-rl] rotate-180">
+              {t('ap.tf.freqAxis', { F })} ↑
+            </span>
+            <div
+              className={`flex flex-col justify-between py-[3px] font-mono text-[8px] leading-none text-muted-foreground ${fill ? 'h-full' : ''}`}
+              style={fill ? undefined : { height: F * ROW_PX + 4 }}
+            >
+              {ticks.map((f) => (
+                <span key={f}>f{f}</span>
+              ))}
+            </div>
           </div>
+          {fill ? <div className="min-h-12 shrink-0" /> : null}
         </div>
-        <div className="flex min-w-0 flex-1 gap-1">
+        <div className={`flex min-w-0 flex-1 gap-1 ${fill ? 'h-full' : ''}`}>
           {blocks.map((b) => (
-            <GridBlock key={b.key} b={b} F={F} toScale={toScale} />
+            <GridBlock key={b.key} b={b} F={F} toScale={toScale} fill={fill} />
           ))}
         </div>
       </div>

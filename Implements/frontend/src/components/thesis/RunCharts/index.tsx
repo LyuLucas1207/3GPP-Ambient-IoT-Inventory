@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchDeviceMap, fetchIdentifications } from '@/api/thesisRuns'
 import { axis, baseLayout, MATLAB, PLOT_CONFIG } from '@/components/aperiodic/plotLayout'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dropdown } from '@/components/ui/dropdown'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import type { LiveRunState } from '@/hooks/useLiveRun'
@@ -115,7 +115,7 @@ export function RunCharts({
   return (
     <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="flex h-full min-h-0 flex-col gap-1">
       <div className="flex flex-wrap items-center gap-2">
-        <TabsList className="h-7">
+        <TabsList className="h-auto max-w-full flex-wrap">
           {TABS.map((k) => (
             <TabsTrigger key={k} value={k} className="px-2 text-[11px]">
               {t(`thesis.charts.tab.${k}`)}
@@ -142,33 +142,29 @@ export function RunCharts({
             <span className="tabular-nums">{t('thesis.charts.scopeSize', { n: scope.size })}</span>
           ) : null}
           {t('thesis.charts.reader')}
-          <Select
+          <Dropdown
             value={String(reader)}
-            items={Object.fromEntries([
-              ['all', t('thesis.charts.allReaders')],
-              ...readerStats.map(([id]) => [String(id), `#${id}`]),
-            ])}
-            onValueChange={(v) => onReader(v == null || v === 'all' ? 'all' : Number(v))}
-          >
-            <SelectTrigger size="sm" className="h-7 min-w-36 text-[11px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent align="end" alignItemWithTrigger={false} className="max-h-72 min-w-60">
-              <SelectItem value="all" className="text-xs">
-                {t('thesis.charts.allReaders')}
-              </SelectItem>
-              {readerStats.map(([id, st]) => (
-                <SelectItem key={id} value={String(id)} className="text-xs">
+            size="sm"
+            align="end"
+            className="w-auto min-w-36 text-[11px]"
+            menuClassName="min-w-60"
+            options={[
+              { value: 'all', label: t('thesis.charts.allReaders') },
+              ...readerStats.map(([id, st]) => ({
+                value: String(id),
+                trigger: `#${id}`,
+                label: (
                   <span className="flex w-full items-center justify-between gap-3">
                     <span className="font-medium">#{id}</span>
                     <span className="tabular-nums text-muted-foreground">
                       {t('thesis.charts.readerItem', { identified: st.identified, rounds: st.rounds })}
                     </span>
                   </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                ),
+              })),
+            ]}
+            onChange={(v) => onReader(v === 'all' ? 'all' : Number(v))}
+          />
         </div>
       </div>
       <ChartHelp tab={tab} />

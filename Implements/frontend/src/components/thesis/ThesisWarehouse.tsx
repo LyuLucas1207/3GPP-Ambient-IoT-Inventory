@@ -77,7 +77,7 @@ export function ThesisWarehouse({
   flagPending?: boolean
   /** selected run, used to link the selected device to the readers that cover it */
   run?: RunSummary | null
-  /** simulated time shown (replay position or live clock); readers stopped by then are greyed */
+  /** simulated time shown (replay position or live clock); a reader stopped by then no longer pulses */
   runTime?: number | null
   selectedDeviceId?: number | null
   onSelectDevice?: (id: number | null) => void
@@ -103,9 +103,9 @@ export function ThesisWarehouse({
   const [layersOpen, setLayersOpen] = useState(false)
   const [layersSize, setLayersSize] = useState({ width: 176, height: 36 })
   const [layers, setLayers] = useState<Layers>({
-    device1: true,
-    device2a: true,
-    device2b: true,
+    device1: false,
+    device2a: false,
+    device2b: false,
     radar: true,
     station: true,
   })
@@ -810,7 +810,7 @@ export function ThesisWarehouse({
                     data-placement={placement.id}
                     transform={`translate(${placement.x_m} ${placement.y_m})`}
                     className="cursor-pointer"
-                    opacity={dimmed ? 0.18 : stop ? 0.55 : 1}
+                    opacity={dimmed ? 0.18 : 1}
                     onClick={(event) => {
                       event.stopPropagation()
                       if (selecting && placement.kind !== 'device') {
@@ -854,7 +854,7 @@ export function ThesisWarehouse({
                       <MarkerShape
                         shape={shapeOf(placement)}
                         r={size}
-                        className={dimmed ? 'fill-foreground' : stop ? 'fill-zinc-400' : fillClass(placement)}
+                        className={dimmed ? 'fill-foreground' : fillClass(placement)}
                         strokeWidth={0}
                       />
                     </g>

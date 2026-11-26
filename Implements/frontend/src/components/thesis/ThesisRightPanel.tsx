@@ -1,4 +1,4 @@
-import { Loader2, PanelRightClose, PanelRightOpen, Pause, Pencil, Play, Plus, Square, Trash2, X } from 'lucide-react'
+import { Loader2, PanelRightClose, PanelRightOpen, Pause, Pencil, Play, Plus, Square, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NewRunDialog } from '@/components/thesis/NewRunDialog'
@@ -6,15 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogBackdrop, DialogDescription, DialogPopup, DialogPortal, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { runDisplayName } from '@/lib/thesisRunStates'
-import type { Placement, PlacementId, RunCreateInput, RunStatus, RunSummary, Scene } from '@/types/thesis'
+import type { Placement, RunCreateInput, RunStatus, RunSummary, Scene } from '@/types/thesis'
 
-/** Right-hand sidebar of the simulation page: one collapsible panel with Readers / Runs tabs. */
+/** Right-hand sidebar of the simulation page: the run list for the open scene. */
 export function ThesisRightPanel({
   scene,
-  focusReaderId,
-  onFocus,
   runs,
   selectedRunId,
   runsBusy,
@@ -27,8 +24,6 @@ export function ThesisRightPanel({
   onResumeRun,
 }: {
   scene: Scene | null
-  focusReaderId: PlacementId | null
-  onFocus: (id: PlacementId | null) => void
   runs: RunSummary[]
   selectedRunId: number | null
   runsBusy: boolean
@@ -65,57 +60,11 @@ export function ThesisRightPanel({
           aria-hidden={!open}
           inert={!open}
         >
-          <Tabs defaultValue="readers" className="min-h-0 w-full flex-1 flex-col gap-0">
-            <TabsList className="mx-3 mt-3 grid h-9 w-[calc(100%-1.5rem)] shrink-0 grid-cols-2">
-              <TabsTrigger value="readers" className="min-w-0 px-1 text-xs">
-                {t('thesis.readerList.title', { count: readers.length })}
-              </TabsTrigger>
-              <TabsTrigger value="runs" className="min-w-0 px-1 text-xs">
-                {t('thesis.runsPanel.title', { count: runs.length })}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="readers" className="flex min-h-0 flex-1 flex-col">
-              <div className="flex h-8 shrink-0 items-center justify-end px-3">
-                {focusReaderId != null ? (
-                  <Button type="button" size="xs" variant="ghost" aria-label={t('thesis.readerList.clear')} onClick={() => onFocus(null)}>
-                    <X className="mr-1 size-3" />
-                    {t('thesis.readerList.clear')}
-                  </Button>
-                ) : null}
-              </div>
-              <ScrollArea className="min-h-0 flex-1">
-                <div className="flex flex-col gap-1 p-2 pt-0">
-                  {readers.length === 0 ? (
-                    <p className="px-1 text-xs text-muted-foreground">{t('thesis.readerList.empty')}</p>
-                  ) : null}
-                  {readers.map((reader) => {
-                    const active = focusReaderId != null && reader.id === focusReaderId
-                    return (
-                      <button
-                        key={reader.id}
-                        type="button"
-                        className={`flex flex-col items-start rounded-lg border px-2 py-1.5 text-left text-xs transition ${
-                          active ? 'border-[#b91c1c] bg-[#b91c1c]/10' : 'hover:bg-muted'
-                        }`}
-                        onClick={() => onFocus(active ? null : reader.id)}
-                      >
-                        <span className="font-medium">#{reader.id}</span>
-                        <span className="text-muted-foreground tabular-nums">
-                          ({reader.x_m.toFixed(1)}, {reader.y_m.toFixed(1)}) m
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
-              <p className="shrink-0 border-t px-3 py-2 text-[11px] text-muted-foreground">{t('thesis.readerList.hint')}</p>
-            </TabsContent>
-
-            <TabsContent value="runs" className="flex min-h-0 flex-1 flex-col">
-              <div className="flex h-8 shrink-0 items-center justify-between gap-2 px-3">
-                <span className="text-[11px] text-muted-foreground">
-                  {runsBusy ? `⏳ ${t('thesis.runsPanel.working')}` : null}
+          <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex h-10 shrink-0 items-center justify-between gap-2 border-b px-3">
+                <span className="min-w-0 truncate text-xs font-medium">
+                  {t('thesis.runsPanel.title', { count: runs.length })}
+                  {runsBusy ? <span className="ml-1 font-normal text-muted-foreground">⏳</span> : null}
                 </span>
                 <Button
                   type="button"
@@ -130,7 +79,7 @@ export function ThesisRightPanel({
                 </Button>
               </div>
               <ScrollArea className="min-h-0 flex-1">
-                <div className="flex flex-col gap-2 p-2 pt-0">
+                <div className="flex flex-col gap-2 p-2">
                   {!canRun ? <p className="px-1 text-xs text-muted-foreground">{t('thesis.runsPanel.needInit')}</p> : null}
                   {canRun && runs.length === 0 ? (
                     <p className="px-1 text-xs text-muted-foreground">{t('thesis.runsPanel.empty')}</p>
@@ -221,8 +170,7 @@ export function ThesisRightPanel({
                 </div>
               </ScrollArea>
               <p className="shrink-0 border-t px-3 py-2 text-[11px] text-muted-foreground">{t('thesis.runsPanel.hint')}</p>
-            </TabsContent>
-          </Tabs>
+          </div>
         </aside>
       </div>
       <Button

@@ -65,7 +65,11 @@ def dump_state(state: EpisodeState) -> bytes:
 def load_state(blob: bytes, snapshot: dict[str, Any], config: EpisodeConfig) -> EpisodeState:
     with np.load(io.BytesIO(blob), allow_pickle=False) as data:
         meta = json.loads(str(data["meta"]))
-        arrays = {name: data[f"{_WORLD_PREFIX}{name}"].copy() for name in DeviceWorld.MUTABLE_FIELDS}
+        arrays = {
+            name: data[f"{_WORLD_PREFIX}{name}"].copy()
+            for name in DeviceWorld.MUTABLE_FIELDS
+            if f"{_WORLD_PREFIX}{name}" in data.files
+        }
         for name in DeviceWorld.METRIC_FIELDS:
             key = f"{_WORLD_PREFIX}{name}"
             if key in data.files:

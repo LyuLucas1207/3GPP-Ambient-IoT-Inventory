@@ -7,6 +7,7 @@ export const APERIODIC_PAGING_PATH = '/aperiodic-paging'
 export const THESIS_SIMULATION_PATH = '/thesis-simulation'
 export const THESIS_ANALYSIS_PATH = '/thesis-simulation/analysis'
 export const THESIS_TRAINING_PATH = '/thesis-simulation/training'
+export const THESIS_RL_PATH = '/thesis-simulation/rl'
 
 const LINKS = [
   { to: PERIODIC_PAGING_PATH, key: 'nav.periodicPaper' },

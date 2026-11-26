@@ -120,6 +120,7 @@ export function TimeScroller({
   tEnd,
   height,
   draw,
+  overlay,
   hit,
   onWindow,
   jumps,
@@ -128,10 +129,13 @@ export function TimeScroller({
   redrawKey,
   toolbar,
   globalKeys = false,
+  followLatest = false,
 }: {
   tEnd: number
   height: number
   draw: (ctx: CanvasRenderingContext2D, view: TimeView) => void
+  /** Painted after collapsed-idle bands, so a line can stay visible across them. */
+  overlay?: (ctx: CanvasRenderingContext2D, view: TimeView) => void
   hit?: (t: number, y: number) => string | null
   onWindow?: (t0: number, t1: number) => void
   /** sorted times the prev / next buttons jump between (e.g. the frames a device took part in) */
@@ -143,6 +147,8 @@ export function TimeScroller({
   toolbar?: React.ReactNode
   /** listen to arrow keys on the whole window (for a modal); otherwise only while focused */
   globalKeys?: boolean
+  /** Keep the right edge on the latest time until the viewer scrolls away from it. */
+  followLatest?: boolean
 }) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -155,6 +161,7 @@ export function TimeScroller({
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null)
   const pendingAnchor = useRef<{ t: number; offset: number } | null>(null)
   const leftTime = useRef(0)
+  const pinned = useRef(true)
 
   const total = Math.max(tEnd, 0)
   const warp = useMemo(() => buildWarp(gaps, pxPerS, collapse), [gaps, pxPerS, collapse])
@@ -181,11 +188,16 @@ export function TimeScroller({
   useLayoutEffect(() => {
     const node = scrollRef.current
     if (!node) return
+    if (followLatest && pinned.current) {
+      node.scrollLeft = Math.max(0, node.scrollWidth - node.clientWidth)
+      setScrollLeft(node.scrollLeft)
+      return
+    }
     const anchor = pendingAnchor.current ?? { t: leftTime.current, offset: 0 }
     pendingAnchor.current = null
     node.scrollLeft = Math.max(0, warp.X(anchor.t) - anchor.offset)
     setScrollLeft(node.scrollLeft)
-  }, [warp])
+  }, [warp, followLatest, total, width])
 
   const zoom = useCallback(
     (factor: number, offsetPx?: number) => {
@@ -235,8 +247,9 @@ export function TimeScroller({
     const view: TimeView = { t0, t1, pxPerS, width, height, dark, x, w: (a, b) => x(b) - x(a) }
     draw(ctx, view)
     drawGaps(ctx, view, warp.gaps, scrollLeft)
+    overlay?.(ctx, view)
     drawAxis(ctx, view, warp.gaps)
-  }, [draw, width, height, t0, t1, pxPerS, redrawKey, warp, scrollLeft])
+  }, [draw, overlay, width, height, t0, t1, pxPerS, redrawKey, warp, scrollLeft])
 
   function scrollToTime(time: number, frac = 0.15) {
     const node = scrollRef.current
@@ -361,8 +374,10 @@ export function TimeScroller({
         ref={scrollRef}
         className="relative overflow-x-auto overflow-y-hidden rounded-md border bg-background"
         onScroll={(event) => {
-          const left = event.currentTarget.scrollLeft
+          const node = event.currentTarget
+          const left = node.scrollLeft
           leftTime.current = warp.T(left)
+          pinned.current = left + node.clientWidth >= node.scrollWidth - 24
           setScrollLeft(left)
         }}
         onMouseMove={(event) => {

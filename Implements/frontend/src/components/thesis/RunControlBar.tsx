@@ -144,7 +144,7 @@ export function RunControlBar({
           {configChips.map((chip) => (
             <span
               key={chip.key}
-              className="rounded-md border bg-muted/50 px-1.5 py-0.5 text-[10px] text-muted-foreground"
+              className="max-w-full rounded-md border bg-muted/50 px-1.5 py-0.5 text-[10px] break-all text-muted-foreground"
               title={chip.title}
             >
               {chip.label}
@@ -309,16 +309,33 @@ function runConfigChips(
     },
   ]
 
-  if (adaptive) {
+  const controller = (cfg.controller ?? {}) as { kind?: string; policy_id?: string | null }
+  const ctlKind = run.controller_kind ?? controller.kind ?? 'auto'
+  const resolved = ctlKind === 'policy' ? 'policy' : ctlKind === 'dfsa' || (ctlKind === 'auto' && adaptive) ? 'dfsa' : 'fixed'
+  if (resolved === 'policy') {
+    chips.push({
+      key: 'controller',
+      label: t('thesis.live.configPolicy', { id: run.policy_id ?? controller.policy_id ?? '?' }),
+      title: t('thesis.newRun.controller.desc.policy'),
+    })
+    chips.push({
+      key: 'k',
+      label: t('thesis.live.configInitialK', { k: k0 ?? 128 }),
+    })
+  } else if (resolved === 'dfsa') {
     chips.push({
       key: 'k',
       label: k0 != null ? t('thesis.live.configAdaptiveK', { k: k0 }) : t('thesis.live.configAdaptiveKDefault'),
-      title: t('thesis.newRun.adaptiveKHint'),
+      title: t('thesis.newRun.controller.desc.dfsa'),
     })
   } else {
+    const pFixed = num('p_fixed')
     chips.push({
       key: 'k',
-      label: t('thesis.live.configFixedK', { k: k0 ?? 128 }),
+      label: pFixed != null
+        ? t('thesis.live.configFixedKP', { k: k0 ?? 128, p: pFixed })
+        : t('thesis.live.configFixedK', { k: k0 ?? 128 }),
+      title: t('thesis.newRun.controller.desc.fixed'),
     })
   }
 
@@ -330,6 +347,14 @@ function runConfigChips(
     })
   } else if (scheme === 'periodic') {
     chips.push({ key: 'g', label: t('thesis.live.configNoGrouping') })
+  }
+
+  if (cfg.single_reply === true) {
+    chips.push({
+      key: 'singleReply',
+      label: t('thesis.newRun.singleReply'),
+      title: t('thesis.newRun.singleReplyHint'),
+    })
   }
 
   chips.push({
@@ -373,17 +398,6 @@ function runConfigChips(
     })
   }
 
-  const controller = (cfg.controller ?? {}) as { kind?: string; policy_id?: string | null }
-  const ctlKind = run.controller_kind ?? controller.kind ?? 'auto'
-  if (ctlKind !== 'auto') {
-    chips.push({
-      key: 'controller',
-      label: ctlKind === 'policy'
-        ? t('thesis.live.configPolicy', { id: run.policy_id ?? controller.policy_id ?? '?' })
-        : t(`thesis.newRun.controller.kinds.${ctlKind}`, { defaultValue: ctlKind }),
-      title: t('thesis.newRun.controller.hint'),
-    })
-  }
   const mode = run.resource_mode ?? ((cfg.resource as { mode?: string } | undefined)?.mode ?? 'independent')
   chips.push({
     key: 'resource',

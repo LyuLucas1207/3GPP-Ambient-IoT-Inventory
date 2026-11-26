@@ -5,7 +5,7 @@ import { fetchDeviceMetrics, fetchInterference } from '@/api/thesisRuns'
 import { axis, baseLayout, PLOT_CONFIG } from '@/components/aperiodic/plotLayout'
 import { defaultTermination, terminationLabel, TerminationEditor } from '@/components/thesis/MultiReaderOptions'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dropdown } from '@/components/ui/dropdown'
 import { useTerminationReplay } from '@/hooks/useMultiReader'
 import { usePlotTheme } from '@/hooks/usePlotTheme'
 import Plot from '@/lib/Plot'
@@ -41,22 +41,18 @@ function RunSelect({ analyses, value, onChange, label }: { analyses: RunAnalysis
   return (
     <label className="flex items-center gap-2 text-xs text-muted-foreground">
       <span>{label}</span>
-      <Select
+      <Dropdown
         value={value == null ? '' : String(value)}
-        items={Object.fromEntries(analyses.map((a) => [String(a.run_id), runShortLabel(a)]))}
-        onValueChange={(v) => v != null && onChange(Number(v))}
-      >
-        <SelectTrigger className="h-7 min-w-40 text-xs">
-          <SelectValue placeholder="—" />
-        </SelectTrigger>
-        <SelectContent align="start">
-          {analyses.map((a) => (
-            <SelectItem key={a.run_id} value={String(a.run_id)} className="text-xs">
-              {runShortLabel(a)} · {a.summary.resource_mode ?? 'independent'}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        placeholder="—"
+        size="sm"
+        className="min-w-40"
+        options={analyses.map((a) => ({
+          value: String(a.run_id),
+          trigger: runShortLabel(a),
+          label: `${runShortLabel(a)} · ${a.summary.resource_mode ?? 'independent'}`,
+        }))}
+        onChange={(v) => onChange(Number(v))}
+      />
     </label>
   )
 }

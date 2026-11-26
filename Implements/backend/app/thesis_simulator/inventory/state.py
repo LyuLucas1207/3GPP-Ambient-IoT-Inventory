@@ -27,6 +27,18 @@ from app.thesis_simulator.inventory.controller import ControllerSpec, new_histor
 from app.thesis_simulator.inventory.estimator import BacklogEstimator
 from app.thesis_simulator.inventory.termination import TermState, TerminationSpec
 
+def _fixed_p(value: object) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        parsed = float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    if parsed != parsed or parsed <= 0.0:
+        return None
+    return min(1.0, parsed)
+
+
 SUBTYPE_CODE: dict[str, int] = {"1": 0, "2a": 1, "2b": 2}
 SUBTYPE_LABEL: tuple[str, str, str] = ("1", "2a", "2b")
 UPLINK_BACKSCATTER = 0
@@ -100,6 +112,7 @@ class DeviceWorld:
 
     grp: np.ndarray  # int32, -1 unlatched
     latched_reader: np.ndarray  # int32, -1 unlatched
+    latched_until: np.ndarray  # float64, sim time the one-reply lock ends; <0 means no timed lock
     attempts: np.ndarray  # int32
     identified: np.ndarray  # bool
     dropped: np.ndarray  # bool
@@ -120,7 +133,7 @@ class DeviceWorld:
     fail_to_page_count: np.ndarray | None = None  # int32
 
     MUTABLE_FIELDS = (
-        "E", "on", "grp", "latched_reader", "attempts", "identified",
+        "E", "on", "grp", "latched_reader", "latched_until", "attempts", "identified",
         "dropped", "drop_cause", "depletions", "identified_t", "identified_by",
     )
     METRIC_FIELDS = (
@@ -225,6 +238,8 @@ class EpisodeConfig:
     use_capture: bool
     use_ebi: bool
     include_d2r: bool
+    # Aperiodic: after a device joins one reader's round, ignore other readers until that round ends.
+    single_reply: bool
     seed: int | None
     reader_start_offsets: dict[str, float]
     disabled_reader_ids: list[int] = field(default_factory=list)
@@ -232,6 +247,8 @@ class EpisodeConfig:
     # When True, k_initial is only the cold-start frame length; later rounds
     # follow the Schoute / empty-slot backlog rule (K ≈ 2 N̂).
     adaptive_k: bool = False
+    # Fixed controller only. None keeps the backlog estimator; a number is sent in every page.
+    p_fixed: float | None = None
     controller: ControllerSpec = field(default_factory=ControllerSpec)
     termination: TerminationSpec = field(default_factory=TerminationSpec)
     resource: ResourceSpec = field(default_factory=ResourceSpec)
@@ -258,11 +275,13 @@ class EpisodeConfig:
             use_capture=bool(cfg.get("use_capture", True)),
             use_ebi=bool(cfg.get("use_ebi", True)),
             include_d2r=bool(cfg.get("include_d2r", True)),
+            single_reply=bool(cfg.get("single_reply", False)),
             seed=cfg.get("seed"),
             reader_start_offsets=dict(cfg.get("reader_start_offsets") or {}),
             disabled_reader_ids=list(cfg.get("disabled_reader_ids") or []),
             stall_timeout_s=None if stall in (None, "") else float(stall),
             adaptive_k=adaptive_k,
+            p_fixed=_fixed_p(cfg.get("p_fixed")),
             controller=ControllerSpec.from_json(cfg.get("controller")),
             termination=TerminationSpec.from_json(cfg.get("termination")),
             resource=ResourceSpec.from_json(cfg.get("resource")),

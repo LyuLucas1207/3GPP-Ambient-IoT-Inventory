@@ -9,6 +9,27 @@ from dataclasses import dataclass
 import numpy as np
 
 from app.aperiodic_simulator.core.config import SystemParams
+from app.journal.tables import (
+    TYPE1_BACKSCATTER_LOSS_DB,
+    TYPE1_E_LOW_J,
+    TYPE1_E_UP_J,
+    TYPE1_P_RX_W,
+    TYPE1_P_TX_W,
+    TYPE1_RX_SENSITIVITY_DBM,
+    TYPE2A_BACKSCATTER_GAIN_DB,
+    TYPE2A_BACKSCATTER_LOSS_DB,
+    TYPE2A_E_LOW_J,
+    TYPE2A_E_UP_J,
+    TYPE2A_P_RX_W,
+    TYPE2A_P_TX_W,
+    TYPE2A_RX_SENSITIVITY_DBM,
+    TYPE2B_ACTIVE_TX_POWER_DBM,
+    TYPE2B_E_LOW_J,
+    TYPE2B_E_UP_J,
+    TYPE2B_P_RX_W,
+    TYPE2B_P_TX_W,
+    TYPE2B_RX_SENSITIVITY_DBM,
+)
 
 
 @dataclass(frozen=True)
@@ -34,43 +55,43 @@ def device_types(system: SystemParams | None = None) -> tuple[DeviceType, Device
     t1 = DeviceType(
         name="1",
         index=0,
-        rx_sensitivity_dbm=-36.0,
-        p_tx_w=1e-6,
-        p_rx_w=1e-6,
-        p_wurx_w=1e-6,  # P_wurx = P_rx for type 1
+        rx_sensitivity_dbm=TYPE1_RX_SENSITIVITY_DBM,
+        p_tx_w=TYPE1_P_TX_W,
+        p_rx_w=TYPE1_P_RX_W,
+        p_wurx_w=TYPE1_P_RX_W,  # P_wurx = P_rx for type 1
         p_sl_w=s.p_sl_w,
-        e_up_j=5e-6,
-        e_low_j=2.5e-6,
+        e_up_j=TYPE1_E_UP_J,
+        e_low_j=TYPE1_E_LOW_J,
         uplink="backscatter",
-        backscatter_loss_db=6.0,
+        backscatter_loss_db=TYPE1_BACKSCATTER_LOSS_DB,
     )
     t2a = DeviceType(
         name="2a",
         index=1,
-        rx_sensitivity_dbm=-40.0,
-        p_tx_w=200e-6,
-        p_rx_w=50e-6,
+        rx_sensitivity_dbm=TYPE2A_RX_SENSITIVITY_DBM,
+        p_tx_w=TYPE2A_P_TX_W,
+        p_rx_w=TYPE2A_P_RX_W,
         p_wurx_w=s.p_wurx_w,
         p_sl_w=s.p_sl_w,
-        e_up_j=25e-6,
-        e_low_j=12.5e-6,
+        e_up_j=TYPE2A_E_UP_J,
+        e_low_j=TYPE2A_E_LOW_J,
         uplink="backscatter",
-        backscatter_loss_db=6.0,
-        backscatter_gain_db=10.0,
+        backscatter_loss_db=TYPE2A_BACKSCATTER_LOSS_DB,
+        backscatter_gain_db=TYPE2A_BACKSCATTER_GAIN_DB,
         uses_wurx=True,
     )
     t2b = DeviceType(
         name="2b",
         index=2,
-        rx_sensitivity_dbm=-70.0,
-        p_tx_w=200e-6,
-        p_rx_w=50e-6,
+        rx_sensitivity_dbm=TYPE2B_RX_SENSITIVITY_DBM,
+        p_tx_w=TYPE2B_P_TX_W,
+        p_rx_w=TYPE2B_P_RX_W,
         p_wurx_w=s.p_wurx_w,
         p_sl_w=s.p_sl_w,
-        e_up_j=25e-6,
-        e_low_j=12.5e-6,
+        e_up_j=TYPE2B_E_UP_J,
+        e_low_j=TYPE2B_E_LOW_J,
         uplink="active",
-        active_tx_power_dbm=-20.0,
+        active_tx_power_dbm=TYPE2B_ACTIVE_TX_POWER_DBM,
         uses_wurx=True,
     )
     return t1, t2a, t2b

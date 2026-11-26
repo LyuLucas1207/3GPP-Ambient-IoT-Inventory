@@ -520,6 +520,7 @@ def _build_world(placements: list[dict[str, Any]]) -> DeviceWorld:
         include_d2r_default=True,
         grp=np.full(n, -1, dtype=np.int32),
         latched_reader=np.full(n, -1, dtype=np.int32),
+        latched_until=np.full(n, -1.0, dtype=np.float64),
         attempts=np.zeros(n, dtype=np.int32),
         identified=np.zeros(n, dtype=bool),
         dropped=np.zeros(n, dtype=bool),

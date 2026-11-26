@@ -26,22 +26,38 @@ import numpy as np
 from app.aperiodic_simulator.core.config import SystemParams
 from app.aperiodic_simulator.physics.energy import compute_global_lmax
 from app.aperiodic_simulator.rl.checkpoint import CHECKPOINT_DIR, alpha_tag, sha256_file
+from app.journal.tables import (
+    BATCH_SIZE,
+    CLIP_RANGE,
+    ENT_COEF,
+    GAE_LAMBDA,
+    GAMMA,
+    LEARNING_RATE,
+    LSTM_HIDDEN,
+    MAX_GRAD_NORM,
+    MLP_WIDTH,
+    N_EPOCHS,
+    N_LSTM_LAYERS,
+    N_STEPS,
+    TOTAL_TIMESTEPS,
+    VF_COEF,
+)
 from app.aperiodic_simulator.rl.env import TRAINING_DISTRIBUTION, AperiodicInventoryEnv
 from app.aperiodic_simulator.rl.transforms import ACTION_TRANSFORM, OBSERVATION_NORMALIZATION
 
-PAPER_TRAINING_STEPS = 1_000_000
+PAPER_TRAINING_STEPS = TOTAL_TIMESTEPS
 
 HYPERPARAMETERS = {
-    "learning_rate": 3e-4,
-    "gamma": 0.9,
-    "gae_lambda": 0.95,
-    "clip_range": 0.2,
-    "ent_coef": 0.01,
-    "vf_coef": 0.02,
-    "max_grad_norm": 0.5,
-    "n_steps": 2048,
-    "batch_size": 256,
-    "n_epochs": 10,
+    "learning_rate": LEARNING_RATE,
+    "gamma": GAMMA,
+    "gae_lambda": GAE_LAMBDA,
+    "clip_range": CLIP_RANGE,
+    "ent_coef": ENT_COEF,
+    "vf_coef": VF_COEF,
+    "max_grad_norm": MAX_GRAD_NORM,
+    "n_steps": N_STEPS,
+    "batch_size": BATCH_SIZE,
+    "n_epochs": N_EPOCHS,
 }
 ARCHITECTURE = "actor: LSTM(1x128) -> MLP(128,128,ReLU) -> Gaussian(2); critic: LSTM(1x128) -> MLP(128,128,ReLU) -> value"
 
@@ -50,11 +66,11 @@ def policy_kwargs():
     import torch.nn as nn
 
     return {
-        "lstm_hidden_size": 128,
-        "n_lstm_layers": 1,
+        "lstm_hidden_size": LSTM_HIDDEN,
+        "n_lstm_layers": N_LSTM_LAYERS,
         "shared_lstm": False,
         "enable_critic_lstm": True,
-        "net_arch": {"pi": [128, 128], "vf": [128, 128]},
+        "net_arch": {"pi": [MLP_WIDTH, MLP_WIDTH], "vf": [MLP_WIDTH, MLP_WIDTH]},
         "activation_fn": nn.ReLU,
     }
 

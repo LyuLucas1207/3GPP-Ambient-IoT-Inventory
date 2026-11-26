@@ -1,11 +1,11 @@
-import { PanelLeftClose, PanelLeftOpen, Plus, RotateCcw, Trash2 } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Plus, RotateCcw, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MathInline } from '@/components/MathText'
 import { ShapeGlyph } from '@/components/thesis/MarkerShape'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dropdown } from '@/components/ui/dropdown'
 import {
   Dialog,
   DialogBackdrop,
@@ -24,7 +24,7 @@ import {
   DEFAULT_WIDTH_M,
 } from '@/lib/thesisGeometry'
 import { DEVICE_SUBTYPES, deriveReaderRanges } from '@/lib/thesisPhysics'
-import type { CatalogEntry, DeviceMix, DeviceSubtype, ParamValue, ScenarioDefaults, Scene, SectionSummary } from '@/types/thesis'
+import type { CatalogEntry, DeviceMix, DeviceSubtype, ParamValue, PlacementId, ScenarioDefaults, Scene, SectionSummary } from '@/types/thesis'
 
 export function ThesisSidebar({
   catalog,
@@ -55,6 +55,8 @@ export function ThesisSidebar({
   onConvert,
   onClearPicked,
   onLeaveSelect,
+  focusReaderId,
+  onFocusReader,
 }: {
   catalog: CatalogEntry[]
   pristineCatalog: CatalogEntry[]
@@ -84,12 +86,15 @@ export function ThesisSidebar({
   onConvert: (kind: 'station' | 'radar') => void
   onClearPicked: () => void
   onLeaveSelect: () => void
+  focusReaderId: PlacementId | null
+  onFocusReader: (id: PlacementId | null) => void
 }) {
   const { t } = useTranslation()
   const locked = !scene || scene.status === 'initialized'
   const deviceCount = scene?.placements.filter((item) => item.kind === 'device').length ?? 0
   const stationOnly = scene?.placements.filter((item) => item.kind === 'station').length ?? 0
-  const readerCount = scene?.placements.filter((item) => item.kind === 'radar').length ?? 0
+  const readers = useMemo(() => scene?.placements.filter((item) => item.kind === 'radar') ?? [], [scene])
+  const readerCount = readers.length
   const [deviceMix, setDeviceMix] = useState<DeviceMix>('mixed')
   const [pendingDelete, setPendingDelete] = useState<SectionSummary | null>(null)
   const [pendingClear, setPendingClear] = useState<'device' | 'infra' | null>(null)
@@ -114,9 +119,10 @@ export function ThesisSidebar({
           if (value !== 'warehouse') onLeaveSelect()
         }}
       >
-        <TabsList className="mx-3 mt-3 grid h-9 w-[calc(100%-1.5rem)] shrink-0 grid-cols-3">
+        <TabsList className="mx-3 mt-3 grid h-9 w-[calc(100%-1.5rem)] shrink-0 grid-cols-4">
           <TabsTrigger value="section" className="min-w-0 px-1 text-xs">{t('thesis.tabs.section')}</TabsTrigger>
           <TabsTrigger value="warehouse" className="min-w-0 px-1 text-xs">{t('thesis.tabs.warehouse')}</TabsTrigger>
+          <TabsTrigger value="readers" className="min-w-0 px-1 text-xs">{t('thesis.tabs.readers')}</TabsTrigger>
           <TabsTrigger value="catalog" className="min-w-0 px-1 text-xs">{t('thesis.tabs.catalog')}</TabsTrigger>
         </TabsList>
         <TabsContent value="section" className="min-h-0 flex-1">
@@ -274,6 +280,43 @@ export function ThesisSidebar({
               </Panel>
             </div>
           </ScrollArea>
+        </TabsContent>
+        <TabsContent value="readers" className="flex min-h-0 flex-1 flex-col">
+          <div className="flex h-8 shrink-0 items-center justify-between px-3">
+            <span className="min-w-0 truncate text-xs text-muted-foreground">{t('thesis.readerList.title', { count: readerCount })}</span>
+            {focusReaderId != null ? (
+              <Button type="button" size="xs" variant="ghost" aria-label={t('thesis.readerList.clear')} onClick={() => onFocusReader(null)}>
+                <X className="mr-1 size-3" />
+                {t('thesis.readerList.clear')}
+              </Button>
+            ) : null}
+          </div>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="flex flex-col gap-1 p-2 pt-0">
+              {readers.length === 0 ? (
+                <p className="px-1 text-xs text-muted-foreground">{t('thesis.readerList.empty')}</p>
+              ) : null}
+              {readers.map((reader) => {
+                const active = focusReaderId != null && reader.id === focusReaderId
+                return (
+                  <button
+                    key={reader.id}
+                    type="button"
+                    className={`flex flex-col items-start rounded-lg border px-2 py-1.5 text-left text-xs transition ${
+                      active ? 'border-[#b91c1c] bg-[#b91c1c]/10' : 'hover:bg-muted'
+                    }`}
+                    onClick={() => onFocusReader(active ? null : reader.id)}
+                  >
+                    <span className="font-medium">#{reader.id}</span>
+                    <span className="text-muted-foreground tabular-nums">
+                      ({reader.x_m.toFixed(1)}, {reader.y_m.toFixed(1)}) m
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </ScrollArea>
+          <p className="shrink-0 border-t px-3 py-2 text-[11px] text-muted-foreground">{t('thesis.readerList.hint')}</p>
         </TabsContent>
         <TabsContent value="catalog" className="min-h-0 flex-1">
           <ScrollArea className="h-full">
@@ -631,28 +674,14 @@ function MenuSelect<T extends string>({
   label: string
   onChange: (value: T) => void
 }) {
-  const items = Object.fromEntries(options.map((option) => [option.value, option.label]))
   return (
-    <Select
+    <Dropdown
       value={value}
-      items={items}
       disabled={disabled}
-      onValueChange={(next) => {
-        if (next == null) return
-        onChange(String(next) as T)
-      }}
-    >
-      <SelectTrigger className="h-8 w-full min-w-0" aria-label={label}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent align="start" alignItemWithTrigger={false}>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+      aria-label={label}
+      options={options.map((option) => ({ value: option.value, label: option.label }))}
+      onChange={onChange}
+    />
   )
 }
 

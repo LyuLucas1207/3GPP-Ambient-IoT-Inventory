@@ -245,6 +245,10 @@ def device_trace(db: Session, run_id: int, device_id: int) -> dict[str, Any]:
     t_end = float(
         db.scalar(select(func.max(ThesisRunRound.t_end_s)).where(ThesisRunRound.run_id == run_id)) or 0.0
     )
+    # While the run is still going, the summary clock is ahead of the last flushed round.
+    summary = run.summary
+    if summary is not None and summary.metrics_json:
+        t_end = max(t_end, float(summary.metrics_json.get("sim_time_s") or 0.0))
 
     # Energy between events: rebuilt from each event's (E, on timer). Runs
     # recorded before the on timer was logged have no ``on_s``; their gaps are

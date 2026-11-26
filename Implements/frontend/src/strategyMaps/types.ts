@@ -16,7 +16,16 @@ export enum EdgeKind {
   Sleep = 'sleep',
 }
 
-export type StrategyHelpPrefix = 'em' | 'dcm1' | 'dcm4' | 'overview' | 'apOverview'
+export type StrategyHelpPrefix = 'em' | 'dcm1' | 'dcm4' | 'overview' | 'apOverview' | 'rl'
+
+export interface StrategySheetGroup {
+  headingKey?: string
+  /** 2 puts short feature rows side by side so the node stays readable. */
+  columns?: 1 | 2
+  /** Width of the symbol column. Defaults to 5.4rem. */
+  symbolWidth?: string
+  rows: { symbol: string; textKey: string }[]
+}
 
 export interface StrategyNodeData extends Record<string, unknown> {
   label: string
@@ -29,6 +38,9 @@ export interface StrategyNodeData extends Record<string, unknown> {
   nodeId?: string
   active?: boolean
   dimmed?: boolean
+  /** Shown on the node itself, so the diagram can be read without opening the popover. */
+  sheetLeadKey?: string
+  sheet?: StrategySheetGroup[]
 }
 
 export interface StrategyMapDef {
@@ -91,6 +103,7 @@ export function e(
   sourceHandle = 'bs',
   targetHandle = 'tt',
   path: 'step' | 'straight' = 'step',
+  offset?: number,
 ): BuiltInEdge {
   const around = isAround(sourceHandle, targetHandle)
   return {
@@ -103,7 +116,7 @@ export function e(
     data: { kind },
     type: path === 'straight' ? 'straight' : 'smoothstep',
     animated: kind === EdgeKind.Sleep || kind === EdgeKind.Retry,
-    pathOptions: path === 'straight' ? undefined : { borderRadius: 14, offset: around ? 56 : 28 },
+    pathOptions: path === 'straight' ? undefined : { borderRadius: 14, offset: offset ?? (around ? 56 : 28) },
     style: {
       stroke: EDGE_STROKE[kind],
       strokeWidth: kind === EdgeKind.Normal ? 2.25 : 2.5,

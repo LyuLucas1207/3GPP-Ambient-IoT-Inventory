@@ -86,6 +86,11 @@ class RunCreateIn(BaseModel):
     use_capture: bool = True
     use_ebi: bool = True
     include_d2r: bool = True
+    # After a device joins one reader, it does not answer another until that round ends.
+    single_reply: bool = False
+    # Fixed controller: this access probability is written into every paging message.
+    # None keeps the backlog estimator (older runs).
+    p_fixed: float | None = Field(default=None, gt=0.0, le=1.0)
     seed: int | None = None
     reader_start_offsets: dict[str, float] = Field(default_factory=dict)
     # Staggered start, recorded for analysis: reader ids per start group (group i

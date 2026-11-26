@@ -43,8 +43,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from app.aperiodic_simulator.rl.transforms import ACTION_TRANSFORM as SINGLE_READER_ACTION
-from app.aperiodic_simulator.rl.transforms import action_to_multipliers
+from app.journal.tables import M_MAX, M_MIN, Q_MAX, Q_MIN
 
 if TYPE_CHECKING:
     from app.thesis_simulator.inventory.state import EpisodeConfig, ReaderState
@@ -72,8 +71,24 @@ OBSERVATION_SPEC = {
     "dim": OBS_DIM,
     "excluded": ["devices left", "energies", "availability", "C2"],
 }
+
+
+def _log_map(a: float, lo: float, hi: float) -> float:
+    a = min(max(float(a), -1.0), 1.0)
+    return math.exp(math.log(lo) + (a + 1.0) / 2.0 * (math.log(hi) - math.log(lo)))
+
+
+def action_to_multipliers(action) -> tuple[float, float]:
+    a = np.asarray(action, dtype=float).reshape(-1)
+    return _log_map(a[0], M_MIN, M_MAX), _log_map(a[1], Q_MIN, Q_MAX)
+
+
 ACTION_SPEC = {
-    **SINGLE_READER_ACTION,
+    "policy_action_space": "Box([-1, -1], [1, 1])",
+    "m": "exp(ln(0.25) + (a0 + 1) / 2 * (ln(10) - ln(0.25)))",
+    "q": "exp(ln(0.1) + (a1 + 1) / 2 * (ln(10) - ln(0.1)))",
+    "m_range": [M_MIN, M_MAX],
+    "q_range": [Q_MIN, Q_MAX],
     "L": "clip(ceil(m * ceil(K_prev / F_r)), 1, ceil(K_max / F_r))",
     "K": "L * F_r",
     "p": f"clip(q * p_prev, {P_FLOOR}, 1)",

@@ -57,6 +57,13 @@ const handleCls = '!size-2.5 !border-0 !bg-transparent !opacity-0 pointer-events
 
 const FIT = { padding: 0.1, minZoom: 0.28, maxZoom: 1.2 } as const
 
+export type FlowFit = {
+  padding: number
+  minZoom: number
+  maxZoom: number
+  nodes?: { id: string }[]
+}
+
 function StrategyNode({ data, selected, dragging }: NodeProps<Node<StrategyNodeData>>) {
   const { t } = useTranslation()
   const Icon = data.icon
@@ -107,9 +114,47 @@ function StrategyNode({ data, selected, dragging }: NodeProps<Node<StrategyNodeD
             />
           }
         >
-          <Icon className="mt-0.5 size-5 shrink-0" aria-hidden strokeWidth={2} />
-          <span>
-            <MathText text={t(data.label, { defaultValue: data.label })} />
+          <span className="flex w-full items-start gap-2.5">
+            <Icon className="mt-0.5 size-5 shrink-0" aria-hidden strokeWidth={2} />
+            <span className="min-w-0 flex-1">
+              <MathText text={t(data.label, { defaultValue: data.label })} />
+              {data.sheetLeadKey ? (
+                <span className="mt-1 block text-sm leading-snug opacity-80">
+                  <MathText text={t(data.sheetLeadKey)} />
+                </span>
+              ) : null}
+              {data.sheet?.map((group) => (
+                <span key={group.headingKey ?? group.rows[0]?.textKey} className="mt-2 block">
+                  {group.headingKey ? (
+                    <span className="block text-sm font-medium">
+                      <MathText text={t(group.headingKey)} />
+                    </span>
+                  ) : null}
+                  <span className={cn('mt-0.5 grid gap-x-4 gap-y-1', group.columns === 2 ? 'grid-cols-2' : 'grid-cols-1')}>
+                    {group.rows.map((row) =>
+                      row.symbol ? (
+                        <span
+                          key={row.textKey}
+                          className="grid gap-1.5 text-sm leading-snug font-normal"
+                          style={{ gridTemplateColumns: `${group.symbolWidth ?? '5.4rem'} 1fr` }}
+                        >
+                          <span className="font-mono">
+                            <MathText text={row.symbol} />
+                          </span>
+                          <span>
+                            <MathText text={t(row.textKey)} />
+                          </span>
+                        </span>
+                      ) : (
+                        <span key={row.textKey} className="block text-sm leading-snug font-normal">
+                          <MathText text={t(row.textKey)} />
+                        </span>
+                      ),
+                    )}
+                  </span>
+                </span>
+              ))}
+            </span>
           </span>
         </PopoverTrigger>
         <PopoverPortal>
@@ -158,7 +203,17 @@ function cloneNodes(def: StrategyMapDef, dropGen: number, highlight?: FlowHighli
   }))
 }
 
-function FlowInner({ def, highlight, toolbar = true }: { def: StrategyMapDef; highlight?: FlowHighlight; toolbar?: boolean }) {
+function FlowInner({
+  def,
+  highlight,
+  toolbar = true,
+  fit = FIT,
+}: {
+  def: StrategyMapDef
+  highlight?: FlowHighlight
+  toolbar?: boolean
+  fit?: FlowFit
+}) {
   const { fitView } = useReactFlow()
   const { t } = useTranslation()
   const [dropGen, setDropGen] = useState(0)
@@ -184,7 +239,7 @@ function FlowInner({ def, highlight, toolbar = true }: { def: StrategyMapDef; hi
   const [edges, setEdges, onEdgesChange] = useEdgesState(originEdges)
 
   const centerMap = (duration = 0) => {
-    void fitView({ ...FIT, duration })
+    void fitView({ ...fit, duration })
   }
 
   useEffect(() => {
@@ -201,7 +256,7 @@ function FlowInner({ def, highlight, toolbar = true }: { def: StrategyMapDef; hi
       cancelAnimationFrame(outer)
       cancelAnimationFrame(inner)
     }
-  }, [def, dropGen, fitView])
+  }, [def, dropGen, fit, fitView])
 
   const resetLayout = () => {
     setDropGen((n) => n + 1)
@@ -236,9 +291,9 @@ function FlowInner({ def, highlight, toolbar = true }: { def: StrategyMapDef; hi
           edgesReconnectable={false}
           elementsSelectable
           fitView
-          fitViewOptions={FIT}
+          fitViewOptions={fit}
           onInit={(instance) => {
-            requestAnimationFrame(() => instance.fitView({ ...FIT, duration: 0 }))
+            requestAnimationFrame(() => instance.fitView({ ...fit, duration: 0 }))
           }}
           panOnScroll
           zoomOnScroll
@@ -270,14 +325,16 @@ export function StrategyFlow({
   def,
   highlight,
   toolbar = true,
+  fit,
 }: {
   def: StrategyMapDef
   highlight?: FlowHighlight
   toolbar?: boolean
+  fit?: FlowFit
 }) {
   return (
     <ReactFlowProvider>
-      <FlowInner def={def} highlight={highlight} toolbar={toolbar} />
+      <FlowInner def={def} highlight={highlight} toolbar={toolbar} fit={fit} />
     </ReactFlowProvider>
   )
 }

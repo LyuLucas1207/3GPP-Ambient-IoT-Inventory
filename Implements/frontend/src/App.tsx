@@ -3,6 +3,7 @@ import {
   APERIODIC_PAGING_PATH,
   PERIODIC_PAGING_PATH,
   THESIS_ANALYSIS_PATH,
+  THESIS_RL_PATH,
   THESIS_SIMULATION_PATH,
   THESIS_TRAINING_PATH,
 } from '@/components/PaperNav'
@@ -11,6 +12,7 @@ import AperiodicPagingPage from '@/pages/AperiodicPagingPage'
 import GlossaryPage from '@/pages/GlossaryPage'
 import PeriodicPagingPage from '@/pages/PeriodicPagingPage'
 import ThesisAnalysisPage from '@/pages/ThesisAnalysisPage'
+import ThesisRlPage from '@/pages/ThesisRlPage'
 import ThesisSimulationPage from '@/pages/ThesisSimulationPage'
 import ThesisTrainingPage from '@/pages/ThesisTrainingPage'
 
@@ -24,6 +26,7 @@ export default function App() {
         <Route path={THESIS_SIMULATION_PATH} element={<ThesisSimulationPage />} />
         <Route path={THESIS_ANALYSIS_PATH} element={<ThesisAnalysisPage />} />
         <Route path={THESIS_TRAINING_PATH} element={<ThesisTrainingPage />} />
+        <Route path={THESIS_RL_PATH} element={<ThesisRlPage />} />
         <Route path={GLOSSARY_PATH} element={<GlossaryPage />} />
       </Routes>
     </BrowserRouter>

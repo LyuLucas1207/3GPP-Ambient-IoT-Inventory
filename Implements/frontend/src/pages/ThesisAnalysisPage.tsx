@@ -17,13 +17,7 @@ import {
   RetentionPanel,
   TerminationPanel,
 } from '@/components/thesis/analysis/MultiReaderAnalysis'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Dropdown } from '@/components/ui/dropdown'
 import { useInventoryRuns } from '@/hooks/useInventoryRuns'
 import { useRunAnalysis } from '@/hooks/useRunAnalysis'
 import { axis, baseLayout, PLOT_CONFIG } from '@/components/aperiodic/plotLayout'
@@ -122,22 +116,13 @@ export default function ThesisAnalysisPage() {
       <div className="flex shrink-0 items-center gap-3 border-b px-4 py-2">
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{t('thesis.analysis.sectionLabel')}</span>
-          <Select
+          <Dropdown
             value={sectionId == null ? '' : String(sectionId)}
-            items={Object.fromEntries(sections.map((s) => [String(s.id), s.name]))}
-            onValueChange={(v) => setSectionId(v == null ? null : Number(v))}
-          >
-            <SelectTrigger className="h-8 min-w-48">
-              <SelectValue placeholder={t('thesis.analysis.sectionLabel')} />
-            </SelectTrigger>
-            <SelectContent align="start">
-              {sections.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder={t('thesis.analysis.sectionLabel')}
+            className="min-w-48"
+            options={sections.map((s) => ({ value: String(s.id), label: s.name }))}
+            onChange={(v) => setSectionId(Number(v))}
+          />
         </label>
         <span className="text-xs text-muted-foreground">
           {t('thesis.analysis.selectedCount', { count: selected.size, max: MAX_SELECTED })}

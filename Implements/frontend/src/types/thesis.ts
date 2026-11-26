@@ -98,7 +98,7 @@ export type ControllerKind = 'auto' | 'fixed' | 'dfsa' | 'policy'
 export type ResourceMode = 'independent' | 'shared' | 'fdma' | 'tdma' | 'hybrid' | 'lbt'
 export type TerminationKind = 'oracle' | 'quiet_rounds' | 'id_rate' | 'energy_bound' | 'combined'
 
-/** Per-reader (K, p*) controller; ``auto`` = DFSA when adaptive_k, else fixed K. */
+/** Per-reader (K, p*) controller. ``auto`` is only accepted from older saved runs. */
 export type ControllerSpec = { kind: ControllerKind; policy_id?: string | null; deterministic?: boolean }
 
 /** How readers share the F subbands (backend ``coordination/spec.py``). */
@@ -157,6 +157,10 @@ export type RunCreateInput = {
   use_capture: boolean
   use_ebi: boolean
   include_d2r: boolean
+  /** After joining one reader, ignore other readers until that round ends. */
+  single_reply?: boolean
+  /** Fixed controller: access probability written into every paging message. */
+  p_fixed?: number | null
   seed?: number | null
   reader_start_offsets?: Record<string, number>
   /** reader ids per start group, group i starting i × reader_start_interval_s after the first */

@@ -18,7 +18,7 @@ import { ExplainButton } from '@/components/ViewExplanationDialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dropdown } from '@/components/ui/dropdown'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Slider } from '@/components/ui/slider'
 import { PaperNav } from '@/components/PaperNav'
@@ -295,34 +295,14 @@ function PeriodicPagingPage() {
                     if (typeof next === 'number') sim.setFrame(next)
                   }}
                 />
-                <Select
+                <Dropdown
                   value={sim.viewStrategy}
-                  items={{
-                    [StrategyKey.EM]: t(`strategy.${StrategyKey.EM}`),
-                    [StrategyKey.DCM_1_GROUP]: t(`strategy.${StrategyKey.DCM_1_GROUP}`),
-                    [StrategyKey.DCM_4_GROUP]: t(`strategy.${StrategyKey.DCM_4_GROUP}`),
-                  }}
-                  onValueChange={(v) => {
-                    if (
-                      v === StrategyKey.EM ||
-                      v === StrategyKey.DCM_1_GROUP ||
-                      v === StrategyKey.DCM_4_GROUP
-                    ) {
-                      sim.setViewStrategy(v)
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-48 shrink-0" aria-label={t('playback.title')}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="end" alignItemWithTrigger className="z-[80]">
-                    {Object.values(StrategyKey).map((k) => (
-                      <SelectItem key={k} value={k}>
-                        {t(`strategy.${k}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  align="end"
+                  aria-label={t('playback.title')}
+                  className="w-48 shrink-0"
+                  options={Object.values(StrategyKey).map((k) => ({ value: k, label: t(`strategy.${k}`) }))}
+                  onChange={sim.setViewStrategy}
+                />
               </div>
               <MetricsPanel result={sim.result} />
             </CardContent>

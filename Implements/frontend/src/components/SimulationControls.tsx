@@ -6,7 +6,7 @@ import { DicesIcon } from 'lucide-react'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dropdown } from '@/components/ui/dropdown'
 import { DeviceType, StrategyKey, type SimulateRequest } from '@/types/simulation'
 import { TermId } from '@/explain/ids'
 import { useEffect, useState } from 'react'
@@ -97,25 +97,19 @@ export function SimulationControls({
           <FieldLabel htmlFor="device-type" hint={t('hints.deviceType')}>
             {t('sim.deviceType')}
           </FieldLabel>
-          <Select
+          <Dropdown
+            id="device-type"
             value={String(request.device_type)}
-            items={{
-              [String(DeviceType.Device1)]: t('sim.device1'),
-              [String(DeviceType.Device2)]: t('sim.device2'),
-            }}
-            onValueChange={(v) => {
+            aria-label={t('sim.deviceType')}
+            options={[
+              { value: String(DeviceType.Device1), label: t('sim.device1') },
+              { value: String(DeviceType.Device2), label: t('sim.device2') },
+            ]}
+            onChange={(v) => {
               if (v === String(DeviceType.Device1)) patch({ device_type: DeviceType.Device1 })
               if (v === String(DeviceType.Device2)) patch({ device_type: DeviceType.Device2 })
             }}
-          >
-            <SelectTrigger id="device-type" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent alignItemWithTrigger className="z-[80]">
-              <SelectItem value={String(DeviceType.Device1)}>{t('sim.device1')}</SelectItem>
-              <SelectItem value={String(DeviceType.Device2)}>{t('sim.device2')}</SelectItem>
-            </SelectContent>
-          </Select>
+          />
         </div>
         <fieldset className="grid gap-2">
           <legend className="flex items-center gap-1.5 text-sm font-medium">

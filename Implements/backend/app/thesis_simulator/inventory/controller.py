@@ -111,7 +111,12 @@ class FixedController:
 
     def decide(self, reader: "ReaderState", config: "EpisodeConfig", group: int, f_r: int) -> Decision:
         k = _scale_to_grant(_cold_k(config), config.consts.f_freq, f_r)
-        return Decision(k=k, pstar=reader.estimator.p_star(k, group))
+        p = config.p_fixed
+        if p is None:
+            p = reader.estimator.p_star(k, group)
+        else:
+            p = min(1.0, max(config.consts.p_min, float(p)))
+        return Decision(k=k, pstar=p)
 
 
 class DfsaController:

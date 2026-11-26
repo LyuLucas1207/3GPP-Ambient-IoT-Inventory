@@ -102,6 +102,11 @@ def run_one_frame(
     cur_group = reader.round_index % g
     periodic = config.scheme == "periodic"
     t0 = reader.clock_s
+    if config.single_reply:
+        expired = (world.latched_until >= 0.0) & (world.latched_until <= t0)
+        if np.any(expired):
+            world.latched_reader[expired] = -1
+            world.latched_until[expired] = -1.0
     stats = _FrameStats()
     result = FrameResult(t_frame=0.0, f_r=F_r)
     rid = reader.reader_id
@@ -365,6 +370,17 @@ def run_one_frame(
 
     t_frame = T_pg + T_m1_phase + T_ebi + s_m2_time * T_m2 + n_m3_slots * T_m3
     t_end = t0 + t_frame
+
+    # ---------- one reply: stay with this reader until this round's end ----------
+    # The scheduler runs a whole frame before the next reader's overlapping frame,
+    # so the lock is visible to any page that starts before t_end. It expires on
+    # its own; a failed device is free again once this round is over.
+    if config.single_reply and not config.use_grouping and attempted.size:
+        pending = attempted[~world.identified[attempted]]
+        keep = pending[world.E[pending] > world.Eoff[pending]]
+        if keep.size:
+            world.latched_reader[keep] = rid
+            world.latched_until[keep] = t_end
 
     # ---------- per-device CBRA failure bookkeeping ----------
     if attempted.size:

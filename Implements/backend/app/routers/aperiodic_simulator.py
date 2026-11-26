@@ -40,6 +40,13 @@ def paper_config() -> dict:
     return service.paper_config_payload()
 
 
+@router.get("/config/journal")
+def journal_config() -> dict:
+    from app.journal.tables import journal_payload
+
+    return journal_payload()
+
+
 @router.post("/simulate")
 def simulate(req: AperiodicSimulateRequest) -> dict:
     factory = _controller_factory(req)

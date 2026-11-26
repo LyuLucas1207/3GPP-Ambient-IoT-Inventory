@@ -29,8 +29,10 @@ import math
 
 import numpy as np
 
-M_RANGE = (0.25, 10.0)
-Q_RANGE = (0.1, 10.0)
+from app.journal.tables import M_MAX, M_MIN, Q_MAX, Q_MIN
+
+M_RANGE = (M_MIN, M_MAX)
+Q_RANGE = (Q_MIN, Q_MAX)
 OBS_DIM = 7
 
 ACTION_TRANSFORM = {

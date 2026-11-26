@@ -220,6 +220,8 @@ export default function ThesisSimulationPage() {
             setSelecting(false)
             setPicked([])
           }}
+          focusReaderId={focusReaderId}
+          onFocusReader={setFocusReaderId}
         />
         <main ref={mainRef} className="relative min-w-0 flex-1 overflow-hidden">
           <ThesisWarehouse
@@ -245,17 +247,6 @@ export default function ThesisSimulationPage() {
             onEdit={(id, x, y) => setMenu({ type: 'edit', id, x, y })}
             onPlace={(worldX, worldY, x, y) => setMenu({ type: 'place', worldX, worldY, x, y })}
           />
-          {scene && inspected ? (
-            <DeviceInspector
-              scene={scene}
-              placement={inspected}
-              live={runs.selectedRunId != null ? live.devices : null}
-              runId={runs.selectedRunId}
-              runStatus={live.status ?? selectedRun?.status ?? null}
-              run={selectedRun}
-              onClose={() => setSelectedDeviceId(null)}
-            />
-          ) : null}
           {inspectedReader && selectedRun ? (
             <ReaderInspector
               reader={inspectedReader}
@@ -277,20 +268,22 @@ export default function ThesisSimulationPage() {
               minSize={DOCK_MIN}
               maxSize={Math.max(DOCK_MIN, mainHeight - 72)}
               defaultSize={DOCK_DEFAULT}
-              inset={{ left: 12, right: inspected || inspectedReader ? 452 : 56, bottom: 12 }}
+              inset={{ left: 12, right: inspectedReader ? 452 : 56, bottom: 12 }}
             >
-              <div className="flex h-full min-h-0 flex-col gap-2 p-2 pt-3">
-                <RunControlBar
-                  run={selectedRun}
-                  config={runs.activeRun?.id === selectedRun.run_id ? runs.activeRun.config : null}
-                  live={live}
-                  busy={runs.busy}
-                  onPause={() => void runs.pauseRun(selectedRun.run_id)}
-                  onResume={() => void runs.resumeRun(selectedRun.run_id)}
-                  onStop={() => void runs.stopRun(selectedRun.run_id)}
-                  onSpeed={(speed) => void runs.setSpeed(selectedRun.run_id, speed)}
-                />
-                <div className="min-h-0 flex-1">
+              <div className="flex h-full min-h-0 w-full gap-3 overflow-hidden p-2 pt-3">
+                <aside className="w-72 shrink-0 overflow-auto border-r pr-3">
+                  <RunControlBar
+                    run={selectedRun}
+                    config={runs.activeRun?.id === selectedRun.run_id ? runs.activeRun.config : null}
+                    live={live}
+                    busy={runs.busy}
+                    onPause={() => void runs.pauseRun(selectedRun.run_id)}
+                    onResume={() => void runs.resumeRun(selectedRun.run_id)}
+                    onStop={() => void runs.stopRun(selectedRun.run_id)}
+                    onSpeed={(speed) => void runs.setSpeed(selectedRun.run_id, speed)}
+                  />
+                </aside>
+                <div className="min-h-0 min-w-0 flex-1">
                   <RunCharts
                     runId={selectedRun.run_id}
                     scheme={selectedRun.scheme}
@@ -305,10 +298,23 @@ export default function ThesisSimulationPage() {
             </HudPanel>
           ) : null}
         </main>
+        {scene && inspected ? (
+          <DeviceInspector
+            scene={scene}
+            placement={inspected}
+            live={runs.selectedRunId != null ? live.devices : null}
+            runId={runs.selectedRunId}
+            runStatus={live.status ?? selectedRun?.status ?? null}
+            run={selectedRun}
+            nowS={
+              live.viewTime ??
+              (live.status === 'running' || live.status === 'pending' || live.status === 'paused' ? live.simTime : null)
+            }
+            onClose={() => setSelectedDeviceId(null)}
+          />
+        ) : null}
         <ThesisRightPanel
           scene={scene}
-          focusReaderId={focusReaderId}
-          onFocus={setFocusReaderId}
           runs={panelRuns}
           selectedRunId={runs.selectedRunId}
           runsBusy={runs.busy}

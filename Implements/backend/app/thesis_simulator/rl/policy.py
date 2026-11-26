@@ -13,16 +13,15 @@ Algorithms
 * ``sb3_ppo``             - stable-baselines3 PPO (MLP, parameter sharing).
 * ``torch_mlp``           - actors exported by ``training/algos/mappo.py``
   (one shared actor, or one per reader slot for the independent baseline).
-* ``zero_shot_aperiodic`` - the single-reader RecurrentPPO of the aperiodic
-  engine applied to every reader with its own LSTM state (``source`` points at
-  that checkpoint; its own SHA-256 is checked).
+* ``zero_shot_aperiodic`` - the original Sources ``A_IoT_PPO_LSTM.zip`` on
+  every reader, each with its own LSTM state. Observation and action follow
+  that script (raw counts, multipliers already in [0.25, 10] and [0.1, 10]).
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import math
 import os
 import zipfile
 from pathlib import Path
@@ -30,6 +29,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
+from app.thesis_simulator.rl.source_policy import apply_source_action, source_observation
 from app.thesis_simulator.inventory.controller import Decision, _cold_k, _scale_to_grant
 from app.thesis_simulator.rl.features import P_FLOOR, apply_action, observation
 
@@ -172,7 +172,7 @@ class _TorchActor:
 
 
 class _ZeroShotActor:
-    """The aperiodic single-reader RecurrentPPO, one LSTM state per reader."""
+    """Original Sources RecurrentPPO, one LSTM state per reader."""
 
     recurrent = True
 
@@ -180,19 +180,14 @@ class _ZeroShotActor:
         import torch
         from sb3_contrib import RecurrentPPO
 
-        from app.aperiodic_simulator.core.config import SystemParams
-        from app.aperiodic_simulator.physics.energy import compute_global_lmax
-
         torch.set_num_threads(1)
         self.model = RecurrentPPO.load(path, device="cpu")
-        self.L_max = compute_global_lmax(SystemParams())
 
     def observe(self, reader: "ReaderState") -> np.ndarray:
+        """Raw counts in the order ``RL.py`` trained: S2b, S2a, S1, empty, collisions, K, p."""
         h = reader.history[-1]
-        n_ao = max(1, h.k)
         s1, s2a, s2b = (h.new_by_subtype + (0, 0, 0))[:3]
-        L = max(1, math.ceil(h.k / max(1, h.f_r)))
-        return np.array([s1 / n_ao, s2a / n_ao, s2b / n_ao, h.empty / n_ao, h.collision / n_ao, min(1.0, L / self.L_max), h.pstar], dtype=np.float32)
+        return source_observation(s2b, s2a, s1, h.empty, h.collision, h.k, h.pstar)
 
     def act(self, obs: np.ndarray, slot: int, state: Any, deterministic: bool) -> tuple[np.ndarray, Any]:
         lstm, start = state if state is not None else (None, True)
@@ -260,7 +255,10 @@ class PolicyController:
             return Decision(k=k, pstar=p, info={"policy_id": self.policy_id, "cold_start": True})
         slot = int(reader.context.get("slot", self.slot))
         a, self.state = self.actor.act(self._obs(reader, config), slot, self.state, self.deterministic)
-        k, p, m, q = apply_action(a, self.k_prev, self.p_prev or 1.0, f_r, int(config.consts.k_max))
+        if isinstance(self.actor, _ZeroShotActor):
+            k, p, m, q = apply_source_action(a, self.k_prev, self.p_prev or 1.0, f_r, int(config.consts.f_freq))
+        else:
+            k, p, m, q = apply_action(a, self.k_prev, self.p_prev or 1.0, f_r, int(config.consts.k_max))
         self.k_prev, self.p_prev = k, p
         return Decision(k=k, pstar=p, info={"policy_id": self.policy_id, "m": m, "q": q})
 

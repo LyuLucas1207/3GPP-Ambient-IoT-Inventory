@@ -1,8 +1,8 @@
-"""No training: reference the aperiodic engine's single-reader RecurrentPPO checkpoint.
+"""No training: use the original Sources ``A_IoT_PPO_LSTM.zip`` on every reader.
 
-Every reader runs that policy with its own LSTM state on the single-reader
-observation (S1, S2a, S2b, I, C per resource, L, p). This measures how far a
-policy trained for one reader transfers to many without retraining.
+Each reader keeps its own LSTM state. The observation is that script's raw
+counts (S2b, S2a, S1, empty, collisions, K, p), and the action is the
+multiplier pair already in [0.25, 10] x [0.1, 10].
 """
 
 from __future__ import annotations
@@ -13,20 +13,17 @@ from typing import Any
 from training.common import BACKEND_ROOT, CsvLog
 
 
-def train(job: dict[str, Any], out_dir: Path, log: CsvLog) -> dict[str, Any]:
-    from app.aperiodic_simulator.rl.checkpoint import load_meta
+SOURCE_ZIP = "app/thesis_simulator/rl/policies/A_IoT_PPO_LSTM.zip"
 
-    src = load_meta(float(job["alpha"]))
-    path = Path(src["path"])
-    try:
-        rel = str(path.relative_to(BACKEND_ROOT))
-    except ValueError:
-        rel = str(path)
+
+def train(job: dict[str, Any], out_dir: Path, log: CsvLog) -> dict[str, Any]:
+    """Point at the original Sources weights. This job does not train."""
+    path = BACKEND_ROOT / SOURCE_ZIP
     return {
         "algo": "zero_shot_aperiodic",
         "artifact": path,
-        "source": rel,
-        "training_steps": int(src.get("training_steps") or 0),
-        "architecture": src.get("architecture"),
-        "hyperparameters": {"source_alpha": src.get("alpha"), "source_seed": src.get("seed")},
+        "source": SOURCE_ZIP,
+        "training_steps": 1_001_472,
+        "architecture": "Sources A_IoT_PPO_LSTM.zip: LSTM(1x128) -> MLP(128,128) -> action Box([0.25, 0.1], [10, 10])",
+        "hyperparameters": {"source_alpha": float(job["alpha"]), "source_file": "Sources/Standard_3GPP/3GPP Ambient IoT Aperiodic Codes/Controller-Level/Code/A_IoT_PPO_LSTM.zip"},
     }

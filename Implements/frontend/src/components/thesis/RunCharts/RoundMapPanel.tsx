@@ -41,13 +41,13 @@ export function RoundMapPanel({
   const inspect = slots && slots.id === round.id ? toInspectRound(round, slots.slots, periodic) : null
 
   return (
-    <div className="grid h-full content-start gap-2 overflow-auto text-xs">
-      <div className="flex items-center gap-2">
+    <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden text-xs">
+      <div className="flex shrink-0 items-center gap-2">
         <span className="shrink-0 tabular-nums">
           R#{round.reader_id} · {t('thesis.charts.roundN', { n: round.round_index })} · {round.t_start_s.toFixed(3)}–{round.t_end_s.toFixed(3)} s
         </span>
         <Slider
-          className="min-w-32 flex-1"
+          className="min-w-24 flex-1"
           min={0}
           max={Math.max(0, ordered.length - 1)}
           step={1}
@@ -59,9 +59,9 @@ export function RoundMapPanel({
         />
         <span className="shrink-0 text-muted-foreground">{pick == null ? t('thesis.charts.followLatest') : `${idx + 1}/${ordered.length}`}</span>
       </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 tabular-nums text-muted-foreground">
+      <div className="flex shrink-0 flex-wrap gap-x-3 gap-y-0.5 tabular-nums text-muted-foreground">
         <span>K={round.k_estimate}</span>
-        <span>p*={round.pstar?.toFixed(3)}</span>
+        <span>p*={round.pstar?.toFixed(3) ?? '—'}</span>
         <span>{t('thesis.charts.candidates')}: {round.candidates ?? '—'}</span>
         <span>{t('thesis.charts.joiners')}: {round.joiners ?? '—'}</span>
         <span>S/C/E: {round.success_count}/{round.collision_count}/{round.empty_count}</span>
@@ -71,14 +71,10 @@ export function RoundMapPanel({
         <span>n̂={round.n_hat != null ? round.n_hat.toFixed(1) : '—'}</span>
         <span>{t('thesis.charts.backlogTrue')}: {round.backlog_true ?? '—'}</span>
       </div>
-      {inspect ? (
-        <>
-          <TimeFrequencyMap r={inspect} />
-          <TimeFrequencyLegend />
-        </>
-      ) : (
-        <p className="text-muted-foreground">{t('thesis.timeline.loading')}</p>
-      )}
+      <div className="min-h-0 flex-1">
+        {inspect ? <TimeFrequencyMap r={inspect} fill /> : <p className="text-muted-foreground">{t('thesis.timeline.loading')}</p>}
+      </div>
+      <TimeFrequencyLegend />
     </div>
   )
 }

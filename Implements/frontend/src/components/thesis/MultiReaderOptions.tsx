@@ -4,7 +4,7 @@ import { ParamHint } from '@/components/ParamHint'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dropdown } from '@/components/ui/dropdown'
 import { usePolicies } from '@/hooks/useMultiReader'
 import type {
   ControllerKind,
@@ -16,7 +16,7 @@ import type {
   TerminationSpec,
 } from '@/types/thesis'
 
-export const CONTROLLER_KINDS: ControllerKind[] = ['auto', 'fixed', 'dfsa', 'policy']
+export const CONTROLLER_KINDS = ['fixed', 'dfsa', 'policy'] as const satisfies readonly ControllerKind[]
 export const RESOURCE_MODES: ResourceMode[] = ['independent', 'shared', 'fdma', 'tdma', 'hybrid', 'lbt']
 export const TERMINATION_KINDS: TerminationKind[] = ['oracle', 'quiet_rounds', 'id_rate', 'energy_bound', 'combined']
 /** Device 2a coverage of a default reader: the farthest backscatter device, still inside the harvesting range. */
@@ -148,20 +148,28 @@ function Toggle({ checked, onChange, label, hint }: { checked: boolean; onChange
   )
 }
 
-function Choice<T extends string>({ value, options, label, onChange }: { value: T; options: [T, string][]; label: (v: T) => string; onChange: (v: T) => void }) {
+function Choice<T extends string>({
+  value,
+  options,
+  hints,
+  onChange,
+}: {
+  value: string
+  options: [T, string][]
+  hints?: Record<string, string>
+  onChange: (v: T) => void
+}) {
   return (
-    <Select value={value} items={Object.fromEntries(options)} onValueChange={(v) => onChange((v ?? value) as T)}>
-      <SelectTrigger className="h-8 w-full">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent align="start">
-        {options.map(([v]) => (
-          <SelectItem key={v} value={v}>
-            {label(v)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Dropdown
+      value={value}
+      options={options.map(([v, label]) => ({
+        value: v,
+        label,
+        trigger: label,
+        hint: hints?.[v] ? <ParamHint text={hints[v]} title={label} /> : undefined,
+      }))}
+      onChange={(next) => onChange(next as T)}
+    />
   )
 }
 
@@ -179,7 +187,7 @@ export function Section({ title, hint, children }: { title: string; hint?: strin
 
 // ------------------------------------------------------------------ controller
 
-export function ControllerSection({ value, adaptiveK, onChange }: { value: ControllerSpec; adaptiveK: boolean; onChange: (v: ControllerSpec) => void }) {
+export function ControllerSection({ value, onChange }: { value: ControllerSpec; onChange: (v: ControllerSpec) => void }) {
   const { t } = useTranslation()
   const policies = usePolicies()
   const available = (policies.data ?? []).filter((p) => p.available)
@@ -191,15 +199,11 @@ export function ControllerSection({ value, adaptiveK, onChange }: { value: Contr
         <Choice
           value={value.kind}
           options={CONTROLLER_KINDS.map((k) => [k, kindLabel(k)])}
-          label={kindLabel}
+          hints={Object.fromEntries(CONTROLLER_KINDS.map((k) => [k, t(`thesis.newRun.controller.desc.${k}`)]))}
           onChange={(kind) => onChange({ ...value, kind, policy_id: kind === 'policy' ? value.policy_id ?? available[0]?.policy_id ?? null : null })}
         />
       </Field>
-      <p className="col-span-2 text-[11px] text-muted-foreground">
-        {value.kind === 'auto'
-          ? t(adaptiveK ? 'thesis.newRun.controller.autoDfsa' : 'thesis.newRun.controller.autoFixed')
-          : t(`thesis.newRun.controller.desc.${value.kind}`)}
-      </p>
+      <p className="col-span-2 text-[11px] text-muted-foreground">{t(`thesis.newRun.controller.desc.${value.kind}`)}</p>
       {value.kind === 'policy' ? (
         <>
           <Field label={t('thesis.newRun.controller.policy')} wide>
@@ -209,7 +213,6 @@ export function ControllerSection({ value, adaptiveK, onChange }: { value: Contr
               <Choice
                 value={value.policy_id ?? ''}
                 options={available.map((p) => [p.policy_id, p.policy_id])}
-                label={(v) => v}
                 onChange={(policy_id) => onChange({ ...value, policy_id })}
               />
             )}
@@ -273,7 +276,12 @@ export function ResourceSection({
   return (
     <Section title={t('thesis.newRun.resource.title')} hint={t('thesis.newRun.resource.hint')}>
       <Field label={t('thesis.newRun.resource.mode')} wide>
-        <Choice value={value.mode} options={RESOURCE_MODES.map((m) => [m, modeLabel(m)])} label={modeLabel} onChange={(mode) => set({ mode })} />
+        <Choice
+          value={value.mode}
+          options={RESOURCE_MODES.map((m) => [m, modeLabel(m)])}
+          hints={Object.fromEntries(RESOURCE_MODES.map((m) => [m, t(`thesis.newRun.resource.desc.${m}`)]))}
+          onChange={(mode) => set({ mode })}
+        />
       </Field>
       <p className="col-span-2 text-[11px] text-muted-foreground">{t(`thesis.newRun.resource.desc.${value.mode}`)}</p>
       {readerCount < 2 && value.mode !== 'independent' ? (
@@ -334,13 +342,15 @@ export function ResourceSection({
           ) : null}
         </>
       ) : null}
+      {value.mode !== 'independent' ? (
       <Toggle
         checked={value.interference ?? true}
         onChange={(interference) => set({ interference })}
         label={t('thesis.newRun.resource.interference')}
         hint={t('thesis.newRun.resource.interferenceHint')}
       />
-      {value.interference ?? true ? (
+      ) : null}
+      {value.mode !== 'independent' && (value.interference ?? true) ? (
         <>
           <Toggle
             checked={value.cross_msg1 ?? true}
@@ -397,7 +407,12 @@ export function TerminationEditor({
   return (
     <>
       <Field label={t('thesis.newRun.termination.kind')} wide={!onRemove}>
-        <Choice value={value.kind} options={kinds.map((k) => [k, kindLabel(k)])} label={kindLabel} onChange={(k) => onChange(defaultTermination(k))} />
+        <Choice
+          value={value.kind}
+          options={kinds.map((k) => [k, kindLabel(k)])}
+          hints={Object.fromEntries(kinds.map((k) => [k, t(`thesis.newRun.termination.desc.${k}`)]))}
+          onChange={(k) => onChange(defaultTermination(k))}
+        />
       </Field>
       {onRemove ? (
         <div className="flex items-end">
@@ -418,7 +433,6 @@ export function TerminationEditor({
             <Choice
               value={value.window_mode ?? 'rounds'}
               options={(['rounds', 'seconds', 'ewma'] as const).map((m) => [m, t(`thesis.newRun.termination.windowModes.${m}`)])}
-              label={(m) => t(`thesis.newRun.termination.windowModes.${m}`)}
               onChange={(window_mode) => set({ window_mode })}
             />
           </Field>
@@ -448,7 +462,6 @@ export function TerminationEditor({
             <Choice
               value={value.energy_source ?? 'edge'}
               options={(['edge', 'actual'] as const).map((m) => [m, t(`thesis.newRun.termination.energySources.${m}`)])}
-              label={(m) => t(`thesis.newRun.termination.energySources.${m}`)}
               onChange={(energy_source) => set({ energy_source })}
             />
           </Field>
@@ -479,7 +492,6 @@ export function TerminationEditor({
             <Choice
               value={value.combine ?? 'all'}
               options={(['all', 'any'] as const).map((m) => [m, t(`thesis.newRun.termination.combineModes.${m}`)])}
-              label={(m) => t(`thesis.newRun.termination.combineModes.${m}`)}
               onChange={(combine) => set({ combine })}
             />
           </Field>

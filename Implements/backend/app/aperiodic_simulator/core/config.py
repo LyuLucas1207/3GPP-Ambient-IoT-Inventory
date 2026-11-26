@@ -10,6 +10,37 @@ conflict, this package never uses ``T_pg``; it uses ``t_page_s``, ``t_msg1_s``,
 
 from dataclasses import asdict, dataclass, field, replace
 
+from app.journal.tables import (
+    ALPHA,
+    BS_HEIGHT_M,
+    BS_RX_SENSITIVITY_DBM,
+    BS_SPACING_M,
+    BS_TX_ANTENNA_GAIN_DBI,
+    BS_TX_POWER_DBM,
+    CAPTURE_RATIO_DB,
+    CARRIER_GHZ,
+    DATA_RATE_BPS,
+    DEVICE_HEIGHT_M,
+    EI_OVERHEAD_BITS,
+    F,
+    FACTORY_LENGTH_M,
+    FACTORY_WIDTH_M,
+    FALSE_ALARM_RATE,
+    MISSED_DETECTION_RATE,
+    MSG1_BITS,
+    MSG2_BITS,
+    MSG3_BITS,
+    N_BS,
+    N_TOT_MAX,
+    ON_OBJECT_PENALTY_DB,
+    P_SL_W,
+    P_WURX_W,
+    PAGING_BITS,
+    POLARIZATION_LOSS_DB,
+    SHADOW_FADING_MARGIN_DB,
+    SINGLE_SOURCE_MIN_PIN_DBM,
+    T_MON_S,
+)
 from app.aperiodic_simulator.core.states import (
     ControllerName,
     HarvestingScenario,
@@ -22,34 +53,34 @@ from app.aperiodic_simulator.core.states import (
 class SystemParams:
     """Table II system values (global)."""
 
-    factory_length_m: float = 120.0
-    factory_width_m: float = 60.0
-    n_bs: int = 18
-    bs_spacing_m: float = 20.0
-    bs_height_m: float = 8.0
-    device_height_m: float = 1.5
-    carrier_ghz: float = 0.9
-    polarization_loss_db: float = 3.0
-    shadow_fading_margin_db: float = 4.0
-    on_object_penalty_db: float = 0.9
-    bs_rx_sensitivity_dbm: float = -106.0
-    bs_tx_power_dbm: float = 33.0
-    bs_tx_antenna_gain_dbi: float = 6.0
-    F: int = 8
-    data_rate_bps: float = 7000.0
-    paging_bits: int = 80
-    msg1_bits: int = 38
-    msg2_bits: int = 88
-    msg3_bits: int = 144
-    ei_overhead_bits: int = 24
-    false_alarm_rate: float = 0.001
-    missed_detection_rate: float = 0.01
-    capture_ratio_db: float = 6.0
-    t_mon_s: float = 0.100
-    p_sl_w: float = 0.1e-6
-    p_wurx_w: float = 1.0e-6
-    single_source_min_pin_dbm: float = -36.0
-    n_tot_default: int = 15000
+    factory_length_m: float = FACTORY_LENGTH_M
+    factory_width_m: float = FACTORY_WIDTH_M
+    n_bs: int = N_BS
+    bs_spacing_m: float = BS_SPACING_M
+    bs_height_m: float = BS_HEIGHT_M
+    device_height_m: float = DEVICE_HEIGHT_M
+    carrier_ghz: float = CARRIER_GHZ
+    polarization_loss_db: float = POLARIZATION_LOSS_DB
+    shadow_fading_margin_db: float = SHADOW_FADING_MARGIN_DB
+    on_object_penalty_db: float = ON_OBJECT_PENALTY_DB
+    bs_rx_sensitivity_dbm: float = BS_RX_SENSITIVITY_DBM
+    bs_tx_power_dbm: float = BS_TX_POWER_DBM
+    bs_tx_antenna_gain_dbi: float = BS_TX_ANTENNA_GAIN_DBI
+    F: int = F
+    data_rate_bps: float = DATA_RATE_BPS
+    paging_bits: int = PAGING_BITS
+    msg1_bits: int = MSG1_BITS
+    msg2_bits: int = MSG2_BITS
+    msg3_bits: int = MSG3_BITS
+    ei_overhead_bits: int = EI_OVERHEAD_BITS
+    false_alarm_rate: float = FALSE_ALARM_RATE
+    missed_detection_rate: float = MISSED_DETECTION_RATE
+    capture_ratio_db: float = CAPTURE_RATIO_DB
+    t_mon_s: float = T_MON_S
+    p_sl_w: float = P_SL_W
+    p_wurx_w: float = P_WURX_W
+    single_source_min_pin_dbm: float = SINGLE_SOURCE_MIN_PIN_DBM
+    n_tot_default: int = N_TOT_MAX
 
 
 @dataclass(frozen=True)
@@ -112,7 +143,7 @@ class Assumptions:
 class EpisodeConfig:
     """One simulation episode (one seed)."""
 
-    n_tot: int = 15000
+    n_tot: int = N_TOT_MAX
     seed: int = 42
     harvesting_scenario: HarvestingScenario = HarvestingScenario.MULTI_SOURCE
     paging_mode: PagingMode = PagingMode.APERIODIC
@@ -122,7 +153,7 @@ class EpisodeConfig:
     p_initial: float = 1.0
     N_g: int = 1
     enforce_midround_depletion: bool = True
-    alpha: float = 0.5
+    alpha: float = ALPHA
     t_max_s: float = 1200.0
     max_rounds: int = 2_000_000
     runtime_mode: RuntimeMode = RuntimeMode.PAPER_BATCH
